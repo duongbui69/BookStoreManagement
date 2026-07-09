@@ -1,92 +1,106 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using BookStoreManagement.Models;
 
 namespace BookStoreManagement.Repositories
 {
-    public class CategoryRepository
+    public class CategoryRepository : RepositoryBase
     {
-        // Map a SqlDataReader to a Category object
         private Category MapCategory(SqlDataReader reader)
         {
             return new Category
             {
-                Id = DataReaderHelper.GetInt(reader, "Id"),
-                CategoryName = DataReaderHelper.GetString(reader, "CategoryName"),
-                Description = DataReaderHelper.GetNullableString(reader, "Description"),
-                IsActive = DataReaderHelper.GetBool(reader, "IsActive"),
-                CreatedAt = DataReaderHelper.GetDateTime(reader, "CreatedAt"),
-                UpdatedAt = DataReaderHelper.GetNullableDateTime(reader, "UpdatedAt")
+                Id = GetInt(reader, "Id"),
+                CategoryName = GetString(reader, "CategoryName"),
+                Description = GetNullableString(reader, "Description"),
+                IsActive = GetBool(reader, "IsActive"),
+                CreatedAt = GetDateTime(reader, "CreatedAt"),
+                UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
             };
         }
 
-        // Execute a SQL query and return the result
-        private T ExecuteQuery<T>(Func<SqlCommand, T> action, string sql, Action<SqlParameterCollection>? addParameters = null)
-        {
-            using var connection = DbConnectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
-
-            addParameters?.Invoke(command.Parameters);
-
-            connection.Open();
-            return action(command);
-        }
-
-        // Get all categories from the database
         public List<Category> GetAll()
         {
             var categories = new List<Category>();
-            const string sql = @"SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt FROM Categories ORDER BY Id";
+            const string sql = @"
+                SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt
+                FROM Categories
+                ORDER BY Id DESC;
+            ";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    categories.Add(MapCategory(reader));
-                }
+                while (reader.Read()) categories.Add(MapCategory(reader));
                 return categories;
             }, sql);
         }
 
-        // Get all active categories from the database
         public List<Category> GetActive()
         {
             var categories = new List<Category>();
-            const string sql = @"SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt FROM Categories WHERE IsActive = 1 ORDER BY Id";
+            const string sql = @"
+                SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt
+                FROM Categories
+                WHERE IsActive = 1
+                ORDER BY CategoryName;
+            ";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    categories.Add(MapCategory(reader));
-                }
+                while (reader.Read()) categories.Add(MapCategory(reader));
                 return categories;
             }, sql);
         }
 
-        // Get a category by its ID
-        public int Add(Category categories)
+        public Category? GetById(int id)
         {
             const string sql = @"
-                INSERT INTO Categories (CategoryName, Description, IsActive, CreatedAt)
-                OUTPUT INSERTED.Id
-                VALUES (@CategoryName, @Description, @IsActive, SYSDATETIME());
-             ";
+                SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt
+                FROM Categories
+                WHERE Id = @Id;
+            ";
             return ExecuteQuery(command =>
             {
-                return (int)command.ExecuteScalar();
-            }, sql, parameters =>
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapCategory(reader) : null;
+            }, sql, parameters => AddParameter(parameters, "@Id", id));
+        }
+
+        public List<Category> Search(string keyword)
+        {
+            var categories = new List<Category>();
+            const string sql = @"
+                SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt
+                FROM Categories
+                WHERE CategoryName LIKE N'%' + @Keyword + N'%'
+                   OR Description LIKE N'%' + @Keyword + N'%'
+                ORDER BY Id DESC;
+            ";
+            return ExecuteQuery(command =>
             {
-                parameters.AddWithValue("@CategoryName", categories.CategoryName);
-                parameters.AddWithValue("@Description", (object?)categories.Description ?? DBNull.Value);
-                parameters.AddWithValue("@IsActive", categories.IsActive);
+                using var reader = command.ExecuteReader();
+                while (reader.Read()) categories.Add(MapCategory(reader));
+                return categories;
+            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
+        }
+
+        public int Add(Category category)
+        {
+            const string sql = @"
+                INSERT INTO Categories (CategoryName, Description, IsActive)
+                OUTPUT INSERTED.Id
+                VALUES (@CategoryName, @Description, @IsActive);
+            ";
+            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters =>
+            {
+                AddParameter(parameters, "@CategoryName", category.CategoryName);
+                AddParameter(parameters, "@Description", category.Description);
+                AddParameter(parameters, "@IsActive", category.IsActive);
             });
         }
 
-        // Update an existing category in the database
-        public bool Update(Category categories)
+        public bool Update(Category category)
         {
             const string sql = @"
                 UPDATE Categories
@@ -96,19 +110,15 @@ namespace BookStoreManagement.Repositories
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
             ";
-            return ExecuteQuery(command =>
+            return ExecuteNonQuery(sql, parameters =>
             {
-                return command.ExecuteNonQuery() > 0;
-            }, sql, parameters =>
-            {
-                parameters.AddWithValue("@Id", categories.Id);
-                parameters.AddWithValue("@CategoryName", categories.CategoryName);
-                parameters.AddWithValue("@Description", (object?)categories.Description ?? DBNull.Value);
-                parameters.AddWithValue("@IsActive", categories.IsActive);
-            });
+                AddParameter(parameters, "@Id", category.Id);
+                AddParameter(parameters, "@CategoryName", category.CategoryName);
+                AddParameter(parameters, "@Description", category.Description);
+                AddParameter(parameters, "@IsActive", category.IsActive);
+            }) > 0;
         }
 
-        // Set the active status of a category by its ID
         public bool SetActive(int id, bool isActive)
         {
             const string sql = @"
@@ -117,14 +127,27 @@ namespace BookStoreManagement.Repositories
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
             ";
-            return ExecuteQuery(command =>
+            return ExecuteNonQuery(sql, parameters =>
             {
-                return command.ExecuteNonQuery() > 0;
-            }, sql, parameters =>
+                AddParameter(parameters, "@Id", id);
+                AddParameter(parameters, "@IsActive", isActive);
+            }) > 0;
+        }
+
+        public bool IsNameExists(string categoryName, int? excludeId = null)
+        {
+            string sql = @"
+                SELECT COUNT(1)
+                FROM Categories
+                WHERE CategoryName = @CategoryName
+            ";
+            if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
+
+            return ExecuteScalarInt(sql, parameters =>
             {
-                parameters.AddWithValue("@Id", id);
-                parameters.AddWithValue("@IsActive", isActive);
-            });
+                AddParameter(parameters, "@CategoryName", categoryName);
+                if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
+            }) > 0;
         }
     }
 }

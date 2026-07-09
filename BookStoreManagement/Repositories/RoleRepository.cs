@@ -1,27 +1,31 @@
-using System;
 using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+using BookStoreManagement.Models;
 
 namespace BookStoreManagement.Repositories
 {
-    public class RoleRepository
+    public class RoleRepository : RepositoryBase
     {
-        // Execute a SQL query and return the result
-        private T ExecuteQuery<T>(Func<SqlCommand, T> action, string sql, Action<SqlParameterCollection>? addParameters = null)
+        private Role MapRole(SqlDataReader reader)
         {
-            using var connection = DbConnectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
-
-            addParameters?.Invoke(command.Parameters);
-
-            connection.Open();
-            return action(command);
+            return new Role
+            {
+                Id = GetInt(reader, "Id"),
+                RoleName = GetString(reader, "RoleName"),
+                Description = GetNullableString(reader, "Description")
+            };
         }
 
-        // Get all roles
         public List<Role> GetAll()
         {
             var roles = new List<Role>();
-            const string sql = @"SELECT Id, RoleName, Description FROM Roles ORDER BY Id";
+
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                ORDER BY Id;
+            ";
+
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -31,6 +35,42 @@ namespace BookStoreManagement.Repositories
                 }
                 return roles;
             }, sql);
+        }
+
+        public Role? GetById(int id)
+        {
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                WHERE Id = @Id;
+            ";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapRole(reader) : null;
+            }, sql, parameters =>
+            {
+                AddParameter(parameters, "@Id", id);
+            });
+        }
+
+        public Role? GetByName(string roleName)
+        {
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                WHERE RoleName = @RoleName;
+            ";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapRole(reader) : null;
+            }, sql, parameters =>
+            {
+                AddParameter(parameters, "@RoleName", roleName);
+            });
         }
     }
 }
