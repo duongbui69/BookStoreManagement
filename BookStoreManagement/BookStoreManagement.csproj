@@ -9,19 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Repositories\SalesOrderRepository.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Forms\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Repositories\SalesOrderRepository.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
   </ItemGroup>
 
