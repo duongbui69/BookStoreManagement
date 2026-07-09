@@ -52,8 +52,8 @@ namespace BookStoreManagement.Forms
 
                 MessageBox.Show("Đăng nhập thành công: " + user.FullName);
 
-                FormTest formTest = new FormTest();
-                formTest.Show();
+                DashboardForm dashboardform = new DashboardForm();
+                dashboardform.Show();
 
                 this.Hide();
             }
