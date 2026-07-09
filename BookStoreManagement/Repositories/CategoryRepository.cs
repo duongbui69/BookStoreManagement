@@ -1,21 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using BookStoreManagement.Models;
 
 namespace BookStoreManagement.Repositories
 {
     public class CategoryRepository
     {
-        // Execute a SQL query and return the result
+        // Map a SqlDataReader to a Category object
         private Category MapCategory(SqlDataReader reader)
         {
             return new Category
             {
-                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                Name = reader.GetString(reader.GetOrdinal("Name")),
-                Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
-                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
+                Id = DataReaderHelper.GetInt(reader, "Id"),
+                CategoryName = DataReaderHelper.GetString(reader, "CategoryName"),
+                Description = DataReaderHelper.GetNullableString(reader, "Description"),
+                IsActive = DataReaderHelper.GetBool(reader, "IsActive"),
+                CreatedAt = DataReaderHelper.GetDateTime(reader, "CreatedAt"),
+                UpdatedAt = DataReaderHelper.GetNullableDateTime(reader, "UpdatedAt")
             };
         }
 
@@ -31,10 +34,11 @@ namespace BookStoreManagement.Repositories
             return action(command);
         }
 
+        // Get all categories from the database
         public List<Category> GetAll()
         {
             var categories = new List<Category>();
-            const string sql = @"SELECT Id, Name, Description, CreatedAt, UpdatedAt FROM Categories ORDER BY Id";
+            const string sql = @"SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt FROM Categories ORDER BY Id";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -46,10 +50,11 @@ namespace BookStoreManagement.Repositories
             }, sql);
         }
 
+        // Get all active categories from the database
         public List<Category> GetActive()
         {
             var categories = new List<Category>();
-            const string sql = @"SELECT Id, Name, Description, CreatedAt, UpdatedAt FROM Categories WHERE IsActive = 1 ORDER BY Id";
+            const string sql = @"SELECT Id, CategoryName, Description, IsActive, CreatedAt, UpdatedAt FROM Categories WHERE IsActive = 1 ORDER BY Id";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -61,12 +66,13 @@ namespace BookStoreManagement.Repositories
             }, sql);
         }
 
+        // Get a category by its ID
         public int Add(Category categories)
         {
             const string sql = @"
-                INSERT INTO Categories (CategoryName, Description, IsActive)
+                INSERT INTO Categories (CategoryName, Description, IsActive, CreatedAt)
                 OUTPUT INSERTED.Id
-                VALUES (@CategoryName, @Description, @IsActive);
+                VALUES (@CategoryName, @Description, @IsActive, SYSDATETIME());
              ";
             return ExecuteQuery(command =>
             {
@@ -79,7 +85,8 @@ namespace BookStoreManagement.Repositories
             });
         }
 
-        public bool Update(Category categories) 
+        // Update an existing category in the database
+        public bool Update(Category categories)
         {
             const string sql = @"
                 UPDATE Categories
@@ -101,6 +108,7 @@ namespace BookStoreManagement.Repositories
             });
         }
 
+        // Set the active status of a category by its ID
         public bool SetActive(int id, bool isActive)
         {
             const string sql = @"
