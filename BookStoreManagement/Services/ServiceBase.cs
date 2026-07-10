@@ -1,103 +1,75 @@
 using System;
-using System.Text.RegularExpressions;
+using BookStoreManagement.Helpers;
 
 namespace BookStoreManagement.Services
 {
     public abstract class ServiceBase
     {
-        protected static string Normalize(string? value)
+        protected readonly PermissionService PermissionService;
+
+        protected ServiceBase()
+        {
+            PermissionService = new PermissionService();
+        }
+
+        protected string Trim(string? value)
         {
             return value?.Trim() ?? string.Empty;
         }
 
-        protected static string? NormalizeNullable(string? value)
+        protected string? TrimNullable(string? value)
         {
-            value = value?.Trim();
-            return string.IsNullOrWhiteSpace(value) ? null : value;
+            string trimmed = value?.Trim() ?? string.Empty;
+            return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed;
         }
 
-        protected static void EnsureId(int id, string fieldName)
+        protected void Require(bool condition, string message)
         {
-            if (id <= 0)
+            if (!condition)
             {
-                throw new Exception($"{fieldName} không hợp lệ.");
-            }
-        }
-
-        protected static void EnsureRequired(string? value, string fieldName)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new Exception($"{fieldName} không được để trống.");
+                throw new Exception(message);
             }
         }
 
-        protected static void EnsureMaxLength(string? value, int maxLength, string fieldName)
+        protected int ResolveStoreIdForWrite(int requestedStoreId)
         {
-            if (!string.IsNullOrEmpty(value) && value.Length > maxLength)
+            PermissionService.RequireStaffOrAdmin();
+
+            if (CurrentSession.IsAdmin)
             {
-                throw new Exception($"{fieldName} không được vượt quá {maxLength} ký tự.");
+                Require(requestedStoreId > 0, "Cửa hàng không hợp lệ.");
+                return requestedStoreId;
             }
+
+            Require(CurrentSession.StoreId.HasValue && CurrentSession.StoreId.Value > 0,
+                "Tài khoản nhân viên chưa được gán cửa hàng.");
+
+            if (requestedStoreId > 0 && requestedStoreId != CurrentSession.StoreId.Value)
+            {
+                throw new Exception("Nhân viên chỉ được thao tác tại cửa hàng của mình.");
+            }
+
+            return CurrentSession.StoreId.Value;
         }
 
-        protected static void EnsureNonNegative(decimal value, string fieldName)
+        protected int? ResolveStoreIdForRead(int? requestedStoreId)
         {
-            if (value < 0)
-            {
-                throw new Exception($"{fieldName} không được nhỏ hơn 0.");
-            }
-        }
+            PermissionService.RequireStaffOrAdmin();
 
-        protected static void EnsureNonNegative(int value, string fieldName)
-        {
-            if (value < 0)
+            if (CurrentSession.IsAdmin)
             {
-                throw new Exception($"{fieldName} không được nhỏ hơn 0.");
-            }
-        }
-
-        protected static void EnsurePositive(int value, string fieldName)
-        {
-            if (value <= 0)
-            {
-                throw new Exception($"{fieldName} phải lớn hơn 0.");
-            }
-        }
-
-        protected static void EnsurePositive(decimal value, string fieldName)
-        {
-            if (value <= 0)
-            {
-                throw new Exception($"{fieldName} phải lớn hơn 0.");
-            }
-        }
-
-        protected static void EnsureValidEmail(string? email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return;
+                return requestedStoreId;
             }
 
-            string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-            if (!Regex.IsMatch(email.Trim(), pattern))
-            {
-                throw new Exception("Email không đúng định dạng.");
-            }
-        }
+            Require(CurrentSession.StoreId.HasValue && CurrentSession.StoreId.Value > 0,
+                "Tài khoản nhân viên chưa được gán cửa hàng.");
 
-        protected static void EnsureValidPhone(string? phone)
-        {
-            if (string.IsNullOrWhiteSpace(phone))
+            if (requestedStoreId.HasValue && requestedStoreId.Value != CurrentSession.StoreId.Value)
             {
-                return;
+                throw new Exception("Nhân viên chỉ được xem dữ liệu của cửa hàng mình.");
             }
 
-            string pattern = @"^[0-9+\-\s]{8,20}$";
-            if (!Regex.IsMatch(phone.Trim(), pattern))
-            {
-                throw new Exception("Số điện thoại không đúng định dạng.");
-            }
+            return CurrentSession.StoreId.Value;
         }
     }
 }

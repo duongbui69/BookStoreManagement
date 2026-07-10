@@ -7,7 +7,6 @@ namespace BookStoreManagement.Repositories
 {
     public class AuthorRepository : RepositoryBase
     {
-        // Map a SqlDataReader to an Author object
         private Author MapAuthor(SqlDataReader reader)
         {
             return new Author
@@ -21,10 +20,9 @@ namespace BookStoreManagement.Repositories
             };
         }
 
-        // Get all authors from the database
         public List<Author> GetAll()
         {
-            var authors = new List<Author>();
+            var items = new List<Author>();
             const string sql = @"
                 SELECT Id, AuthorName, Description, IsActive, CreatedAt, UpdatedAt
                 FROM Authors
@@ -33,15 +31,14 @@ namespace BookStoreManagement.Repositories
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) authors.Add(MapAuthor(reader));
-                return authors;
+                while (reader.Read()) items.Add(MapAuthor(reader));
+                return items;
             }, sql);
         }
 
-        // Get all active authors from the database
         public List<Author> GetActive()
         {
-            var authors = new List<Author>();
+            var items = new List<Author>();
             const string sql = @"
                 SELECT Id, AuthorName, Description, IsActive, CreatedAt, UpdatedAt
                 FROM Authors
@@ -51,12 +48,11 @@ namespace BookStoreManagement.Repositories
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) authors.Add(MapAuthor(reader));
-                return authors;
+                while (reader.Read()) items.Add(MapAuthor(reader));
+                return items;
             }, sql);
         }
 
-        // Get an author by ID from the database
         public Author? GetById(int id)
         {
             const string sql = @"
@@ -71,43 +67,39 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
-        // Search authors by keyword in the database
         public List<Author> Search(string keyword)
         {
-            var authors = new List<Author>();
+            var items = new List<Author>();
             const string sql = @"
                 SELECT Id, AuthorName, Description, IsActive, CreatedAt, UpdatedAt
                 FROM Authors
                 WHERE AuthorName LIKE N'%' + @Keyword + N'%'
-                   OR Description LIKE N'%' + @Keyword + N'%'
                 ORDER BY Id DESC;
             ";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) authors.Add(MapAuthor(reader));
-                return authors;
+                while (reader.Read()) items.Add(MapAuthor(reader));
+                return items;
             }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
         }
 
-        // Add a new author to the database and return the new author's ID
-        public int Add(Author author)
+        public int Add(Author item)
         {
             const string sql = @"
                 INSERT INTO Authors (AuthorName, Description, IsActive)
                 OUTPUT INSERTED.Id
                 VALUES (@AuthorName, @Description, @IsActive);
             ";
-            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters =>
+            return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@AuthorName", author.AuthorName);
-                AddParameter(parameters, "@Description", author.Description);
-                AddParameter(parameters, "@IsActive", author.IsActive);
+                AddParameter(parameters, "@AuthorName", item.AuthorName);
+                AddParameter(parameters, "@Description", item.Description);
+                AddParameter(parameters, "@IsActive", item.IsActive);
             });
         }
 
-        // Update an existing author in the database
-        public bool Update(Author author)
+        public bool Update(Author item)
         {
             const string sql = @"
                 UPDATE Authors
@@ -119,14 +111,13 @@ namespace BookStoreManagement.Repositories
             ";
             return ExecuteNonQuery(sql, parameters =>
             {
-                AddParameter(parameters, "@Id", author.Id);
-                AddParameter(parameters, "@AuthorName", author.AuthorName);
-                AddParameter(parameters, "@Description", author.Description);
-                AddParameter(parameters, "@IsActive", author.IsActive);
+                AddParameter(parameters, "@Id", item.Id);
+                AddParameter(parameters, "@AuthorName", item.AuthorName);
+                AddParameter(parameters, "@Description", item.Description);
+                AddParameter(parameters, "@IsActive", item.IsActive);
             }) > 0;
         }
 
-        // Set the active status of an author in the database
         public bool SetActive(int id, bool isActive)
         {
             const string sql = @"
@@ -142,18 +133,18 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        // Check if an author name already exists in the database, optionally excluding a specific author ID
-        public bool IsNameExists(string authorName, int? excludeId = null)
+        public bool IsNameExists(string name, int? excludeId = null)
         {
             string sql = @"
                 SELECT COUNT(1)
                 FROM Authors
-                WHERE AuthorName = @AuthorName
+                WHERE AuthorName = @Name
             ";
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
+
             return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@AuthorName", authorName);
+                AddParameter(parameters, "@Name", name);
                 if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
             }) > 0;
         }

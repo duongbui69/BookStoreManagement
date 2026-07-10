@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 using BookStoreManagement.Models;
-using BookStoreManagement.Repositories;
 using BookStoreManagement.ViewModels;
 
 namespace BookStoreManagement.Repositories
@@ -15,6 +14,7 @@ namespace BookStoreManagement.Repositories
             {
                 Id = GetInt(reader, "Id"),
                 OrderCode = GetString(reader, "OrderCode"),
+                StoreId = GetInt(reader, "StoreId"),
                 UserId = GetInt(reader, "UserId"),
                 CustomerId = GetNullableInt(reader, "CustomerId"),
                 OrderDate = GetDateTime(reader, "OrderDate"),
@@ -31,6 +31,8 @@ namespace BookStoreManagement.Repositories
             {
                 Id = GetInt(reader, "Id"),
                 OrderCode = GetString(reader, "OrderCode"),
+                StoreId = GetInt(reader, "StoreId"),
+                StoreName = GetString(reader, "StoreName"),
                 OrderDate = GetDateTime(reader, "OrderDate"),
                 StaffId = GetInt(reader, "StaffId"),
                 StaffName = GetString(reader, "StaffName"),
@@ -49,11 +51,13 @@ namespace BookStoreManagement.Repositories
             {
                 SalesOrderId = GetInt(reader, "SalesOrderId"),
                 OrderCode = GetString(reader, "OrderCode"),
+                StoreId = GetInt(reader, "StoreId"),
+                StoreName = GetString(reader, "StoreName"),
                 OrderDate = GetDateTime(reader, "OrderDate"),
                 StaffId = GetInt(reader, "StaffId"),
                 StaffName = GetString(reader, "StaffName"),
                 CustomerId = GetNullableInt(reader, "CustomerId"),
-                CustomerName = GetNullableString(reader, "CustomerName"),
+                CustomerName = GetString(reader, "CustomerName"),
                 BookId = GetInt(reader, "BookId"),
                 BookCode = GetString(reader, "BookCode"),
                 Title = GetString(reader, "Title"),
@@ -73,18 +77,19 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, StoreId, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @StoreId, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 using var orderCommand = new SqlCommand(insertOrderSql, connection, transaction);
-                orderCommand.Parameters.AddWithValue("@OrderCode", order.OrderCode);
-                orderCommand.Parameters.AddWithValue("@UserId", order.UserId);
-                orderCommand.Parameters.AddWithValue("@CustomerId", (object?)order.CustomerId ?? DBNull.Value);
-                orderCommand.Parameters.AddWithValue("@PaymentMethod", order.PaymentMethod);
-                orderCommand.Parameters.AddWithValue("@OrderStatus", order.OrderStatus);
-                orderCommand.Parameters.AddWithValue("@Note", (object?)order.Note ?? DBNull.Value);
+                AddParameter(orderCommand, "@OrderCode", order.OrderCode);
+                AddParameter(orderCommand, "@StoreId", order.StoreId);
+                AddParameter(orderCommand, "@UserId", order.UserId);
+                AddParameter(orderCommand, "@CustomerId", order.CustomerId);
+                AddParameter(orderCommand, "@PaymentMethod", order.PaymentMethod);
+                AddParameter(orderCommand, "@OrderStatus", order.OrderStatus);
+                AddParameter(orderCommand, "@Note", order.Note);
 
                 int orderId = Convert.ToInt32(orderCommand.ExecuteScalar());
 
@@ -96,11 +101,11 @@ namespace BookStoreManagement.Repositories
                 foreach (var detail in details)
                 {
                     using var detailCommand = new SqlCommand(insertDetailSql, connection, transaction);
-                    detailCommand.Parameters.AddWithValue("@SalesOrderId", orderId);
-                    detailCommand.Parameters.AddWithValue("@BookId", detail.BookId);
-                    detailCommand.Parameters.AddWithValue("@Quantity", detail.Quantity);
-                    detailCommand.Parameters.AddWithValue("@UnitPrice", detail.UnitPrice);
-                    detailCommand.Parameters.AddWithValue("@DiscountAmount", detail.DiscountAmount);
+                    AddParameter(detailCommand, "@SalesOrderId", orderId);
+                    AddParameter(detailCommand, "@BookId", detail.BookId);
+                    AddParameter(detailCommand, "@Quantity", detail.Quantity);
+                    AddParameter(detailCommand, "@UnitPrice", detail.UnitPrice);
+                    AddParameter(detailCommand, "@DiscountAmount", detail.DiscountAmount);
                     detailCommand.ExecuteNonQuery();
                 }
 
@@ -111,11 +116,7 @@ namespace BookStoreManagement.Repositories
         public List<SalesOrderListViewModel> GetAll()
         {
             var orders = new List<SalesOrderListViewModel>();
-            const string sql = @"
-                SELECT *
-                FROM vw_SalesOrderList
-                ORDER BY OrderDate DESC;
-            ";
+            const string sql = "SELECT * FROM vw_SalesOrderList ORDER BY OrderDate DESC;";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -127,7 +128,7 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetById(int id)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE Id = @Id;
             ";
@@ -141,7 +142,7 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetByOrderCode(string orderCode)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE OrderCode = @OrderCode;
             ";
@@ -156,8 +157,7 @@ namespace BookStoreManagement.Repositories
         {
             var orders = new List<SalesOrderListViewModel>();
             const string sql = @"
-                SELECT *
-                FROM vw_SalesOrderList
+                SELECT * FROM vw_SalesOrderList
                 WHERE StaffId = @StaffId
                 ORDER BY OrderDate DESC;
             ";
@@ -169,17 +169,12 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@StaffId", staffId));
         }
 
-        public List<SalesOrderListViewModel> Search(string keyword)
+        public List<SalesOrderListViewModel> GetByStoreId(int storeId)
         {
             var orders = new List<SalesOrderListViewModel>();
             const string sql = @"
-                SELECT *
-                FROM vw_SalesOrderList
-                WHERE OrderCode LIKE N'%' + @Keyword + N'%'
-                   OR StaffName LIKE N'%' + @Keyword + N'%'
-                   OR CustomerName LIKE N'%' + @Keyword + N'%'
-                   OR PaymentMethod LIKE N'%' + @Keyword + N'%'
-                   OR OrderStatus LIKE N'%' + @Keyword + N'%'
+                SELECT * FROM vw_SalesOrderList
+                WHERE StoreId = @StoreId
                 ORDER BY OrderDate DESC;
             ";
             return ExecuteQuery(command =>
@@ -187,19 +182,49 @@ namespace BookStoreManagement.Repositories
                 using var reader = command.ExecuteReader();
                 while (reader.Read()) orders.Add(MapOrderList(reader));
                 return orders;
-            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
+            }, sql, parameters => AddParameter(parameters, "@StoreId", storeId));
         }
 
-        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate)
+        public List<SalesOrderListViewModel> Search(string keyword, int? storeId = null)
         {
             var orders = new List<SalesOrderListViewModel>();
-            const string sql = @"
-                SELECT *
-                FROM vw_SalesOrderList
+            string sql = @"
+                SELECT * FROM vw_SalesOrderList
+                WHERE (
+                    OrderCode LIKE N'%' + @Keyword + N'%'
+                    OR StoreName LIKE N'%' + @Keyword + N'%'
+                    OR StaffName LIKE N'%' + @Keyword + N'%'
+                    OR CustomerName LIKE N'%' + @Keyword + N'%'
+                    OR PaymentMethod LIKE N'%' + @Keyword + N'%'
+                    OR OrderStatus LIKE N'%' + @Keyword + N'%'
+                )
+            ";
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            sql += " ORDER BY OrderDate DESC;";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                while (reader.Read()) orders.Add(MapOrderList(reader));
+                return orders;
+            }, sql, parameters =>
+            {
+                AddParameter(parameters, "@Keyword", keyword);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
+            });
+        }
+
+        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
+        {
+            var orders = new List<SalesOrderListViewModel>();
+            string sql = @"
+                SELECT * FROM vw_SalesOrderList
                 WHERE OrderDate >= @FromDate
                   AND OrderDate < DATEADD(DAY, 1, @ToDate)
-                ORDER BY OrderDate DESC;
             ";
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            sql += " ORDER BY OrderDate DESC;";
+
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -209,6 +234,7 @@ namespace BookStoreManagement.Repositories
             {
                 AddParameter(parameters, "@FromDate", fromDate.Date);
                 AddParameter(parameters, "@ToDate", toDate.Date);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
@@ -216,8 +242,7 @@ namespace BookStoreManagement.Repositories
         {
             var details = new List<SalesOrderDetailFullViewModel>();
             const string sql = @"
-                SELECT *
-                FROM vw_SalesOrderDetailFull
+                SELECT * FROM vw_SalesOrderDetailFull
                 WHERE SalesOrderId = @SalesOrderId;
             ";
             return ExecuteQuery(command =>

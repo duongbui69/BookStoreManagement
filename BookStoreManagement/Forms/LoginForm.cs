@@ -1,7 +1,5 @@
-﻿using BookStoreManagement.Services;
-using BookStoreManagement.Models;
-using System;
-using System.Windows.Forms;
+﻿using BookStoreManagement.Models;
+using BookStoreManagement.Services;
 
 namespace BookStoreManagement.Forms
 {
@@ -15,13 +13,14 @@ namespace BookStoreManagement.Forms
 
             _authService = new AuthService();
 
-            btnLogin.Click += btnLogin_Click;
-            btnExit.Click += btnExit_Click;
+            btnLogin.Click += BtnLogin_Click;
+            btnExit.Click += BtnExit_Click;
 
             txtPassword.UseSystemPasswordChar = true;
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private void BtnLogin_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -52,10 +51,10 @@ namespace BookStoreManagement.Forms
 
                 MessageBox.Show("Đăng nhập thành công: " + user.FullName);
 
-                DashboardForm dashboardform = new DashboardForm();
-                dashboardform.Show();
+                DashboardForm dashboardForm = new DashboardForm();
+                dashboardForm.Show();
 
-                this.Hide();
+                Hide();
             }
             catch (Exception ex)
             {
@@ -63,7 +62,7 @@ namespace BookStoreManagement.Forms
             }
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
+        private void BtnExit_Click(object? sender, EventArgs e)
         {
             Application.Exit();
         }

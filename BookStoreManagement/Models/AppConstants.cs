@@ -1,4 +1,4 @@
-﻿namespace BookStoreManagement.Models
+namespace BookStoreManagement.Models
 {
     public static class AppConstants
     {
@@ -27,12 +27,14 @@
             public const string Sale = "Sale";
             public const string Adjustment = "Adjustment";
             public const string CancelSale = "CancelSale";
+            public const string Return = "Return";
         }
 
         public static class ReferenceTypes
         {
             public const string SalesOrder = "SalesOrder";
             public const string PurchaseReceipt = "PurchaseReceipt";
+            public const string ReturnReceipt = "ReturnReceipt";
             public const string Manual = "Manual";
         }
     }

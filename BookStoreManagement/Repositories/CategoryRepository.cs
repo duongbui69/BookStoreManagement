@@ -92,7 +92,7 @@ namespace BookStoreManagement.Repositories
                 OUTPUT INSERTED.Id
                 VALUES (@CategoryName, @Description, @IsActive);
             ";
-            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters =>
+            return ExecuteScalarInt(sql, parameters =>
             {
                 AddParameter(parameters, "@CategoryName", category.CategoryName);
                 AddParameter(parameters, "@Description", category.Description);

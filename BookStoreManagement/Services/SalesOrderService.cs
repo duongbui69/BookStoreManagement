@@ -11,170 +11,114 @@ namespace BookStoreManagement.Services
     {
         private readonly SalesOrderRepository _salesOrderRepository;
         private readonly BookRepository _bookRepository;
-        private readonly UserRepository _userRepository;
-        private readonly CustomerRepository _customerRepository;
 
         public SalesOrderService()
         {
             _salesOrderRepository = new SalesOrderRepository();
             _bookRepository = new BookRepository();
-            _userRepository = new UserRepository();
-            _customerRepository = new CustomerRepository();
         }
 
-        public int CreateOrder(int userId, int? customerId, string paymentMethod, string? note, List<SalesOrderDetail> details)
+        public int CreateOrder(int storeId, int? customerId, string paymentMethod, string? note, List<SalesOrderDetail> details)
         {
-            EnsureId(userId, "Nhân viên lập hóa đơn");
-            EnsureRequired(paymentMethod, "Phương thức thanh toán");
+            PermissionService.RequireStaffOrAdmin();
+            int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+            ValidateDetails(resolvedStoreId, details);
 
-            if (_userRepository.GetById(userId) == null)
+            string orderCode = _salesOrderRepository.GenerateOrderCode();
+            while (_salesOrderRepository.IsOrderCodeExists(orderCode)) orderCode = _salesOrderRepository.GenerateOrderCode();
+
+            var order = new SalesOrder
             {
-                throw new Exception("Nhân viên lập hóa đơn không tồn tại.");
-            }
-
-            if (customerId.HasValue && _customerRepository.GetById(customerId.Value) == null)
-            {
-                throw new Exception("Khách hàng không tồn tại.");
-            }
-
-            ValidateDetails(details);
-
-            SalesOrder order = new SalesOrder
-            {
-                OrderCode = GenerateUniqueOrderCode(),
-                UserId = userId,
+                OrderCode = orderCode,
+                StoreId = resolvedStoreId,
+                UserId = CurrentSession.UserId,
                 CustomerId = customerId,
-                PaymentMethod = Normalize(paymentMethod),
+                PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? AppConstants.PaymentMethods.Cash : paymentMethod.Trim(),
                 OrderStatus = AppConstants.OrderStatuses.Completed,
-                Note = NormalizeNullable(note)
+                Note = TrimNullable(note)
             };
 
             return _salesOrderRepository.CreateOrder(order, details);
         }
 
-        public int CreateCurrentUserOrder(int? customerId, string paymentMethod, string? note, List<SalesOrderDetail> details)
-        {
-            if (!CurrentSession.IsLoggedIn)
-            {
-                throw new Exception("Bạn cần đăng nhập để tạo hóa đơn.");
-            }
-
-            return CreateOrder(CurrentSession.UserId, customerId, paymentMethod, note, details);
-        }
-
         public List<SalesOrderListViewModel> GetAll()
         {
+            PermissionService.RequireAdmin();
             return _salesOrderRepository.GetAll();
+        }
+
+        public List<SalesOrderListViewModel> GetVisibleOrders()
+        {
+            PermissionService.RequireStaffOrAdmin();
+            if (CurrentSession.IsAdmin) return _salesOrderRepository.GetAll();
+            return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
+        }
+
+        public List<SalesOrderListViewModel> GetByStoreId(int storeId)
+        {
+            int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+            if (CurrentSession.IsAdmin) return _salesOrderRepository.GetByStoreId(resolvedStoreId);
+            return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
         }
 
         public List<SalesOrderListViewModel> GetMyOrders()
         {
-            if (!CurrentSession.IsLoggedIn)
-            {
-                throw new Exception("Bạn chưa đăng nhập.");
-            }
-
+            PermissionService.RequireStaffOrAdmin();
             return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
         }
 
-        public SalesOrder GetById(int id)
+        public SalesOrder? GetById(int id)
         {
-            EnsureId(id, "Id hóa đơn");
-            return _salesOrderRepository.GetById(id) ?? throw new Exception("Không tìm thấy hóa đơn.");
-        }
-
-        public SalesOrder GetByOrderCode(string orderCode)
-        {
-            orderCode = Normalize(orderCode);
-            EnsureRequired(orderCode, "Mã hóa đơn");
-            return _salesOrderRepository.GetByOrderCode(orderCode) ?? throw new Exception("Không tìm thấy hóa đơn.");
-        }
-
-        public List<SalesOrderListViewModel> GetByStaffId(int staffId)
-        {
-            EnsureId(staffId, "Id nhân viên");
-            return _salesOrderRepository.GetByStaffId(staffId);
-        }
-
-        public List<SalesOrderListViewModel> Search(string keyword)
-        {
-            keyword = Normalize(keyword);
-            return string.IsNullOrWhiteSpace(keyword) ? GetAll() : _salesOrderRepository.Search(keyword);
-        }
-
-        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate)
-        {
-            if (fromDate.Date > toDate.Date)
-            {
-                throw new Exception("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
-            }
-
-            return _salesOrderRepository.GetByDateRange(fromDate.Date, toDate.Date);
+            PermissionService.RequireStaffOrAdmin();
+            Require(id > 0, "Id hóa đơn không hợp lệ.");
+            SalesOrder? order = _salesOrderRepository.GetById(id);
+            if (order != null && !CurrentSession.IsAdmin && order.UserId != CurrentSession.UserId) throw new Exception("Bạn chỉ được xem hóa đơn do mình lập.");
+            return order;
         }
 
         public List<SalesOrderDetailFullViewModel> GetDetails(int salesOrderId)
         {
-            EnsureId(salesOrderId, "Id hóa đơn");
+            SalesOrder? order = GetById(salesOrderId);
+            Require(order != null, "Không tìm thấy hóa đơn.");
             return _salesOrderRepository.GetDetails(salesOrderId);
+        }
+
+        public List<SalesOrderListViewModel> Search(string keyword, int? storeId = null)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            keyword = Trim(keyword);
+            int? resolvedStoreId = ResolveStoreIdForRead(storeId);
+            if (CurrentSession.IsStaff) return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
+            return string.IsNullOrWhiteSpace(keyword) ? _salesOrderRepository.GetAll() : _salesOrderRepository.Search(keyword, resolvedStoreId);
+        }
+
+        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            Require(fromDate <= toDate, "Khoảng ngày không hợp lệ.");
+            int? resolvedStoreId = ResolveStoreIdForRead(storeId);
+            if (CurrentSession.IsStaff) return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
+            return _salesOrderRepository.GetByDateRange(fromDate, toDate, resolvedStoreId);
         }
 
         public bool CancelOrder(int salesOrderId)
         {
-            EnsureId(salesOrderId, "Id hóa đơn");
-
-            SalesOrder order = GetById(salesOrderId);
-            if (order.OrderStatus == AppConstants.OrderStatuses.Cancelled)
-            {
-                throw new Exception("Hóa đơn đã bị hủy trước đó.");
-            }
-
+            PermissionService.RequireAdmin();
+            Require(salesOrderId > 0, "Id hóa đơn không hợp lệ.");
             return _salesOrderRepository.CancelOrder(salesOrderId);
         }
 
-        public string GenerateUniqueOrderCode()
+        private void ValidateDetails(int storeId, List<SalesOrderDetail> details)
         {
-            string code;
-            int retry = 0;
-
-            do
+            Require(details != null && details.Count > 0, "Hóa đơn phải có ít nhất một sách.");
+            foreach (var detail in details)
             {
-                code = _salesOrderRepository.GenerateOrderCode();
-                if (retry > 0)
-                {
-                    code += retry.ToString("00");
-                }
-
-                retry++;
-            }
-            while (_salesOrderRepository.IsOrderCodeExists(code));
-
-            return code;
-        }
-
-        private void ValidateDetails(List<SalesOrderDetail> details)
-        {
-            if (details == null || details.Count == 0)
-            {
-                throw new Exception("Hóa đơn phải có ít nhất một sách.");
-            }
-
-            foreach (SalesOrderDetail detail in details)
-            {
-                EnsureId(detail.BookId, "Sách");
-                EnsurePositive(detail.Quantity, "Số lượng bán");
-                EnsurePositive(detail.UnitPrice, "Đơn giá bán");
-                EnsureNonNegative(detail.DiscountAmount, "Giảm giá");
-
-                Book? book = _bookRepository.GetById(detail.BookId);
-                if (book == null || !book.IsActive)
-                {
-                    throw new Exception("Sách không tồn tại hoặc đã ngừng hoạt động.");
-                }
-
-                if (!_bookRepository.HasEnoughStock(detail.BookId, detail.Quantity))
-                {
-                    throw new Exception($"Sách '{book.Title}' không đủ tồn kho.");
-                }
+                Require(detail.BookId > 0, "Sách không hợp lệ.");
+                Require(detail.Quantity > 0, "Số lượng bán phải lớn hơn 0.");
+                Require(detail.UnitPrice >= 0, "Đơn giá không hợp lệ.");
+                Require(detail.DiscountAmount >= 0, "Giảm giá không hợp lệ.");
+                bool hasStock = _bookRepository.HasEnoughStock(storeId, detail.BookId, detail.Quantity);
+                if (!hasStock) throw new Exception("Sách không đủ tồn kho để bán.");
             }
         }
     }

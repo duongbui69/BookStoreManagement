@@ -1,76 +1,54 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
 using BookStoreManagement.ViewModels;
 
 namespace BookStoreManagement.Repositories
 {
     public class ReportRepository : RepositoryBase
     {
-        public decimal GetTodayRevenue()
+        public decimal GetTodayRevenue(int? storeId = null)
         {
-            const string sql = @"
+            string sql = @"
                 SELECT ISNULL(SUM(TotalAmount), 0)
                 FROM SalesOrders
                 WHERE CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE)
-                  AND OrderStatus = 'Completed';
+                  AND OrderStatus = 'Completed'
             ";
-            return ExecuteScalarDecimal(sql);
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+
+            return ExecuteScalarDecimal(sql, parameters =>
+            {
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
+            });
         }
 
-        public decimal GetMonthRevenue()
+        public decimal GetMonthRevenue(int? storeId = null)
         {
-            const string sql = @"
+            string sql = @"
                 SELECT ISNULL(SUM(TotalAmount), 0)
                 FROM SalesOrders
                 WHERE MONTH(OrderDate) = MONTH(GETDATE())
                   AND YEAR(OrderDate) = YEAR(GETDATE())
-                  AND OrderStatus = 'Completed';
+                  AND OrderStatus = 'Completed'
             ";
-            return ExecuteScalarDecimal(sql);
-        }
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
 
-        public decimal GetTotalRevenue()
-        {
-            const string sql = @"
-                SELECT ISNULL(SUM(TotalAmount), 0)
-                FROM SalesOrders
-                WHERE OrderStatus = 'Completed';
-            ";
-            return ExecuteScalarDecimal(sql);
-        }
-
-        public decimal GetRevenueByDateRange(DateTime fromDate, DateTime toDate)
-        {
-            const string sql = @"
-                SELECT ISNULL(SUM(TotalAmount), 0)
-                FROM SalesOrders
-                WHERE OrderStatus = 'Completed'
-                  AND OrderDate >= @FromDate
-                  AND OrderDate < DATEADD(DAY, 1, @ToDate);
-            ";
             return ExecuteScalarDecimal(sql, parameters =>
             {
-                AddParameter(parameters, "@FromDate", fromDate.Date);
-                AddParameter(parameters, "@ToDate", toDate.Date);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
-        public int GetTotalOrders()
+        public int GetTotalOrders(int? storeId = null)
         {
-            const string sql = "SELECT COUNT(*) FROM SalesOrders;";
-            return ExecuteScalarInt(sql);
-        }
+            string sql = "SELECT COUNT(*) FROM SalesOrders WHERE 1 = 1";
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
 
-        public int GetCompletedOrders()
-        {
-            const string sql = "SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Completed';";
-            return ExecuteScalarInt(sql);
-        }
-
-        public int GetCancelledOrders()
-        {
-            const string sql = "SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Cancelled';";
-            return ExecuteScalarInt(sql);
+            return ExecuteScalarInt(sql, parameters =>
+            {
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
+            });
         }
 
         public int GetTotalBooks()
@@ -87,18 +65,20 @@ namespace BookStoreManagement.Repositories
 
         public int GetTotalCustomers()
         {
-            const string sql = "SELECT COUNT(*) FROM Customers;";
+            const string sql = "SELECT COUNT(*) FROM Customers WHERE IsActive = 1;";
+            return ExecuteScalarInt(sql);
+        }
+
+        public int GetTotalStores()
+        {
+            const string sql = "SELECT COUNT(*) FROM Stores WHERE IsActive = 1;";
             return ExecuteScalarInt(sql);
         }
 
         public List<DailyRevenueViewModel> GetDailyRevenue()
         {
             var list = new List<DailyRevenueViewModel>();
-            const string sql = @"
-                SELECT RevenueDate, TotalOrders, TotalRevenue
-                FROM vw_DailyRevenue
-                ORDER BY RevenueDate DESC;
-            ";
+            const string sql = "SELECT * FROM vw_DailyRevenue ORDER BY RevenueDate DESC;";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -115,23 +95,22 @@ namespace BookStoreManagement.Repositories
             }, sql);
         }
 
-        public List<DailyRevenueViewModel> GetDailyRevenueByDateRange(DateTime fromDate, DateTime toDate)
+        public List<DailyRevenueByStoreViewModel> GetDailyRevenueByStore(int? storeId = null)
         {
-            var list = new List<DailyRevenueViewModel>();
-            const string sql = @"
-                SELECT RevenueDate, TotalOrders, TotalRevenue
-                FROM vw_DailyRevenue
-                WHERE RevenueDate >= @FromDate
-                  AND RevenueDate <= @ToDate
-                ORDER BY RevenueDate DESC;
-            ";
+            var list = new List<DailyRevenueByStoreViewModel>();
+            string sql = "SELECT * FROM vw_DailyRevenueByStore";
+            if (storeId.HasValue) sql += " WHERE StoreId = @StoreId";
+            sql += " ORDER BY RevenueDate DESC, StoreName;";
+
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    list.Add(new DailyRevenueViewModel
+                    list.Add(new DailyRevenueByStoreViewModel
                     {
+                        StoreId = GetInt(reader, "StoreId"),
+                        StoreName = GetString(reader, "StoreName"),
                         RevenueDate = GetDateTime(reader, "RevenueDate"),
                         TotalOrders = GetInt(reader, "TotalOrders"),
                         TotalRevenue = GetDecimal(reader, "TotalRevenue")
@@ -140,19 +119,19 @@ namespace BookStoreManagement.Repositories
                 return list;
             }, sql, parameters =>
             {
-                AddParameter(parameters, "@FromDate", fromDate.Date);
-                AddParameter(parameters, "@ToDate", toDate.Date);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
         public List<TopSellingBookViewModel> GetTopSellingBooks(int top = 10)
         {
             var list = new List<TopSellingBookViewModel>();
-            const string sql = @"
-                SELECT TOP (@Top) BookId, BookCode, Title, TotalSold, TotalRevenue
+            string sql = $@"
+                SELECT TOP ({top}) *
                 FROM vw_TopSellingBooks
                 ORDER BY TotalSold DESC;
             ";
+
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -168,7 +147,7 @@ namespace BookStoreManagement.Repositories
                     });
                 }
                 return list;
-            }, sql, parameters => AddParameter(parameters, "@Top", top));
+            }, sql);
         }
     }
 }

@@ -8,64 +8,51 @@ namespace BookStoreManagement.Services
 {
     public class InventoryService : ServiceBase
     {
-        private readonly InventoryRepository _inventoryRepository;
-        private readonly BookRepository _bookRepository;
-        private readonly UserRepository _userRepository;
+        private readonly InventoryRepository _repository;
 
         public InventoryService()
         {
-            _inventoryRepository = new InventoryRepository();
-            _bookRepository = new BookRepository();
-            _userRepository = new UserRepository();
+            _repository = new InventoryRepository();
         }
 
-        public List<InventoryHistoryViewModel> GetHistory() => _inventoryRepository.GetHistory();
+        public List<InventoryHistoryViewModel> GetHistory()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetHistory();
+        }
+
+        public List<InventoryHistoryViewModel> GetHistoryByStoreId(int storeId)
+        {
+            int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+            return _repository.GetHistoryByStoreId(resolvedStoreId);
+        }
 
         public List<InventoryHistoryViewModel> GetHistoryByBookId(int bookId)
         {
-            EnsureId(bookId, "Id sách");
-            return _inventoryRepository.GetHistoryByBookId(bookId);
+            PermissionService.RequireAdmin();
+            Require(bookId > 0, "Id sách không hợp lệ.");
+            return _repository.GetHistoryByBookId(bookId);
         }
 
-        public List<LowStockBookViewModel> GetLowStockBooks() => _inventoryRepository.GetLowStockBooks();
-
-        public bool AdjustStock(int bookId, int userId, int quantityChange, string? note)
+        public List<LowStockBookViewModel> GetLowStockBooks()
         {
-            EnsureId(bookId, "Id sách");
-            EnsureId(userId, "Id nhân viên");
-
-            if (quantityChange == 0)
-            {
-                throw new Exception("Số lượng điều chỉnh phải khác 0.");
-            }
-
-            if (_bookRepository.GetById(bookId) == null)
-            {
-                throw new Exception("Sách không tồn tại.");
-            }
-
-            if (_userRepository.GetById(userId) == null)
-            {
-                throw new Exception("Nhân viên không tồn tại.");
-            }
-
-            int currentQuantity = _bookRepository.GetCurrentQuantity(bookId);
-            if (currentQuantity + quantityChange < 0)
-            {
-                throw new Exception("Không thể điều chỉnh vì tồn kho sẽ bị âm.");
-            }
-
-            return _inventoryRepository.AdjustStock(bookId, userId, quantityChange, NormalizeNullable(note));
+            PermissionService.RequireAdmin();
+            return _repository.GetLowStockBooks();
         }
 
-        public bool AdjustStockByCurrentUser(int bookId, int quantityChange, string? note)
+        public List<LowStockBookViewModel> GetLowStockBooksByStoreId(int storeId)
         {
-            if (!CurrentSession.IsLoggedIn)
-            {
-                throw new Exception("Bạn cần đăng nhập để điều chỉnh kho.");
-            }
+            int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+            return _repository.GetLowStockBooksByStoreId(resolvedStoreId);
+        }
 
-            return AdjustStock(bookId, CurrentSession.UserId, quantityChange, note);
+        public void AdjustStock(int storeId, int bookId, int quantityChange, string? note)
+        {
+            PermissionService.RequireAdmin();
+            Require(storeId > 0, "Cửa hàng không hợp lệ.");
+            Require(bookId > 0, "Sách không hợp lệ.");
+            Require(quantityChange != 0, "Số lượng điều chỉnh không được bằng 0.");
+            _repository.AdjustStock(storeId, bookId, CurrentSession.UserId, quantityChange, TrimNullable(note));
         }
     }
 }

@@ -9,120 +9,47 @@ namespace BookStoreManagement.Services
 {
     public class PurchaseReceiptService : ServiceBase
     {
-        private readonly PurchaseReceiptRepository _purchaseReceiptRepository;
-        private readonly SupplierRepository _supplierRepository;
-        private readonly UserRepository _userRepository;
-        private readonly BookRepository _bookRepository;
+        private readonly PurchaseReceiptRepository _repository;
+        public PurchaseReceiptService() { _repository = new PurchaseReceiptRepository(); }
 
-        public PurchaseReceiptService()
+        public int CreateReceipt(int storeId, int supplierId, string? note, List<PurchaseReceiptDetail> details)
         {
-            _purchaseReceiptRepository = new PurchaseReceiptRepository();
-            _supplierRepository = new SupplierRepository();
-            _userRepository = new UserRepository();
-            _bookRepository = new BookRepository();
-        }
-
-        public int CreateReceipt(int supplierId, int userId, string? note, List<PurchaseReceiptDetail> details)
-        {
-            EnsureId(supplierId, "Nhà cung cấp");
-            EnsureId(userId, "Nhân viên nhập hàng");
-
-            Supplier? supplier = _supplierRepository.GetById(supplierId);
-            if (supplier == null || !supplier.IsActive)
-            {
-                throw new Exception("Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động.");
-            }
-
-            if (_userRepository.GetById(userId) == null)
-            {
-                throw new Exception("Nhân viên nhập hàng không tồn tại.");
-            }
-
+            PermissionService.RequireAdmin();
+            Require(storeId > 0, "Cửa hàng không hợp lệ.");
+            Require(supplierId > 0, "Nhà cung cấp không hợp lệ.");
             ValidateDetails(details);
 
-            PurchaseReceipt receipt = new PurchaseReceipt
+            string code = _repository.GenerateReceiptCode();
+            while (_repository.IsReceiptCodeExists(code)) code = _repository.GenerateReceiptCode();
+
+            var receipt = new PurchaseReceipt
             {
-                ReceiptCode = GenerateUniqueReceiptCode(),
+                ReceiptCode = code,
+                StoreId = storeId,
                 SupplierId = supplierId,
-                UserId = userId,
-                Note = NormalizeNullable(note)
+                UserId = CurrentSession.UserId,
+                Note = TrimNullable(note)
             };
 
-            return _purchaseReceiptRepository.CreateReceipt(receipt, details);
+            return _repository.CreateReceipt(receipt, details);
         }
 
-        public int CreateCurrentUserReceipt(int supplierId, string? note, List<PurchaseReceiptDetail> details)
-        {
-            if (!CurrentSession.IsLoggedIn)
-            {
-                throw new Exception("Bạn cần đăng nhập để tạo phiếu nhập.");
-            }
-
-            return CreateReceipt(supplierId, CurrentSession.UserId, note, details);
-        }
-
-        public List<PurchaseReceiptListViewModel> GetAll() => _purchaseReceiptRepository.GetAll();
-
-        public PurchaseReceipt GetById(int id)
-        {
-            EnsureId(id, "Id phiếu nhập");
-            return _purchaseReceiptRepository.GetById(id) ?? throw new Exception("Không tìm thấy phiếu nhập.");
-        }
-
-        public List<PurchaseReceiptListViewModel> Search(string keyword)
-        {
-            keyword = Normalize(keyword);
-            return string.IsNullOrWhiteSpace(keyword) ? GetAll() : _purchaseReceiptRepository.Search(keyword);
-        }
-
-        public List<PurchaseReceiptListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate)
-        {
-            if (fromDate.Date > toDate.Date)
-            {
-                throw new Exception("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
-            }
-
-            return _purchaseReceiptRepository.GetByDateRange(fromDate.Date, toDate.Date);
-        }
-
-        public string GenerateUniqueReceiptCode()
-        {
-            string code;
-            int retry = 0;
-
-            do
-            {
-                code = _purchaseReceiptRepository.GenerateReceiptCode();
-                if (retry > 0)
-                {
-                    code += retry.ToString("00");
-                }
-
-                retry++;
-            }
-            while (_purchaseReceiptRepository.IsReceiptCodeExists(code));
-
-            return code;
-        }
+        public List<PurchaseReceiptListViewModel> GetAll() { PermissionService.RequireAdmin(); return _repository.GetAll(); }
+        public PurchaseReceipt? GetById(int id) { PermissionService.RequireAdmin(); Require(id > 0, "Id phiếu nhập không hợp lệ."); return _repository.GetById(id); }
+        public List<PurchaseReceiptListViewModel> GetByStoreId(int storeId) { PermissionService.RequireAdmin(); Require(storeId > 0, "Cửa hàng không hợp lệ."); return _repository.GetByStoreId(storeId); }
+        public List<PurchaseReceiptDetail> GetDetails(int receiptId) { PermissionService.RequireAdmin(); Require(receiptId > 0, "Id phiếu nhập không hợp lệ."); return _repository.GetDetails(receiptId); }
+        public List<PurchaseReceiptListViewModel> Search(string keyword, int? storeId = null) { PermissionService.RequireAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? _repository.GetAll() : _repository.Search(keyword, storeId); }
+        public List<PurchaseReceiptListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null) { PermissionService.RequireAdmin(); Require(fromDate <= toDate, "Khoảng ngày không hợp lệ."); return _repository.GetByDateRange(fromDate, toDate, storeId); }
 
         private void ValidateDetails(List<PurchaseReceiptDetail> details)
         {
-            if (details == null || details.Count == 0)
+            Require(details != null && details.Count > 0, "Phiếu nhập phải có ít nhất một sách.");
+            foreach (var detail in details)
             {
-                throw new Exception("Phiếu nhập phải có ít nhất một sách.");
-            }
-
-            foreach (PurchaseReceiptDetail detail in details)
-            {
-                EnsureId(detail.BookId, "Sách");
-                EnsurePositive(detail.Quantity, "Số lượng nhập");
-                EnsurePositive(detail.ImportPrice, "Giá nhập");
-
-                Book? book = _bookRepository.GetById(detail.BookId);
-                if (book == null || !book.IsActive)
-                {
-                    throw new Exception("Sách không tồn tại hoặc đã ngừng hoạt động.");
-                }
+                Require(detail.BookId > 0, "Sách không hợp lệ.");
+                Require(detail.Quantity > 0, "Số lượng nhập phải lớn hơn 0.");
+                Require(detail.ImportPrice >= 0, "Giá nhập không hợp lệ.");
+                if (detail.SellingPrice.HasValue) Require(detail.SellingPrice.Value >= 0, "Giá bán không hợp lệ.");
             }
         }
     }

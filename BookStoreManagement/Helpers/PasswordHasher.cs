@@ -1,6 +1,4 @@
 using System;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace BookStoreManagement.Helpers
 {
@@ -13,45 +11,30 @@ namespace BookStoreManagement.Helpers
                 throw new Exception("Mật khẩu không được để trống.");
             }
 
-            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
         public static bool VerifyPassword(string password, string storedPassword)
         {
-            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(storedPassword))
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(storedPassword))
             {
                 return false;
             }
 
-            if (IsBCryptHash(storedPassword))
+            // Hỗ trợ database mẫu đang lưu plain text như 123456.
+            // Sau khi đăng nhập thành công, AuthService có thể tự nâng cấp sang BCrypt.
+            if (!storedPassword.StartsWith("$2", StringComparison.Ordinal))
             {
-                return BCrypt.Net.BCrypt.Verify(password, storedPassword);
+                return password == storedPassword;
             }
 
-            // Fallback để bạn còn đăng nhập được nếu dữ liệu mẫu trong SQL đang là mật khẩu plain text.
-            // Khi tạo mới hoặc đổi mật khẩu, hệ thống sẽ luôn lưu BCrypt hash.
-            return password == storedPassword;
+            return BCrypt.Net.BCrypt.Verify(password, storedPassword);
         }
 
-        public static bool IsBCryptHash(string value)
+        public static bool NeedsRehash(string storedPassword)
         {
-            return value.StartsWith("$2a$", StringComparison.Ordinal)
-                || value.StartsWith("$2b$", StringComparison.Ordinal)
-                || value.StartsWith("$2y$", StringComparison.Ordinal);
-        }
-
-        public static string Sha256ForLegacyOnly(string input)
-        {
-            using SHA256 sha256 = SHA256.Create();
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            var builder = new StringBuilder();
-            foreach (byte b in bytes)
-            {
-                builder.Append(b.ToString("x2"));
-            }
-
-            return builder.ToString();
+            return string.IsNullOrWhiteSpace(storedPassword)
+                   || !storedPassword.StartsWith("$2", StringComparison.Ordinal);
         }
     }
 }

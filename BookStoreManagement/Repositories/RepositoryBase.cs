@@ -47,7 +47,7 @@ namespace BookStoreManagement.Repositories
             Action<SqlParameterCollection>? addParameters = null)
         {
             object? result = ExecuteScalar(sql, addParameters);
-            return result == null || result == DBNull.Value ? 0m : Convert.ToDecimal(result);
+            return result == null || result == DBNull.Value ? 0 : Convert.ToDecimal(result);
         }
 
         protected T ExecuteTransaction<T>(Func<SqlConnection, SqlTransaction, T> action)
@@ -70,20 +70,23 @@ namespace BookStoreManagement.Repositories
             }
         }
 
-        protected void AddParameter(SqlParameterCollection parameters, string parameterName, object? value)
+        protected void ExecuteTransaction(Action<SqlConnection, SqlTransaction> action)
         {
-            parameters.AddWithValue(parameterName, value ?? DBNull.Value);
+            ExecuteTransaction((connection, transaction) =>
+            {
+                action(connection, transaction);
+                return true;
+            });
         }
 
-        protected int GetInt(SqlDataReader reader, string columnName)
+        protected void AddParameter(SqlParameterCollection parameters, string name, object? value)
         {
-            return reader.GetInt32(reader.GetOrdinal(columnName));
+            parameters.AddWithValue(name, value ?? DBNull.Value);
         }
 
-        protected int? GetNullableInt(SqlDataReader reader, string columnName)
+        protected void AddParameter(SqlCommand command, string name, object? value)
         {
-            int index = reader.GetOrdinal(columnName);
-            return reader.IsDBNull(index) ? null : reader.GetInt32(index);
+            command.Parameters.AddWithValue(name, value ?? DBNull.Value);
         }
 
         protected string GetString(SqlDataReader reader, string columnName)
@@ -98,6 +101,17 @@ namespace BookStoreManagement.Repositories
             return reader.IsDBNull(index) ? null : reader.GetString(index);
         }
 
+        protected int GetInt(SqlDataReader reader, string columnName)
+        {
+            return reader.GetInt32(reader.GetOrdinal(columnName));
+        }
+
+        protected int? GetNullableInt(SqlDataReader reader, string columnName)
+        {
+            int index = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(index) ? null : reader.GetInt32(index);
+        }
+
         protected bool GetBool(SqlDataReader reader, string columnName)
         {
             return reader.GetBoolean(reader.GetOrdinal(columnName));
@@ -106,6 +120,12 @@ namespace BookStoreManagement.Repositories
         protected decimal GetDecimal(SqlDataReader reader, string columnName)
         {
             return reader.GetDecimal(reader.GetOrdinal(columnName));
+        }
+
+        protected decimal? GetNullableDecimal(SqlDataReader reader, string columnName)
+        {
+            int index = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(index) ? null : reader.GetDecimal(index);
         }
 
         protected DateTime GetDateTime(SqlDataReader reader, string columnName)

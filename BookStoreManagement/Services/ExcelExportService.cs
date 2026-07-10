@@ -5,22 +5,16 @@ using ClosedXML.Excel;
 
 namespace BookStoreManagement.Services
 {
-    public class ExcelExportService
+    public class ExcelExportService : ServiceBase
     {
         public void ExportDataTable(DataTable dataTable, string filePath, string sheetName = "Data")
         {
-            if (dataTable == null)
-            {
-                throw new Exception("Không có dữ liệu để xuất Excel.");
-            }
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new Exception("Đường dẫn file Excel không hợp lệ.");
-            }
+            PermissionService.RequireStaffOrAdmin();
+            Require(dataTable != null, "Không có dữ liệu để xuất Excel.");
+            Require(!string.IsNullOrWhiteSpace(filePath), "Đường dẫn file Excel không hợp lệ.");
 
             using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add(sheetName);
+            var worksheet = workbook.Worksheets.Add(string.IsNullOrWhiteSpace(sheetName) ? "Data" : sheetName);
             worksheet.Cell(1, 1).InsertTable(dataTable);
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(filePath);
@@ -28,27 +22,17 @@ namespace BookStoreManagement.Services
 
         public void ExportDataGridView(DataGridView dataGridView, string filePath, string sheetName = "Data")
         {
-            if (dataGridView == null)
-            {
-                throw new Exception("Không có bảng dữ liệu để xuất Excel.");
-            }
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new Exception("Đường dẫn file Excel không hợp lệ.");
-            }
+            PermissionService.RequireStaffOrAdmin();
+            Require(dataGridView != null, "Không có bảng dữ liệu để xuất Excel.");
+            Require(!string.IsNullOrWhiteSpace(filePath), "Đường dẫn file Excel không hợp lệ.");
 
             using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add(sheetName);
+            var worksheet = workbook.Worksheets.Add(string.IsNullOrWhiteSpace(sheetName) ? "Data" : sheetName);
 
             int visibleColumnIndex = 1;
             for (int col = 0; col < dataGridView.Columns.Count; col++)
             {
-                if (!dataGridView.Columns[col].Visible)
-                {
-                    continue;
-                }
-
+                if (!dataGridView.Columns[col].Visible) continue;
                 worksheet.Cell(1, visibleColumnIndex).Value = dataGridView.Columns[col].HeaderText;
                 visibleColumnIndex++;
             }
@@ -56,23 +40,15 @@ namespace BookStoreManagement.Services
             int excelRow = 2;
             for (int row = 0; row < dataGridView.Rows.Count; row++)
             {
-                if (dataGridView.Rows[row].IsNewRow)
-                {
-                    continue;
-                }
+                if (dataGridView.Rows[row].IsNewRow) continue;
 
-                int excelCol = 1;
+                visibleColumnIndex = 1;
                 for (int col = 0; col < dataGridView.Columns.Count; col++)
                 {
-                    if (!dataGridView.Columns[col].Visible)
-                    {
-                        continue;
-                    }
-
-                    worksheet.Cell(excelRow, excelCol).Value = dataGridView.Rows[row].Cells[col].Value?.ToString() ?? string.Empty;
-                    excelCol++;
+                    if (!dataGridView.Columns[col].Visible) continue;
+                    worksheet.Cell(excelRow, visibleColumnIndex).Value = dataGridView.Rows[row].Cells[col].Value?.ToString() ?? string.Empty;
+                    visibleColumnIndex++;
                 }
-
                 excelRow++;
             }
 

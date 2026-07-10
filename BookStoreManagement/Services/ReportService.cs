@@ -7,66 +7,72 @@ namespace BookStoreManagement.Services
 {
     public class ReportService : ServiceBase
     {
-        private readonly ReportRepository _reportRepository;
+        private readonly ReportRepository _repository;
 
         public ReportService()
         {
-            _reportRepository = new ReportRepository();
+            _repository = new ReportRepository();
         }
 
-        public decimal GetTodayRevenue() => _reportRepository.GetTodayRevenue();
-
-        public decimal GetMonthRevenue() => _reportRepository.GetMonthRevenue();
-
-        public decimal GetTotalRevenue() => _reportRepository.GetTotalRevenue();
-
-        public decimal GetRevenueByDateRange(DateTime fromDate, DateTime toDate)
+        public decimal GetTodayRevenue(int? storeId = null)
         {
-            ValidateDateRange(fromDate, toDate);
-            return _reportRepository.GetRevenueByDateRange(fromDate.Date, toDate.Date);
+            PermissionService.RequireAdmin();
+            return _repository.GetTodayRevenue(storeId);
         }
 
-        public int GetTotalOrders() => _reportRepository.GetTotalOrders();
-
-        public int GetCompletedOrders() => _reportRepository.GetCompletedOrders();
-
-        public int GetCancelledOrders() => _reportRepository.GetCancelledOrders();
-
-        public int GetTotalBooks() => _reportRepository.GetTotalBooks();
-
-        public int GetTotalUsers() => _reportRepository.GetTotalUsers();
-
-        public int GetTotalCustomers() => _reportRepository.GetTotalCustomers();
-
-        public List<DailyRevenueViewModel> GetDailyRevenue() => _reportRepository.GetDailyRevenue();
-
-        public List<DailyRevenueViewModel> GetDailyRevenueByDateRange(DateTime fromDate, DateTime toDate)
+        public decimal GetMonthRevenue(int? storeId = null)
         {
-            ValidateDateRange(fromDate, toDate);
-            return _reportRepository.GetDailyRevenueByDateRange(fromDate.Date, toDate.Date);
+            PermissionService.RequireAdmin();
+            return _repository.GetMonthRevenue(storeId);
+        }
+
+        public int GetTotalOrders(int? storeId = null)
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetTotalOrders(storeId);
+        }
+
+        public int GetTotalBooks()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetTotalBooks();
+        }
+
+        public int GetTotalUsers()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetTotalUsers();
+        }
+
+        public int GetTotalCustomers()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetTotalCustomers();
+        }
+
+        public int GetTotalStores()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetTotalStores();
+        }
+
+        public List<DailyRevenueViewModel> GetDailyRevenue()
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetDailyRevenue();
+        }
+
+        public List<DailyRevenueByStoreViewModel> GetDailyRevenueByStore(int? storeId = null)
+        {
+            PermissionService.RequireAdmin();
+            return _repository.GetDailyRevenueByStore(storeId);
         }
 
         public List<TopSellingBookViewModel> GetTopSellingBooks(int top = 10)
         {
-            if (top <= 0)
-            {
-                top = 10;
-            }
-
-            if (top > 100)
-            {
-                top = 100;
-            }
-
-            return _reportRepository.GetTopSellingBooks(top);
-        }
-
-        private void ValidateDateRange(DateTime fromDate, DateTime toDate)
-        {
-            if (fromDate.Date > toDate.Date)
-            {
-                throw new Exception("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
-            }
+            PermissionService.RequireAdmin();
+            if (top <= 0) top = 10;
+            return _repository.GetTopSellingBooks(top);
         }
     }
 }

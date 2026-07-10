@@ -8,187 +8,65 @@ namespace BookStoreManagement.Services
 {
     public class BookService : ServiceBase
     {
-        private readonly BookRepository _bookRepository;
-        private readonly CategoryRepository _categoryRepository;
-        private readonly AuthorRepository _authorRepository;
-        private readonly PublisherRepository _publisherRepository;
-        private readonly FileStorageService _fileStorageService;
+        private readonly BookRepository _repository;
+        public BookService() { _repository = new BookRepository(); }
 
-        public BookService()
+        public List<BookListViewModel> GetAll() { PermissionService.RequireAdmin(); return _repository.GetAll(); }
+        public List<BookListViewModel> GetActive() { PermissionService.RequireStaffOrAdmin(); return _repository.GetActive(); }
+        public Book? GetById(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id sách không hợp lệ."); return _repository.GetById(id); }
+        public List<BookListViewModel> Search(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? _repository.GetActive() : _repository.Search(keyword); }
+        public List<BookListViewModel> GetByCategoryId(int categoryId) { PermissionService.RequireStaffOrAdmin(); Require(categoryId > 0, "Id danh mục không hợp lệ."); return _repository.GetByCategoryId(categoryId); }
+        public bool HasEnoughStock(int storeId, int bookId, int quantity) { PermissionService.RequireStaffOrAdmin(); storeId = ResolveStoreIdForWrite(storeId); return _repository.HasEnoughStock(storeId, bookId, quantity); }
+
+        public int Add(Book book)
         {
-            _bookRepository = new BookRepository();
-            _categoryRepository = new CategoryRepository();
-            _authorRepository = new AuthorRepository();
-            _publisherRepository = new PublisherRepository();
-            _fileStorageService = new FileStorageService();
-        }
-
-        public List<BookListViewModel> GetAll() => _bookRepository.GetAll();
-
-        public List<BookListViewModel> GetActive() => _bookRepository.GetActive();
-
-        public Book GetById(int id)
-        {
-            EnsureId(id, "Id sách");
-            return _bookRepository.GetById(id) ?? throw new Exception("Không tìm thấy sách.");
-        }
-
-        public BookListViewModel GetViewById(int id)
-        {
-            EnsureId(id, "Id sách");
-            return _bookRepository.GetViewById(id) ?? throw new Exception("Không tìm thấy sách.");
-        }
-
-        public List<BookListViewModel> Search(string keyword, bool activeOnly = false)
-        {
-            keyword = Normalize(keyword);
-            if (string.IsNullOrWhiteSpace(keyword))
-            {
-                return activeOnly ? GetActive() : GetAll();
-            }
-
-            return activeOnly ? _bookRepository.SearchActive(keyword) : _bookRepository.Search(keyword);
-        }
-
-        public int Add(Book book, string? sourceImageFilePath = null)
-        {
-            ValidateBook(book, isCreate: true);
-            NormalizeBook(book);
-
-            if (_bookRepository.IsBookCodeExists(book.BookCode))
-            {
-                throw new Exception("Mã sách đã tồn tại.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(book.ISBN) && _bookRepository.IsISBNExists(book.ISBN))
-            {
-                throw new Exception("ISBN đã tồn tại.");
-            }
-
-            ValidateForeignKeys(book);
-
-            if (!string.IsNullOrWhiteSpace(sourceImageFilePath))
-            {
-                book.ImagePath = _fileStorageService.SaveBookImage(sourceImageFilePath);
-            }
-
+            PermissionService.RequireAdmin();
+            Validate(book);
+            Normalize(book);
+            if (_repository.IsBookCodeExists(book.BookCode)) throw new Exception("Mã sách đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(book.ISBN) && _repository.IsISBNExists(book.ISBN)) throw new Exception("ISBN đã tồn tại.");
             book.IsActive = true;
-            return _bookRepository.Add(book);
+            return _repository.Add(book);
         }
 
-        public bool Update(Book book, string? newSourceImageFilePath = null)
+        public bool Update(Book book)
         {
-            EnsureId(book.Id, "Id sách");
-            ValidateBook(book, isCreate: false);
-            NormalizeBook(book);
-
-            Book oldBook = GetById(book.Id);
-
-            if (_bookRepository.IsBookCodeExists(book.BookCode, book.Id))
-            {
-                throw new Exception("Mã sách đã tồn tại.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(book.ISBN) && _bookRepository.IsISBNExists(book.ISBN, book.Id))
-            {
-                throw new Exception("ISBN đã tồn tại.");
-            }
-
-            ValidateForeignKeys(book);
-
-            if (!string.IsNullOrWhiteSpace(newSourceImageFilePath))
-            {
-                book.ImagePath = _fileStorageService.SaveBookImage(newSourceImageFilePath);
-                _fileStorageService.DeleteFileIfExists(oldBook.ImagePath);
-            }
-            else
-            {
-                book.ImagePath = oldBook.ImagePath;
-            }
-
-            return _bookRepository.Update(book);
-        }
-
-        public bool UpdateImage(int bookId, string sourceImageFilePath)
-        {
-            EnsureId(bookId, "Id sách");
-            Book oldBook = GetById(bookId);
-
-            string? newImagePath = _fileStorageService.SaveBookImage(sourceImageFilePath);
-            bool result = _bookRepository.UpdateImagePath(bookId, newImagePath);
-
-            if (result)
-            {
-                _fileStorageService.DeleteFileIfExists(oldBook.ImagePath);
-            }
-
-            return result;
+            PermissionService.RequireAdmin();
+            Require(book.Id > 0, "Id sách không hợp lệ.");
+            Validate(book);
+            Normalize(book);
+            if (_repository.IsBookCodeExists(book.BookCode, book.Id)) throw new Exception("Mã sách đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(book.ISBN) && _repository.IsISBNExists(book.ISBN, book.Id)) throw new Exception("ISBN đã tồn tại.");
+            return _repository.Update(book);
         }
 
         public bool SetActive(int id, bool isActive)
         {
-            EnsureId(id, "Id sách");
-            return _bookRepository.SetActive(id, isActive);
+            PermissionService.RequireAdmin();
+            Require(id > 0, "Id sách không hợp lệ.");
+            return _repository.SetActive(id, isActive);
         }
 
-        public bool HasEnoughStock(int bookId, int quantity)
+        private void Validate(Book book)
         {
-            EnsureId(bookId, "Id sách");
-            EnsurePositive(quantity, "Số lượng");
-            return _bookRepository.HasEnoughStock(bookId, quantity);
+            Require(book != null, "Dữ liệu sách không hợp lệ.");
+            Require(!string.IsNullOrWhiteSpace(book.BookCode), "Mã sách không được để trống.");
+            Require(!string.IsNullOrWhiteSpace(book.Title), "Tên sách không được để trống.");
+            Require(book.CategoryId > 0, "Danh mục sách không hợp lệ.");
+            Require(book.SellingPrice >= 0, "Giá bán không hợp lệ.");
+            Require(book.Quantity >= 0, "Tổng tồn kho không hợp lệ.");
+            Require(book.MinStock >= 0, "Tồn tối thiểu không hợp lệ.");
+            if (book.PublishYear.HasValue) Require(book.PublishYear.Value > 0 && book.PublishYear.Value <= DateTime.Now.Year + 1, "Năm xuất bản không hợp lệ.");
+            if (book.PageCount.HasValue) Require(book.PageCount.Value > 0, "Số trang phải lớn hơn 0.");
         }
 
-        public int GetCurrentQuantity(int bookId)
+        private void Normalize(Book book)
         {
-            EnsureId(bookId, "Id sách");
-            return _bookRepository.GetCurrentQuantity(bookId);
-        }
-
-        private void ValidateBook(Book book, bool isCreate)
-        {
-            if (book == null)
-            {
-                throw new Exception("Dữ liệu sách không hợp lệ.");
-            }
-
-            EnsureRequired(book.BookCode, "Mã sách");
-            EnsureRequired(book.Title, "Tên sách");
-            EnsureId(book.CategoryId, "Danh mục");
-            EnsurePositive(book.SellingPrice, "Giá bán");
-            EnsureNonNegative(book.Quantity, "Số lượng tồn");
-            EnsureNonNegative(book.MinStock, "Tồn kho tối thiểu");
-            EnsureMaxLength(book.BookCode, 50, "Mã sách");
-            EnsureMaxLength(book.ISBN, 30, "ISBN");
-            EnsureMaxLength(book.Title, 255, "Tên sách");
-            EnsureMaxLength(book.Description, 1000, "Mô tả");
-            EnsureMaxLength(book.ImagePath, 255, "Đường dẫn ảnh");
-        }
-
-        private void NormalizeBook(Book book)
-        {
-            book.BookCode = Normalize(book.BookCode);
-            book.ISBN = NormalizeNullable(book.ISBN);
-            book.Title = Normalize(book.Title);
-            book.Description = NormalizeNullable(book.Description);
-            book.ImagePath = NormalizeNullable(book.ImagePath);
-        }
-
-        private void ValidateForeignKeys(Book book)
-        {
-            if (_categoryRepository.GetById(book.CategoryId) == null)
-            {
-                throw new Exception("Danh mục không tồn tại.");
-            }
-
-            if (book.AuthorId.HasValue && _authorRepository.GetById(book.AuthorId.Value) == null)
-            {
-                throw new Exception("Tác giả không tồn tại.");
-            }
-
-            if (book.PublisherId.HasValue && _publisherRepository.GetById(book.PublisherId.Value) == null)
-            {
-                throw new Exception("Nhà xuất bản không tồn tại.");
-            }
+            book.BookCode = Trim(book.BookCode).ToUpperInvariant();
+            book.ISBN = TrimNullable(book.ISBN);
+            book.Title = Trim(book.Title);
+            book.Description = TrimNullable(book.Description);
+            book.ImagePath = TrimNullable(book.ImagePath);
         }
     }
 }

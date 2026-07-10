@@ -29,10 +29,7 @@ namespace BookStoreManagement.Repositories
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    roles.Add(MapRole(reader));
-                }
+                while (reader.Read()) roles.Add(MapRole(reader));
                 return roles;
             }, sql);
         }
@@ -49,10 +46,7 @@ namespace BookStoreManagement.Repositories
             {
                 using var reader = command.ExecuteReader();
                 return reader.Read() ? MapRole(reader) : null;
-            }, sql, parameters =>
-            {
-                AddParameter(parameters, "@Id", id);
-            });
+            }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
         public Role? GetByName(string roleName)
@@ -67,10 +61,7 @@ namespace BookStoreManagement.Repositories
             {
                 using var reader = command.ExecuteReader();
                 return reader.Read() ? MapRole(reader) : null;
-            }, sql, parameters =>
-            {
-                AddParameter(parameters, "@RoleName", roleName);
-            });
+            }, sql, parameters => AddParameter(parameters, "@RoleName", roleName));
         }
     }
 }

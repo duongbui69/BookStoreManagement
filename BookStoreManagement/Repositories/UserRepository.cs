@@ -2,116 +2,197 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 using BookStoreManagement.Models;
+using BookStoreManagement.ViewModels;
 
 namespace BookStoreManagement.Repositories
 {
     public class UserRepository : RepositoryBase
     {
-        private User MapUser(SqlDataReader reader)
+        private User MapUser(SqlDataReader reader, bool includePassword = false)
         {
-            return new User
+            var user = new User
             {
                 Id = GetInt(reader, "Id"),
+                UserCode = GetString(reader, "UserCode"),
+                StoreId = GetNullableInt(reader, "StoreId"),
+                StoreName = GetNullableString(reader, "StoreName"),
                 RoleId = GetInt(reader, "RoleId"),
+                RoleName = GetString(reader, "RoleName"),
+                IdentityNumber = GetNullableString(reader, "IdentityNumber"),
                 Username = GetString(reader, "Username"),
-                PasswordHash = GetString(reader, "PasswordHash"),
                 FullName = GetString(reader, "FullName"),
                 Phone = GetNullableString(reader, "Phone"),
                 Email = GetNullableString(reader, "Email"),
                 Address = GetNullableString(reader, "Address"),
+                HireDate = GetNullableDateTime(reader, "HireDate"),
+                IsActive = GetBool(reader, "IsActive"),
+                CreatedAt = GetDateTime(reader, "CreatedAt"),
+                UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
+            };
+
+            if (includePassword)
+            {
+                user.PasswordHash = GetString(reader, "PasswordHash");
+            }
+
+            return user;
+        }
+
+        private UserListViewModel MapUserList(SqlDataReader reader)
+        {
+            return new UserListViewModel
+            {
+                Id = GetInt(reader, "Id"),
+                UserCode = GetString(reader, "UserCode"),
+                StoreId = GetNullableInt(reader, "StoreId"),
+                StoreName = GetNullableString(reader, "StoreName"),
+                RoleId = GetInt(reader, "RoleId"),
+                RoleName = GetString(reader, "RoleName"),
+                IdentityNumber = GetNullableString(reader, "IdentityNumber"),
+                Username = GetString(reader, "Username"),
+                FullName = GetString(reader, "FullName"),
+                Phone = GetNullableString(reader, "Phone"),
+                Email = GetNullableString(reader, "Email"),
+                Address = GetNullableString(reader, "Address"),
+                HireDate = GetNullableDateTime(reader, "HireDate"),
                 IsActive = GetBool(reader, "IsActive"),
                 CreatedAt = GetDateTime(reader, "CreatedAt"),
                 UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
             };
         }
 
-        public List<User> GetAll()
+        public List<UserListViewModel> GetAll()
         {
-            var users = new List<User>();
-
+            var users = new List<UserListViewModel>();
             const string sql = @"
-                SELECT Id, RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
-                FROM Users
+                SELECT *
+                FROM vw_UserList
                 ORDER BY Id DESC;
             ";
 
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) users.Add(MapUser(reader));
+                while (reader.Read()) users.Add(MapUserList(reader));
                 return users;
             }, sql);
         }
 
-        public User? GetById(int id)
+        public List<UserListViewModel> GetByStoreId(int storeId)
         {
+            var users = new List<UserListViewModel>();
             const string sql = @"
-                SELECT Id, RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
-                FROM Users
-                WHERE Id = @Id;
+                SELECT *
+                FROM vw_UserList
+                WHERE StoreId = @StoreId
+                ORDER BY Id DESC;
             ";
 
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                return reader.Read() ? MapUser(reader) : null;
+                while (reader.Read()) users.Add(MapUserList(reader));
+                return users;
+            }, sql, parameters => AddParameter(parameters, "@StoreId", storeId));
+        }
+
+        public List<UserListViewModel> Search(string keyword)
+        {
+            var users = new List<UserListViewModel>();
+            const string sql = @"
+                SELECT *
+                FROM vw_UserList
+                WHERE UserCode LIKE N'%' + @Keyword + N'%'
+                   OR Username LIKE N'%' + @Keyword + N'%'
+                   OR FullName LIKE N'%' + @Keyword + N'%'
+                   OR Phone LIKE N'%' + @Keyword + N'%'
+                   OR Email LIKE N'%' + @Keyword + N'%'
+                   OR IdentityNumber LIKE N'%' + @Keyword + N'%'
+                   OR RoleName LIKE N'%' + @Keyword + N'%'
+                   OR StoreName LIKE N'%' + @Keyword + N'%'
+                ORDER BY Id DESC;
+            ";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                while (reader.Read()) users.Add(MapUserList(reader));
+                return users;
+            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
+        }
+
+        public User? GetById(int id)
+        {
+            const string sql = @"
+                SELECT
+                    u.Id, u.UserCode, u.StoreId, s.StoreName, u.RoleId, r.RoleName,
+                    u.IdentityNumber, u.Username, u.PasswordHash, u.FullName, u.Phone,
+                    u.Email, u.Address, u.HireDate, u.IsActive, u.CreatedAt, u.UpdatedAt
+                FROM Users u
+                JOIN Roles r ON u.RoleId = r.Id
+                LEFT JOIN Stores s ON u.StoreId = s.Id
+                WHERE u.Id = @Id;
+            ";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapUser(reader, includePassword: true) : null;
             }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
         public User? GetByUsername(string username)
         {
             const string sql = @"
-                SELECT Id, RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
-                FROM Users
-                WHERE Username = @Username;
+                SELECT
+                    u.Id, u.UserCode, u.StoreId, s.StoreName, u.RoleId, r.RoleName,
+                    u.IdentityNumber, u.Username, u.PasswordHash, u.FullName, u.Phone,
+                    u.Email, u.Address, u.HireDate, u.IsActive, u.CreatedAt, u.UpdatedAt
+                FROM Users u
+                JOIN Roles r ON u.RoleId = r.Id
+                LEFT JOIN Stores s ON u.StoreId = s.Id
+                WHERE u.Username = @Username;
             ";
 
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                return reader.Read() ? MapUser(reader) : null;
+                return reader.Read() ? MapUser(reader, includePassword: true) : null;
             }, sql, parameters => AddParameter(parameters, "@Username", username));
-        }
-
-        public List<User> Search(string keyword)
-        {
-            var users = new List<User>();
-
-            const string sql = @"
-                SELECT Id, RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
-                FROM Users
-                WHERE Username LIKE N'%' + @Keyword + N'%'
-                   OR FullName LIKE N'%' + @Keyword + N'%'
-                   OR Phone LIKE N'%' + @Keyword + N'%'
-                   OR Email LIKE N'%' + @Keyword + N'%'
-                ORDER BY Id DESC;
-            ";
-
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                while (reader.Read()) users.Add(MapUser(reader));
-                return users;
-            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
         }
 
         public int Add(User user)
         {
+            if (string.IsNullOrWhiteSpace(user.UserCode))
+            {
+                user.UserCode = GenerateUserCode();
+            }
+
             const string sql = @"
-                INSERT INTO Users (RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive)
+                INSERT INTO Users (
+                    UserCode, StoreId, RoleId, IdentityNumber, Username, PasswordHash,
+                    FullName, Phone, Email, Address, HireDate, IsActive
+                )
                 OUTPUT INSERTED.Id
-                VALUES (@RoleId, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive);
+                VALUES (
+                    @UserCode, @StoreId, @RoleId, @IdentityNumber, @Username, @PasswordHash,
+                    @FullName, @Phone, @Email, @Address, @HireDate, @IsActive
+                );
             ";
 
-            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters =>
+            return ExecuteScalarInt(sql, parameters =>
             {
+                AddParameter(parameters, "@UserCode", user.UserCode);
+                AddParameter(parameters, "@StoreId", user.StoreId);
                 AddParameter(parameters, "@RoleId", user.RoleId);
+                AddParameter(parameters, "@IdentityNumber", user.IdentityNumber);
                 AddParameter(parameters, "@Username", user.Username);
                 AddParameter(parameters, "@PasswordHash", user.PasswordHash);
                 AddParameter(parameters, "@FullName", user.FullName);
                 AddParameter(parameters, "@Phone", user.Phone);
                 AddParameter(parameters, "@Email", user.Email);
                 AddParameter(parameters, "@Address", user.Address);
+                AddParameter(parameters, "@HireDate", user.HireDate);
                 AddParameter(parameters, "@IsActive", user.IsActive);
             });
         }
@@ -120,11 +201,15 @@ namespace BookStoreManagement.Repositories
         {
             const string sql = @"
                 UPDATE Users
-                SET RoleId = @RoleId,
+                SET UserCode = @UserCode,
+                    StoreId = @StoreId,
+                    RoleId = @RoleId,
+                    IdentityNumber = @IdentityNumber,
                     FullName = @FullName,
                     Phone = @Phone,
                     Email = @Email,
                     Address = @Address,
+                    HireDate = @HireDate,
                     IsActive = @IsActive,
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
@@ -133,11 +218,15 @@ namespace BookStoreManagement.Repositories
             return ExecuteNonQuery(sql, parameters =>
             {
                 AddParameter(parameters, "@Id", user.Id);
+                AddParameter(parameters, "@UserCode", user.UserCode);
+                AddParameter(parameters, "@StoreId", user.StoreId);
                 AddParameter(parameters, "@RoleId", user.RoleId);
+                AddParameter(parameters, "@IdentityNumber", user.IdentityNumber);
                 AddParameter(parameters, "@FullName", user.FullName);
                 AddParameter(parameters, "@Phone", user.Phone);
                 AddParameter(parameters, "@Email", user.Email);
                 AddParameter(parameters, "@Address", user.Address);
+                AddParameter(parameters, "@HireDate", user.HireDate);
                 AddParameter(parameters, "@IsActive", user.IsActive);
             }) > 0;
         }
@@ -158,7 +247,7 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        public bool SetActive(int id, bool isActive)
+        public bool SetActive(int userId, bool isActive)
         {
             const string sql = @"
                 UPDATE Users
@@ -169,7 +258,7 @@ namespace BookStoreManagement.Repositories
 
             return ExecuteNonQuery(sql, parameters =>
             {
-                AddParameter(parameters, "@Id", id);
+                AddParameter(parameters, "@Id", userId);
                 AddParameter(parameters, "@IsActive", isActive);
             }) > 0;
         }
@@ -181,7 +270,6 @@ namespace BookStoreManagement.Repositories
                 FROM Users
                 WHERE Username = @Username
             ";
-
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
 
             return ExecuteScalarInt(sql, parameters =>
@@ -191,21 +279,41 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        public bool IsEmailExists(string email, int? excludeId = null)
+        public bool IsUserCodeExists(string userCode, int? excludeId = null)
         {
             string sql = @"
                 SELECT COUNT(1)
                 FROM Users
-                WHERE Email = @Email
+                WHERE UserCode = @UserCode
             ";
-
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
 
             return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@Email", email);
+                AddParameter(parameters, "@UserCode", userCode);
                 if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
             }) > 0;
+        }
+
+        public bool IsIdentityNumberExists(string identityNumber, int? excludeId = null)
+        {
+            string sql = @"
+                SELECT COUNT(1)
+                FROM Users
+                WHERE IdentityNumber = @IdentityNumber
+            ";
+            if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
+
+            return ExecuteScalarInt(sql, parameters =>
+            {
+                AddParameter(parameters, "@IdentityNumber", identityNumber);
+                if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
+            }) > 0;
+        }
+
+        public string GenerateUserCode()
+        {
+            return "EMP" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
         }
     }
 }

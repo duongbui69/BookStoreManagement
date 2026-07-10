@@ -16,6 +16,8 @@ namespace BookStoreManagement.Repositories
                 BookCode = GetString(reader, "BookCode"),
                 ISBN = GetNullableString(reader, "ISBN"),
                 Title = GetString(reader, "Title"),
+                PublishYear = GetNullableInt(reader, "PublishYear"),
+                PageCount = GetNullableInt(reader, "PageCount"),
                 CategoryId = GetInt(reader, "CategoryId"),
                 AuthorId = GetNullableInt(reader, "AuthorId"),
                 PublisherId = GetNullableInt(reader, "PublisherId"),
@@ -38,6 +40,8 @@ namespace BookStoreManagement.Repositories
                 BookCode = GetString(reader, "BookCode"),
                 ISBN = GetNullableString(reader, "ISBN"),
                 Title = GetString(reader, "Title"),
+                PublishYear = GetNullableInt(reader, "PublishYear"),
+                PageCount = GetNullableInt(reader, "PageCount"),
                 CategoryId = GetInt(reader, "CategoryId"),
                 CategoryName = GetString(reader, "CategoryName"),
                 AuthorId = GetNullableInt(reader, "AuthorId"),
@@ -59,11 +63,7 @@ namespace BookStoreManagement.Repositories
         public List<BookListViewModel> GetAll()
         {
             var books = new List<BookListViewModel>();
-            const string sql = @"
-                SELECT *
-                FROM vw_BookList
-                ORDER BY Id DESC;
-            ";
+            const string sql = "SELECT * FROM vw_BookList ORDER BY Id DESC;";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -75,12 +75,7 @@ namespace BookStoreManagement.Repositories
         public List<BookListViewModel> GetActive()
         {
             var books = new List<BookListViewModel>();
-            const string sql = @"
-                SELECT *
-                FROM vw_BookList
-                WHERE IsActive = 1
-                ORDER BY Id DESC;
-            ";
+            const string sql = "SELECT * FROM vw_BookList WHERE IsActive = 1 ORDER BY Title;";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
@@ -92,7 +87,7 @@ namespace BookStoreManagement.Repositories
         public Book? GetById(int id)
         {
             const string sql = @"
-                SELECT Id, BookCode, ISBN, Title, CategoryId, AuthorId, PublisherId,
+                SELECT Id, BookCode, ISBN, Title, PublishYear, PageCount, CategoryId, AuthorId, PublisherId,
                        SellingPrice, Quantity, MinStock, Description, ImagePath, IsActive, CreatedAt, UpdatedAt
                 FROM Books
                 WHERE Id = @Id;
@@ -104,29 +99,15 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
-        public BookListViewModel? GetViewById(int id)
-        {
-            const string sql = @"
-                SELECT *
-                FROM vw_BookList
-                WHERE Id = @Id;
-            ";
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                return reader.Read() ? MapBookList(reader) : null;
-            }, sql, parameters => AddParameter(parameters, "@Id", id));
-        }
-
         public List<BookListViewModel> Search(string keyword)
         {
             var books = new List<BookListViewModel>();
             const string sql = @"
                 SELECT *
                 FROM vw_BookList
-                WHERE Title LIKE N'%' + @Keyword + N'%'
-                   OR BookCode LIKE N'%' + @Keyword + N'%'
+                WHERE BookCode LIKE N'%' + @Keyword + N'%'
                    OR ISBN LIKE N'%' + @Keyword + N'%'
+                   OR Title LIKE N'%' + @Keyword + N'%'
                    OR CategoryName LIKE N'%' + @Keyword + N'%'
                    OR AuthorName LIKE N'%' + @Keyword + N'%'
                    OR PublisherName LIKE N'%' + @Keyword + N'%'
@@ -140,41 +121,37 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
         }
 
-        public List<BookListViewModel> SearchActive(string keyword)
+        public List<BookListViewModel> GetByCategoryId(int categoryId)
         {
             var books = new List<BookListViewModel>();
             const string sql = @"
                 SELECT *
                 FROM vw_BookList
-                WHERE IsActive = 1
-                  AND (
-                        Title LIKE N'%' + @Keyword + N'%'
-                        OR BookCode LIKE N'%' + @Keyword + N'%'
-                        OR ISBN LIKE N'%' + @Keyword + N'%'
-                        OR CategoryName LIKE N'%' + @Keyword + N'%'
-                        OR AuthorName LIKE N'%' + @Keyword + N'%'
-                        OR PublisherName LIKE N'%' + @Keyword + N'%'
-                  )
-                ORDER BY Id DESC;
+                WHERE CategoryId = @CategoryId
+                ORDER BY Title;
             ";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
                 while (reader.Read()) books.Add(MapBookList(reader));
                 return books;
-            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
+            }, sql, parameters => AddParameter(parameters, "@CategoryId", categoryId));
         }
 
         public int Add(Book book)
         {
             const string sql = @"
-                INSERT INTO Books (BookCode, ISBN, Title, CategoryId, AuthorId, PublisherId,
-                                   SellingPrice, Quantity, MinStock, Description, ImagePath, IsActive)
+                INSERT INTO Books (
+                    BookCode, ISBN, Title, PublishYear, PageCount, CategoryId, AuthorId, PublisherId,
+                    SellingPrice, Quantity, MinStock, Description, ImagePath, IsActive
+                )
                 OUTPUT INSERTED.Id
-                VALUES (@BookCode, @ISBN, @Title, @CategoryId, @AuthorId, @PublisherId,
-                        @SellingPrice, @Quantity, @MinStock, @Description, @ImagePath, @IsActive);
+                VALUES (
+                    @BookCode, @ISBN, @Title, @PublishYear, @PageCount, @CategoryId, @AuthorId, @PublisherId,
+                    @SellingPrice, @Quantity, @MinStock, @Description, @ImagePath, @IsActive
+                );
             ";
-            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters => AddBookParameters(parameters, book));
+            return ExecuteScalarInt(sql, parameters => AddBookParameters(parameters, book, includeId: false));
         }
 
         public bool Update(Book book)
@@ -184,6 +161,8 @@ namespace BookStoreManagement.Repositories
                 SET BookCode = @BookCode,
                     ISBN = @ISBN,
                     Title = @Title,
+                    PublishYear = @PublishYear,
+                    PageCount = @PageCount,
                     CategoryId = @CategoryId,
                     AuthorId = @AuthorId,
                     PublisherId = @PublisherId,
@@ -196,26 +175,7 @@ namespace BookStoreManagement.Repositories
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
             ";
-            return ExecuteNonQuery(sql, parameters =>
-            {
-                AddParameter(parameters, "@Id", book.Id);
-                AddBookParameters(parameters, book);
-            }) > 0;
-        }
-
-        public bool UpdateImagePath(int bookId, string? imagePath)
-        {
-            const string sql = @"
-                UPDATE Books
-                SET ImagePath = @ImagePath,
-                    UpdatedAt = SYSDATETIME()
-                WHERE Id = @Id;
-            ";
-            return ExecuteNonQuery(sql, parameters =>
-            {
-                AddParameter(parameters, "@Id", bookId);
-                AddParameter(parameters, "@ImagePath", imagePath);
-            }) > 0;
+            return ExecuteNonQuery(sql, parameters => AddBookParameters(parameters, book, includeId: true)) > 0;
         }
 
         public bool SetActive(int id, bool isActive)
@@ -233,26 +193,22 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        public bool HasEnoughStock(int bookId, int quantity)
+        public bool HasEnoughStock(int storeId, int bookId, int quantity)
         {
             const string sql = @"
                 SELECT COUNT(1)
-                FROM Books
-                WHERE Id = @BookId
+                FROM StoreBookInventories
+                WHERE StoreId = @StoreId
+                  AND BookId = @BookId
                   AND Quantity >= @Quantity
                   AND IsActive = 1;
             ";
             return ExecuteScalarInt(sql, parameters =>
             {
+                AddParameter(parameters, "@StoreId", storeId);
                 AddParameter(parameters, "@BookId", bookId);
                 AddParameter(parameters, "@Quantity", quantity);
             }) > 0;
-        }
-
-        public int GetCurrentQuantity(int bookId)
-        {
-            const string sql = "SELECT Quantity FROM Books WHERE Id = @BookId;";
-            return ExecuteScalarInt(sql, parameters => AddParameter(parameters, "@BookId", bookId));
         }
 
         public bool IsBookCodeExists(string bookCode, int? excludeId = null)
@@ -277,11 +233,14 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        private void AddBookParameters(SqlParameterCollection parameters, Book book)
+        private void AddBookParameters(SqlParameterCollection parameters, Book book, bool includeId)
         {
+            if (includeId) AddParameter(parameters, "@Id", book.Id);
             AddParameter(parameters, "@BookCode", book.BookCode);
             AddParameter(parameters, "@ISBN", book.ISBN);
             AddParameter(parameters, "@Title", book.Title);
+            AddParameter(parameters, "@PublishYear", book.PublishYear);
+            AddParameter(parameters, "@PageCount", book.PageCount);
             AddParameter(parameters, "@CategoryId", book.CategoryId);
             AddParameter(parameters, "@AuthorId", book.AuthorId);
             AddParameter(parameters, "@PublisherId", book.PublisherId);

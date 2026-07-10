@@ -24,7 +24,7 @@ namespace BookStoreManagement.Repositories
 
         public List<Publisher> GetAll()
         {
-            var publishers = new List<Publisher>();
+            var items = new List<Publisher>();
             const string sql = @"
                 SELECT Id, PublisherName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
                 FROM Publishers
@@ -33,14 +33,14 @@ namespace BookStoreManagement.Repositories
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) publishers.Add(MapPublisher(reader));
-                return publishers;
+                while (reader.Read()) items.Add(MapPublisher(reader));
+                return items;
             }, sql);
         }
 
         public List<Publisher> GetActive()
         {
-            var publishers = new List<Publisher>();
+            var items = new List<Publisher>();
             const string sql = @"
                 SELECT Id, PublisherName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
                 FROM Publishers
@@ -50,8 +50,8 @@ namespace BookStoreManagement.Repositories
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) publishers.Add(MapPublisher(reader));
-                return publishers;
+                while (reader.Read()) items.Add(MapPublisher(reader));
+                return items;
             }, sql);
         }
 
@@ -71,42 +71,42 @@ namespace BookStoreManagement.Repositories
 
         public List<Publisher> Search(string keyword)
         {
-            var publishers = new List<Publisher>();
+            var items = new List<Publisher>();
             const string sql = @"
                 SELECT Id, PublisherName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
                 FROM Publishers
                 WHERE PublisherName LIKE N'%' + @Keyword + N'%'
                    OR Phone LIKE N'%' + @Keyword + N'%'
                    OR Email LIKE N'%' + @Keyword + N'%'
-                   OR Address LIKE N'%' + @Keyword + N'%'
+                   OR Address LIKE N'%' + @Keyword + N'%' 
                 ORDER BY Id DESC;
             ";
             return ExecuteQuery(command =>
             {
                 using var reader = command.ExecuteReader();
-                while (reader.Read()) publishers.Add(MapPublisher(reader));
-                return publishers;
+                while (reader.Read()) items.Add(MapPublisher(reader));
+                return items;
             }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
         }
 
-        public int Add(Publisher publisher)
+        public int Add(Publisher item)
         {
             const string sql = @"
                 INSERT INTO Publishers (PublisherName, Phone, Email, Address, IsActive)
                 OUTPUT INSERTED.Id
                 VALUES (@PublisherName, @Phone, @Email, @Address, @IsActive);
             ";
-            return ExecuteQuery(command => Convert.ToInt32(command.ExecuteScalar()), sql, parameters =>
+            return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@PublisherName", publisher.PublisherName);
-                AddParameter(parameters, "@Phone", publisher.Phone);
-                AddParameter(parameters, "@Email", publisher.Email);
-                AddParameter(parameters, "@Address", publisher.Address);
-                AddParameter(parameters, "@IsActive", publisher.IsActive);
+                AddParameter(parameters, "@PublisherName", item.PublisherName);
+                AddParameter(parameters, "@Phone", item.Phone);
+                AddParameter(parameters, "@Email", item.Email);
+                AddParameter(parameters, "@Address", item.Address);
+                AddParameter(parameters, "@IsActive", item.IsActive);
             });
         }
 
-        public bool Update(Publisher publisher)
+        public bool Update(Publisher item)
         {
             const string sql = @"
                 UPDATE Publishers
@@ -120,12 +120,12 @@ namespace BookStoreManagement.Repositories
             ";
             return ExecuteNonQuery(sql, parameters =>
             {
-                AddParameter(parameters, "@Id", publisher.Id);
-                AddParameter(parameters, "@PublisherName", publisher.PublisherName);
-                AddParameter(parameters, "@Phone", publisher.Phone);
-                AddParameter(parameters, "@Email", publisher.Email);
-                AddParameter(parameters, "@Address", publisher.Address);
-                AddParameter(parameters, "@IsActive", publisher.IsActive);
+                AddParameter(parameters, "@Id", item.Id);
+                AddParameter(parameters, "@PublisherName", item.PublisherName);
+                AddParameter(parameters, "@Phone", item.Phone);
+                AddParameter(parameters, "@Email", item.Email);
+                AddParameter(parameters, "@Address", item.Address);
+                AddParameter(parameters, "@IsActive", item.IsActive);
             }) > 0;
         }
 
@@ -144,17 +144,18 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
-        public bool IsNameExists(string publisherName, int? excludeId = null)
+        public bool IsNameExists(string name, int? excludeId = null)
         {
             string sql = @"
                 SELECT COUNT(1)
                 FROM Publishers
-                WHERE PublisherName = @PublisherName
+                WHERE PublisherName = @Name
             ";
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
+
             return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@PublisherName", publisherName);
+                AddParameter(parameters, "@Name", name);
                 if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
             }) > 0;
         }

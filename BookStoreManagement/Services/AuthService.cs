@@ -8,54 +8,41 @@ namespace BookStoreManagement.Services
     public class AuthService : ServiceBase
     {
         private readonly UserRepository _userRepository;
-        private readonly RoleRepository _roleRepository;
 
         public AuthService()
         {
             _userRepository = new UserRepository();
-            _roleRepository = new RoleRepository();
         }
 
-        public User Login(string username, string password)
+        public User? Login(string username, string password)
         {
-            username = Normalize(username);
+            username = Trim(username);
 
-            EnsureRequired(username, "Tên đăng nhập");
-            EnsureRequired(password, "Mật khẩu");
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
 
             User? user = _userRepository.GetByUsername(username);
 
-            if (user == null)
+            if (user == null || !user.IsActive)
             {
-                throw new Exception("Tên đăng nhập hoặc mật khẩu không đúng.");
+                return null;
             }
 
-            if (!user.IsActive)
+            if (!PasswordHasher.VerifyPassword(password, user.PasswordHash))
             {
-                throw new Exception("Tài khoản đã bị khóa.");
+                return null;
             }
 
-            bool validPassword = PasswordHasher.VerifyPassword(password, user.PasswordHash);
-            if (!validPassword)
-            {
-                throw new Exception("Tên đăng nhập hoặc mật khẩu không đúng.");
-            }
-
-            Role? role = _roleRepository.GetById(user.RoleId);
-            if (role == null)
-            {
-                throw new Exception("Tài khoản chưa có quyền hợp lệ.");
-            }
-
-            // Nếu dữ liệu mẫu vẫn lưu plain text, đăng nhập thành công thì tự đổi sang BCrypt.
-            if (!PasswordHasher.IsBCryptHash(user.PasswordHash))
+            if (PasswordHasher.NeedsRehash(user.PasswordHash))
             {
                 string newHash = PasswordHasher.HashPassword(password);
                 _userRepository.ChangePassword(user.Id, newHash);
                 user.PasswordHash = newHash;
             }
 
-            CurrentSession.Set(user, role.RoleName);
+            CurrentSession.SetCurrentUser(user);
             return user;
         }
 
@@ -66,42 +53,29 @@ namespace BookStoreManagement.Services
 
         public bool ChangeMyPassword(string oldPassword, string newPassword, string confirmPassword)
         {
-            if (!CurrentSession.IsLoggedIn)
-            {
-                throw new Exception("Bạn chưa đăng nhập.");
-            }
-
-            EnsureRequired(oldPassword, "Mật khẩu cũ");
-            ValidatePassword(newPassword, confirmPassword);
+            PermissionService.RequireLogin();
 
             User? user = _userRepository.GetById(CurrentSession.UserId);
-            if (user == null)
-            {
-                throw new Exception("Không tìm thấy tài khoản hiện tại.");
-            }
+            Require(user != null, "Không tìm thấy tài khoản hiện tại.");
 
-            if (!PasswordHasher.VerifyPassword(oldPassword, user.PasswordHash))
+            if (!PasswordHasher.VerifyPassword(oldPassword, user!.PasswordHash))
             {
                 throw new Exception("Mật khẩu cũ không đúng.");
             }
 
-            string newHash = PasswordHasher.HashPassword(newPassword);
-            return _userRepository.ChangePassword(user.Id, newHash);
+            ValidatePassword(newPassword, confirmPassword);
+
+            return _userRepository.ChangePassword(CurrentSession.UserId, PasswordHasher.HashPassword(newPassword));
         }
 
-        public void ValidatePassword(string password, string confirmPassword)
+        public void ValidatePassword(string password, string? confirmPassword = null)
         {
-            EnsureRequired(password, "Mật khẩu");
-            EnsureRequired(confirmPassword, "Xác nhận mật khẩu");
+            Require(!string.IsNullOrWhiteSpace(password), "Mật khẩu không được để trống.");
+            Require(password.Length >= 6, "Mật khẩu phải có ít nhất 6 ký tự.");
 
-            if (password.Length < 6)
+            if (confirmPassword != null)
             {
-                throw new Exception("Mật khẩu phải có ít nhất 6 ký tự.");
-            }
-
-            if (password != confirmPassword)
-            {
-                throw new Exception("Xác nhận mật khẩu không khớp.");
+                Require(password == confirmPassword, "Mật khẩu xác nhận không khớp.");
             }
         }
     }
