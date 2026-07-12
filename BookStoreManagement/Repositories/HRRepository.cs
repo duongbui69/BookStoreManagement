@@ -26,44 +26,26 @@ namespace BookStoreManagement.Repositories
         public DateTime JoinDate { get; set; }
     }
 
-    public class HRRepository
+    public class HRRepository : RepositoryBase
     {
         public HRStats GetStats()
         {
             var stats = new HRStats();
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
 
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Users", connection))
-                stats.TotalEmployees = (int)cmd.ExecuteScalar();
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE JoinDate >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)", connection))
-                stats.NewThisMonth = (int)cmd.ExecuteScalar();
-
-            using (var cmd = new SqlCommand("SELECT COUNT(DISTINCT Department) FROM Users WHERE Department IS NOT NULL", connection))
-                stats.ActiveDepartments = (int)cmd.ExecuteScalar();
+            stats.TotalEmployees = ExecuteScalarInt("SELECT COUNT(*) FROM Users");
+            stats.NewThisMonth = ExecuteScalarInt("SELECT COUNT(*) FROM Users WHERE JoinDate >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)");
+            stats.ActiveDepartments = ExecuteScalarInt("SELECT COUNT(DISTINCT Department) FROM Users WHERE Department IS NOT NULL");
 
             // Mock load percentages based on employee counts
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Department = 'Logistics'", connection))
-                stats.LogisticsLoad = Math.Min(100, (int)cmd.ExecuteScalar() * 15);
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Department LIKE '%Sales%'", connection))
-                stats.SalesLoad = Math.Min(100, (int)cmd.ExecuteScalar() * 20);
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Department LIKE '%IT%'", connection))
-                stats.ITLoad = Math.Min(100, (int)cmd.ExecuteScalar() * 25);
+            stats.LogisticsLoad = Math.Min(100, ExecuteScalarInt("SELECT COUNT(*) FROM Users WHERE Department = 'Logistics'") * 15);
+            stats.SalesLoad = Math.Min(100, ExecuteScalarInt("SELECT COUNT(*) FROM Users WHERE Department LIKE '%Sales%'") * 20);
+            stats.ITLoad = Math.Min(100, ExecuteScalarInt("SELECT COUNT(*) FROM Users WHERE Department LIKE '%IT%'") * 25);
 
             return stats;
         }
 
         public (List<HREmployeeItem> Items, int TotalCount) GetPagedEmployees(int page, int pageSize, string departmentFilter, string statusFilter, string searchTerm)
         {
-            var list = new List<HREmployeeItem>();
-            int totalCount = 0;
-
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
-
             string whereClause = "WHERE 1=1 ";
             if (!string.IsNullOrEmpty(departmentFilter) && departmentFilter != "All Departments")
             {
@@ -78,6 +60,13 @@ namespace BookStoreManagement.Repositories
                 whereClause += "AND (u.FullName LIKE @Search OR u.Email LIKE @Search OR u.EmployeeId LIKE @Search) ";
             }
 
+            Action<SqlParameterCollection> addParams = p =>
+            {
+                if (!string.IsNullOrEmpty(departmentFilter) && departmentFilter != "All Departments") AddParameter(p, "@Dept", departmentFilter);
+                if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "Status: All") AddParameter(p, "@Status", statusFilter);
+                if (!string.IsNullOrEmpty(searchTerm)) AddParameter(p, "@Search", "%" + searchTerm + "%");
+            };
+
             // Get total count
             string countQuery = $@"
                 SELECT COUNT(*) 
@@ -85,13 +74,7 @@ namespace BookStoreManagement.Repositories
                 LEFT JOIN Roles r ON u.RoleId = r.Id
                 {whereClause}";
                 
-            using (var countCmd = new SqlCommand(countQuery, connection))
-            {
-                if (!string.IsNullOrEmpty(departmentFilter) && departmentFilter != "All Departments") countCmd.Parameters.AddWithValue("@Dept", departmentFilter);
-                if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "Status: All") countCmd.Parameters.AddWithValue("@Status", statusFilter);
-                if (!string.IsNullOrEmpty(searchTerm)) countCmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-                totalCount = (int)countCmd.ExecuteScalar();
-            }
+            int totalCount = ExecuteScalarInt(countQuery, addParams);
 
             // Get paged data
             string dataQuery = $@"
@@ -104,18 +87,13 @@ namespace BookStoreManagement.Repositories
                 ORDER BY u.Id ASC
                 OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-            using (var dataCmd = new SqlCommand(dataQuery, connection))
+            var list = ExecuteQuery(cmd =>
             {
-                if (!string.IsNullOrEmpty(departmentFilter) && departmentFilter != "All Departments") dataCmd.Parameters.AddWithValue("@Dept", departmentFilter);
-                if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "Status: All") dataCmd.Parameters.AddWithValue("@Status", statusFilter);
-                if (!string.IsNullOrEmpty(searchTerm)) dataCmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-                dataCmd.Parameters.AddWithValue("@Offset", (page - 1) * pageSize);
-                dataCmd.Parameters.AddWithValue("@PageSize", pageSize);
-
-                using var reader = dataCmd.ExecuteReader();
+                var results = new List<HREmployeeItem>();
+                using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    list.Add(new HREmployeeItem
+                    results.Add(new HREmployeeItem
                     {
                         Name = reader.GetString(0),
                         Email = reader.GetString(1),
@@ -126,7 +104,13 @@ namespace BookStoreManagement.Repositories
                         JoinDate = reader.GetDateTime(6)
                     });
                 }
-            }
+                return results;
+            }, dataQuery, p =>
+            {
+                addParams(p);
+                AddParameter(p, "@Offset", (page - 1) * pageSize);
+                AddParameter(p, "@PageSize", pageSize);
+            });
 
             return (list, totalCount);
         }

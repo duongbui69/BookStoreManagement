@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 
@@ -9,7 +10,7 @@ namespace BookStoreManagement.UserControls
 {
     public partial class OrdersControl : UserControl
     {
-        private OrderRepository _repo;
+        private readonly OrderService _service;
         
         private Panel pnlHeader;
         private Label lblTitle;
@@ -33,7 +34,7 @@ namespace BookStoreManagement.UserControls
 
         public OrdersControl()
         {
-            _repo = new OrderRepository();
+            _service = new OrderService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += OrdersControl_Load;
@@ -145,7 +146,7 @@ namespace BookStoreManagement.UserControls
 
         private void LoadData()
         {
-            var stats = _repo.GetStats();
+            var stats = _service.GetStats();
             
             flpCards.Controls.Clear();
             int cardWidth = Math.Max(200, (this.Width - 140) / 4);
@@ -155,7 +156,7 @@ namespace BookStoreManagement.UserControls
             flpCards.Controls.Add(CreateStatCard("Refund Requests", stats.RefundRequests.ToString("N0"), Color.FromArgb(231, 76, 60), cardWidth));
             flpCards.Controls.Add(CreateStatCard("Revenue (24h)", $"${stats.Revenue24h:N2}", Color.FromArgb(128, 90, 213), cardWidth));
 
-            var (items, totalCount) = _repo.GetPagedOrders(_currentPage, _pageSize, _currentTab, txtSearch.Text);
+            var (items, totalCount) = _service.GetPagedOrders(_currentPage, _pageSize, _currentTab, txtSearch.Text);
             dgvOrders.DataSource = items;
             
             if (dgvOrders.Columns["CustomerEmail"] != null) dgvOrders.Columns["CustomerEmail"].Visible = false; // Hide email column, we paint it in CustomerName

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
+using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 
@@ -10,7 +11,7 @@ namespace BookStoreManagement.UserControls
 {
     public partial class DashboardControl : UserControl
     {
-        private readonly DashboardRepository _dashboardRepo;
+        private readonly DashboardService _dashboardService;
         private Label lblHeader;
         private FlowLayoutPanel flpCards;
         private Panel pnlChartsContainer;
@@ -24,7 +25,7 @@ namespace BookStoreManagement.UserControls
 
         public DashboardControl()
         {
-            _dashboardRepo = new DashboardRepository();
+            _dashboardService = new DashboardService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += DashboardControl_Load;
@@ -155,7 +156,7 @@ namespace BookStoreManagement.UserControls
         {
             try
             {
-                currentStats = _dashboardRepo.GetStats();
+                currentStats = _dashboardService.GetStats();
 
                 flpCards.Controls.Clear();
                 int cardWidth = Math.Max(220, (this.Width - 140) / 4);

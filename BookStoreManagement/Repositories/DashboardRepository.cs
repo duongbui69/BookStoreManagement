@@ -33,13 +33,11 @@ namespace BookStoreManagement.Repositories
         public List<LowStockItem> LowStockItems { get; set; } = new List<LowStockItem>();
     }
 
-    public class DashboardRepository
+    public class DashboardRepository : RepositoryBase
     {
         public DashboardStats GetStats()
         {
             var stats = new DashboardStats();
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
 
             DateTime now = DateTime.Now;
             DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
@@ -48,18 +46,20 @@ namespace BookStoreManagement.Repositories
             // Helper to get sum
             decimal GetTotalRevenue(DateTime start, DateTime end)
             {
-                using var cmd = new SqlCommand("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", connection);
-                cmd.Parameters.AddWithValue("@Start", start);
-                cmd.Parameters.AddWithValue("@End", end);
-                return Convert.ToDecimal(cmd.ExecuteScalar());
+                return ExecuteScalarDecimal("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                    p => {
+                        AddParameter(p, "@Start", start);
+                        AddParameter(p, "@End", end);
+                    });
             }
 
             int GetTotalOrders(DateTime start, DateTime end)
             {
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", connection);
-                cmd.Parameters.AddWithValue("@Start", start);
-                cmd.Parameters.AddWithValue("@End", end);
-                return (int)cmd.ExecuteScalar();
+                return ExecuteScalarInt("SELECT COUNT(*) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                    p => {
+                        AddParameter(p, "@Start", start);
+                        AddParameter(p, "@End", end);
+                    });
             }
 
             decimal currentRevenue = GetTotalRevenue(currentMonthStart, now);
@@ -88,32 +88,25 @@ namespace BookStoreManagement.Repositories
             }
 
             // Pie Chart Data (Sales By Category)
-            using (var cmd = new SqlCommand(@"
+            ExecuteQuery(cmd => {
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    stats.SalesByCategory.Add(reader.GetString(0), reader.GetDecimal(1));
+                }
+                return true;
+            }, @"
                 SELECT c.CategoryName, ISNULL(SUM(sd.Quantity * sd.UnitPrice), 0)
                 FROM SalesOrderDetails sd
                 JOIN Books b ON sd.BookId = b.Id
                 JOIN Categories c ON b.CategoryId = c.Id
                 JOIN SalesOrders so ON sd.SalesOrderId = so.Id
                 WHERE so.OrderDate >= @Start
-                GROUP BY c.CategoryName", connection))
-            {
-                cmd.Parameters.AddWithValue("@Start", currentMonthStart);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    stats.SalesByCategory.Add(reader.GetString(0), reader.GetDecimal(1));
-                }
-            }
+                GROUP BY c.CategoryName", 
+            p => AddParameter(p, "@Start", currentMonthStart));
 
             // Low Stock Items
-            using (var cmd = new SqlCommand(@"
-                SELECT b.BookCode, b.Title, a.AuthorName, c.CategoryName, b.Quantity, b.MinStock
-                FROM Books b
-                LEFT JOIN Authors a ON b.AuthorId = a.Id
-                LEFT JOIN Categories c ON b.CategoryId = c.Id
-                WHERE b.Quantity <= b.MinStock AND b.IsActive = 1
-                ORDER BY b.Quantity ASC", connection))
-            {
+            ExecuteQuery(cmd => {
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -127,8 +120,16 @@ namespace BookStoreManagement.Repositories
                         Threshold = reader.GetInt32(5)
                     });
                 }
-                stats.LowStockCount = stats.LowStockItems.Count;
-            }
+                return true;
+            }, @"
+                SELECT b.BookCode, b.Title, a.AuthorName, c.CategoryName, b.Quantity, b.MinStock
+                FROM Books b
+                LEFT JOIN Authors a ON b.AuthorId = a.Id
+                LEFT JOIN Categories c ON b.CategoryId = c.Id
+                WHERE b.Quantity <= b.MinStock AND b.IsActive = 1
+                ORDER BY b.Quantity ASC");
+
+            stats.LowStockCount = stats.LowStockItems.Count;
 
             return stats;
         }

@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 
@@ -9,7 +10,7 @@ namespace BookStoreManagement.UserControls
 {
     public partial class HRControl : UserControl
     {
-        private HRRepository _repo;
+        private readonly HRService _service;
         
         private Panel pnlHeader;
         private Label lblTitle;
@@ -31,7 +32,7 @@ namespace BookStoreManagement.UserControls
 
         public HRControl()
         {
-            _repo = new HRRepository();
+            _service = new HRService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += HRControl_Load;
@@ -127,7 +128,7 @@ namespace BookStoreManagement.UserControls
 
         private void LoadData()
         {
-            var stats = _repo.GetStats();
+            var stats = _service.GetStats();
             
             flpCards.Controls.Clear();
             int cardWidth = Math.Max(220, (this.Width - 160) / 3);
@@ -136,7 +137,11 @@ namespace BookStoreManagement.UserControls
             flpCards.Controls.Add(CreateStatCard("Active Departments", stats.ActiveDepartments.ToString(), "", cardWidth));
             flpCards.Controls.Add(CreateLoadCard(stats.LogisticsLoad, stats.SalesLoad, stats.ITLoad, cardWidth + 100));
 
-            var (items, totalCount) = _repo.GetPagedEmployees(_currentPage, _pageSize, cbDept.SelectedItem?.ToString(), cbStatus.SelectedItem?.ToString(), txtSearch.Text);
+            string dept = cbDept.SelectedItem?.ToString() == "All Departments" ? null : cbDept.SelectedItem?.ToString();
+            string status = cbStatus.SelectedItem?.ToString().Replace("Status: ", "");
+            if (status == "All") status = null;
+
+            var (items, totalCount) = _service.GetPagedEmployees(_currentPage, _pageSize, dept, status, txtSearch.Text);
             dgvStaff.DataSource = items;
             
             if (dgvStaff.Columns["Email"] != null) dgvStaff.Columns["Email"].Visible = false;

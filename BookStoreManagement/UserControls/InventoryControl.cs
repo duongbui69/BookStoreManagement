@@ -2,13 +2,14 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Repositories;
+using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
 
 namespace BookStoreManagement.UserControls
 {
     public partial class InventoryControl : UserControl
     {
-        private InventoryRepository _repo;
+        private readonly InventoryService _service;
         
         private Panel pnlHeader;
         private Label lblTitle;
@@ -26,7 +27,7 @@ namespace BookStoreManagement.UserControls
 
         public InventoryControl()
         {
-            _repo = new InventoryRepository();
+            _service = new InventoryService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += InventoryControl_Load;
@@ -108,7 +109,7 @@ namespace BookStoreManagement.UserControls
 
         private void LoadData()
         {
-            var stats = _repo.GetStats();
+            var stats = _service.GetStats();
             
             flpCards.Controls.Clear();
             int cardWidth = Math.Max(200, (this.Width - 140) / 4);
@@ -118,7 +119,7 @@ namespace BookStoreManagement.UserControls
             flpCards.Controls.Add(CreateCard("STOCK VALUE", $"${stats.StockValue:N2}", Color.FromArgb(128, 90, 213), cardWidth));
             flpCards.Controls.Add(CreateCard("REORDER POINT", stats.ReorderPoint.ToString("N0"), Color.FromArgb(46, 204, 113), cardWidth));
 
-            var (items, totalCount) = _repo.GetPagedInventoryItems(_currentPage, _pageSize, txtSearch.Text);
+            var (items, totalCount) = _service.GetPagedInventoryItems(_currentPage, _pageSize, txtSearch.Text);
             dgvWarehouses.DataSource = items;
             
             paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);

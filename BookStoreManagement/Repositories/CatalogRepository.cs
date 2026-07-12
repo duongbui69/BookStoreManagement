@@ -23,43 +23,25 @@ namespace BookStoreManagement.Repositories
         public string Status { get; set; } = string.Empty;
     }
 
-    public class CatalogRepository
+    public class CatalogRepository : RepositoryBase
     {
         public CatalogStats GetStats()
         {
-            var stats = new CatalogStats();
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Books WHERE IsActive = 1", connection))
-                stats.TotalTitles = (int)cmd.ExecuteScalar();
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Categories WHERE IsActive = 1", connection))
-                stats.ActiveCategories = (int)cmd.ExecuteScalar();
-
-            using (var cmd = new SqlCommand("SELECT ISNULL(SUM(Quantity * SellingPrice), 0) FROM Books WHERE IsActive = 1", connection))
-                stats.InStockValue = Convert.ToDecimal(cmd.ExecuteScalar());
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock AND IsActive = 1", connection))
-                stats.LowStockAlerts = (int)cmd.ExecuteScalar();
-
-            return stats;
+            return new CatalogStats
+            {
+                TotalTitles = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE IsActive = 1"),
+                ActiveCategories = ExecuteScalarInt("SELECT COUNT(*) FROM Categories WHERE IsActive = 1"),
+                InStockValue = ExecuteScalarDecimal("SELECT ISNULL(SUM(Quantity * SellingPrice), 0) FROM Books WHERE IsActive = 1"),
+                LowStockAlerts = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock AND IsActive = 1")
+            };
         }
 
         public (List<CatalogBookItem> Items, int TotalCount) GetPagedCatalogBooks(int page, int pageSize, string searchTerm = "")
         {
-            var list = new List<CatalogBookItem>();
-            int totalCount = 0;
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
-
             string whereClause = "WHERE b.IsActive = 1 AND (b.Title LIKE @Search OR b.BookCode LIKE @Search)";
 
-            using (var countCmd = new SqlCommand($"SELECT COUNT(*) FROM Books b {whereClause}", connection))
-            {
-                countCmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-                totalCount = (int)countCmd.ExecuteScalar();
-            }
+            int totalCount = ExecuteScalarInt($"SELECT COUNT(*) FROM Books b {whereClause}",
+                p => AddParameter(p, "@Search", "%" + searchTerm + "%"));
 
             string query = $@"
                 SELECT 
@@ -72,30 +54,33 @@ namespace BookStoreManagement.Repositories
                 ORDER BY b.Id DESC
                 OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-            using var cmd = new SqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-            cmd.Parameters.AddWithValue("@Offset", (page - 1) * pageSize);
-            cmd.Parameters.AddWithValue("@PageSize", pageSize);
-
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            var list = ExecuteQuery(cmd =>
             {
-                int qty = reader.GetInt32(5);
-                int minStock = reader.GetInt32(6);
-                string status = "IN STOCK";
-                if (qty == 0) status = "OUT OF STOCK";
-                else if (qty <= minStock) status = "LOW STOCK";
-
-                list.Add(new CatalogBookItem
+                var results = new List<CatalogBookItem>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    Isbn13 = reader.GetString(0),
-                    Title = reader.GetString(1),
-                    Author = reader.GetString(2),
-                    Category = reader.GetString(3),
-                    Price = reader.GetDecimal(4),
-                    Status = status
-                });
-            }
+                    int qty = reader.GetInt32(5);
+                    int minStock = reader.GetInt32(6);
+                    string status = qty == 0 ? "OUT OF STOCK" : (qty <= minStock ? "LOW STOCK" : "IN STOCK");
+
+                    results.Add(new CatalogBookItem
+                    {
+                        Isbn13 = reader.GetString(0),
+                        Title = reader.GetString(1),
+                        Author = reader.GetString(2),
+                        Category = reader.GetString(3),
+                        Price = reader.GetDecimal(4),
+                        Status = status
+                    });
+                }
+                return results;
+            }, query, p =>
+            {
+                AddParameter(p, "@Search", "%" + searchTerm + "%");
+                AddParameter(p, "@Offset", (page - 1) * pageSize);
+                AddParameter(p, "@PageSize", pageSize);
+            });
 
             return (list, totalCount);
         }

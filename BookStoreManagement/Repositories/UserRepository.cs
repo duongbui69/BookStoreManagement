@@ -6,24 +6,13 @@ using BookStoreManagement.Database;
 
 namespace BookStoreManagement.Repositories
 {
-    public class UserRepository
+    public class UserRepository : RepositoryBase
     {
-        private T ExecuteQuery<T>(Func<SqlCommand, T> action, string sql, Action<SqlParameterCollection>? addParameters = null)
-        {
-            using var connection = DbConnectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
-
-            addParameters?.Invoke(command.Parameters);
-
-            connection.Open();
-            return action(command);
-        }
 
         public User? Login(string username, string password)
         {
             const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
                                 FROM Users u JOIN Roles r On u.RoleId = r.Id WHERE u.Username = @Username AND u.PasswordHash = @PasswordHash AND u.IsActive = 1";
-
 
             return ExecuteQuery(command =>
             {
@@ -35,9 +24,44 @@ namespace BookStoreManagement.Repositories
                 return null;
             }, sql, parameters =>
             {
-                parameters.AddWithValue("@Username", username);
-                parameters.AddWithValue("@PasswordHash", password);
+                AddParameter(parameters, "@Username", username);
+                AddParameter(parameters, "@PasswordHash", password);
             });
+        }
+
+        public User? GetByUsername(string username)
+        {
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+                                FROM Users u WHERE u.Username = @Username";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapUser(reader) : null;
+            }, sql, parameters => AddParameter(parameters, "@Username", username));
+        }
+
+        public User? GetById(int id)
+        {
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+                                FROM Users u WHERE u.Id = @Id";
+
+            return ExecuteQuery(command =>
+            {
+                using var reader = command.ExecuteReader();
+                return reader.Read() ? MapUser(reader) : null;
+            }, sql, parameters => AddParameter(parameters, "@Id", id));
+        }
+
+        public bool ChangePassword(int userId, string newPasswordHash)
+        {
+            const string sql = @"UPDATE Users SET PasswordHash = @PasswordHash, UpdatedAt = SYSDATETIME() WHERE Id = @Id";
+
+            return ExecuteNonQuery(sql, parameters =>
+            {
+                AddParameter(parameters, "@Id", userId);
+                AddParameter(parameters, "@PasswordHash", newPasswordHash);
+            }) > 0;
         }
 
         private User MapUser(SqlDataReader reader)

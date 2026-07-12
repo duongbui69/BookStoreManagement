@@ -5,12 +5,13 @@ using System.Windows.Forms;
 using System.Linq;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
+using BookStoreManagement.Services;
 
 namespace BookStoreManagement.UserControls
 {
     public partial class ReportsControl : UserControl
     {
-        private ReportRepository _repo;
+        private readonly ReportService _service;
         private ReportStats _stats;
         
         private Panel pnlHeader;
@@ -31,7 +32,7 @@ namespace BookStoreManagement.UserControls
 
         public ReportsControl()
         {
-            _repo = new ReportRepository();
+            _service = new ReportService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += ReportsControl_Load;
@@ -136,7 +137,7 @@ namespace BookStoreManagement.UserControls
 
         private void ReportsControl_Load(object sender, EventArgs e)
         {
-            _stats = _repo.GetFinancialReports();
+            _stats = _service.GetFinancialReports();
             LoadData();
         }
 

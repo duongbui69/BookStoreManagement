@@ -25,43 +25,25 @@ namespace BookStoreManagement.Repositories
         public string Status { get; set; } = string.Empty;
     }
 
-    public class InventoryRepository
+    public class InventoryRepository : RepositoryBase
     {
         public InventoryStats GetStats()
         {
-            var stats = new InventoryStats();
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
-
-            using (var cmd = new SqlCommand("SELECT ISNULL(SUM(Quantity), 0) FROM Books WHERE IsActive = 1", connection))
-                stats.TotalItems = Convert.ToInt32(cmd.ExecuteScalar());
-
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Books WHERE Quantity = 0 AND IsActive = 1", connection))
-                stats.OutOfStock = (int)cmd.ExecuteScalar();
-
-            using (var cmd = new SqlCommand("SELECT ISNULL(SUM(Quantity * SellingPrice), 0) FROM Books WHERE IsActive = 1", connection))
-                stats.StockValue = Convert.ToDecimal(cmd.ExecuteScalar());
-
-            using (var cmd = new SqlCommand("SELECT ISNULL(SUM(MinStock), 0) FROM Books WHERE IsActive = 1 AND Quantity <= MinStock", connection))
-                stats.ReorderPoint = Convert.ToInt32(cmd.ExecuteScalar());
-
-            return stats;
+            return new InventoryStats
+            {
+                TotalItems = ExecuteScalarInt("SELECT ISNULL(SUM(Quantity), 0) FROM Books WHERE IsActive = 1"),
+                OutOfStock = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE Quantity = 0 AND IsActive = 1"),
+                StockValue = ExecuteScalarDecimal("SELECT ISNULL(SUM(Quantity * SellingPrice), 0) FROM Books WHERE IsActive = 1"),
+                ReorderPoint = ExecuteScalarInt("SELECT ISNULL(SUM(MinStock), 0) FROM Books WHERE IsActive = 1 AND Quantity <= MinStock")
+            };
         }
 
         public (List<InventoryWarehouseItem> Items, int TotalCount) GetPagedInventoryItems(int page, int pageSize, string searchTerm = "")
         {
-            var list = new List<InventoryWarehouseItem>();
-            int totalCount = 0;
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
-
             string whereClause = "WHERE b.IsActive = 1 AND (b.Title LIKE @Search OR b.BookCode LIKE @Search)";
 
-            using (var countCmd = new SqlCommand($"SELECT COUNT(*) FROM Books b {whereClause}", connection))
-            {
-                countCmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-                totalCount = (int)countCmd.ExecuteScalar();
-            }
+            int totalCount = ExecuteScalarInt($"SELECT COUNT(*) FROM Books b {whereClause}",
+                p => AddParameter(p, "@Search", "%" + searchTerm + "%"));
 
             string query = $@"
                 SELECT 
@@ -73,29 +55,34 @@ namespace BookStoreManagement.Repositories
                 ORDER BY b.Id DESC
                 OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-            using var cmd = new SqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@Search", "%" + searchTerm + "%");
-            cmd.Parameters.AddWithValue("@Offset", (page - 1) * pageSize);
-            cmd.Parameters.AddWithValue("@PageSize", pageSize);
-
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            var list = ExecuteQuery(cmd =>
             {
-                int qty = reader.GetInt32(6);
-                string status = qty > 10 ? "IN STOCK" : (qty > 0 ? "LOW STOCK" : "OUT OF STOCK");
-
-                list.Add(new InventoryWarehouseItem
+                var results = new List<InventoryWarehouseItem>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    Title = reader.GetString(0),
-                    Sku = "SKU: " + reader.GetString(1),
-                    UnitPrice = reader.GetDecimal(2),
-                    NorthHub = reader.GetInt32(3),
-                    WestHub = reader.GetInt32(4),
-                    CentralHub = reader.GetInt32(5),
-                    TotalStock = qty,
-                    Status = status
-                });
-            }
+                    int qty = reader.GetInt32(6);
+                    string status = qty > 10 ? "IN STOCK" : (qty > 0 ? "LOW STOCK" : "OUT OF STOCK");
+
+                    results.Add(new InventoryWarehouseItem
+                    {
+                        Title = reader.GetString(0),
+                        Sku = "SKU: " + reader.GetString(1),
+                        UnitPrice = reader.GetDecimal(2),
+                        NorthHub = reader.GetInt32(3),
+                        WestHub = reader.GetInt32(4),
+                        CentralHub = reader.GetInt32(5),
+                        TotalStock = qty,
+                        Status = status
+                    });
+                }
+                return results;
+            }, query, p =>
+            {
+                AddParameter(p, "@Search", "%" + searchTerm + "%");
+                AddParameter(p, "@Offset", (page - 1) * pageSize);
+                AddParameter(p, "@PageSize", pageSize);
+            });
 
             return (list, totalCount);
         }

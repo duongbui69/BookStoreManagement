@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 
@@ -8,7 +9,7 @@ namespace BookStoreManagement.UserControls
 {
     public partial class CatalogControl : UserControl
     {
-        private CatalogRepository _repo;
+        private readonly CatalogService _service;
         
         private Panel pnlHeader;
         private Label lblTitle;
@@ -27,7 +28,7 @@ namespace BookStoreManagement.UserControls
 
         public CatalogControl()
         {
-            _repo = new CatalogRepository();
+            _service = new CatalogService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += CatalogControl_Load;
@@ -118,7 +119,7 @@ namespace BookStoreManagement.UserControls
 
         private void LoadData()
         {
-            var stats = _repo.GetStats();
+            var stats = _service.GetStats();
             
             flpCards.Controls.Clear();
             int cardWidth = Math.Max(200, (this.Width - 140) / 4);
@@ -128,7 +129,7 @@ namespace BookStoreManagement.UserControls
             flpCards.Controls.Add(CreateCard("IN STOCK VALUE", $"${stats.InStockValue:N2}", Color.FromArgb(46, 204, 113), cardWidth));
             flpCards.Controls.Add(CreateCard("LOW STOCK ALERTS", stats.LowStockAlerts.ToString(), Color.FromArgb(231, 76, 60), cardWidth));
 
-            var (items, totalCount) = _repo.GetPagedCatalogBooks(_currentPage, _pageSize, txtSearch.Text);
+            var (items, totalCount) = _service.GetPagedCatalogBooks(_currentPage, _pageSize, txtSearch.Text);
             dgvBooks.DataSource = items;
             
             paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);

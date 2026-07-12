@@ -2,19 +2,19 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Guna.UI2.WinForms;
-using BookStoreManagement.Repositories;
+using BookStoreManagement.Services;
 using BookStoreManagement.Models;
 
 namespace BookStoreManagement.Forms
 {
     public partial class LoginForm : Form
     {
-        private readonly UserRepository _userRepository;
+        private readonly AuthService _authService;
 
         public LoginForm()
         {
             InitializeComponent();
-            _userRepository = new UserRepository();
+            _authService = new AuthService();
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             ApplyTheme();
         }
@@ -62,7 +62,7 @@ namespace BookStoreManagement.Forms
                 return;
             }
 
-            var user = _userRepository.Login(username, password);
+            var user = _authService.Login(username, password);
             if (user != null)
             {
                 // Login successful

@@ -34,13 +34,11 @@ namespace BookStoreManagement.Repositories
         public List<DepartmentPerformance> DepartmentPerformances { get; set; } = new List<DepartmentPerformance>();
     }
 
-    public class ReportRepository
+    public class ReportRepository : RepositoryBase
     {
         public ReportStats GetFinancialReports()
         {
             var stats = new ReportStats();
-            using var connection = DbConnectionFactory.CreateConnection();
-            connection.Open();
 
             DateTime now = DateTime.Now;
             DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
@@ -49,10 +47,11 @@ namespace BookStoreManagement.Repositories
             // Helper to get revenue sum
             decimal GetTotalRevenue(DateTime start, DateTime end)
             {
-                using var cmd = new SqlCommand("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", connection);
-                cmd.Parameters.AddWithValue("@Start", start);
-                cmd.Parameters.AddWithValue("@End", end);
-                return Convert.ToDecimal(cmd.ExecuteScalar());
+                return ExecuteScalarDecimal("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                    p => {
+                        AddParameter(p, "@Start", start);
+                        AddParameter(p, "@End", end);
+                    });
             }
 
             decimal currentRevenue = GetTotalRevenue(currentMonthStart, now);
@@ -85,18 +84,7 @@ namespace BookStoreManagement.Repositories
             }
 
             // Departmental Performance
-            using (var cmd = new SqlCommand(@"
-                SELECT 
-                    c.CategoryName, 
-                    ISNULL(SUM(sd.Quantity * sd.UnitPrice), 0) as GrossSales
-                FROM SalesOrderDetails sd
-                JOIN Books b ON sd.BookId = b.Id
-                JOIN Categories c ON b.CategoryId = c.Id
-                JOIN SalesOrders so ON sd.SalesOrderId = so.Id
-                WHERE so.OrderDate >= @Start
-                GROUP BY c.CategoryName", connection))
-            {
-                cmd.Parameters.AddWithValue("@Start", currentMonthStart);
+            ExecuteQuery(cmd => {
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -118,7 +106,18 @@ namespace BookStoreManagement.Repositories
                         Status = status
                     });
                 }
-            }
+                return true;
+            }, @"
+                SELECT 
+                    c.CategoryName, 
+                    ISNULL(SUM(sd.Quantity * sd.UnitPrice), 0) as GrossSales
+                FROM SalesOrderDetails sd
+                JOIN Books b ON sd.BookId = b.Id
+                JOIN Categories c ON b.CategoryId = c.Id
+                JOIN SalesOrders so ON sd.SalesOrderId = so.Id
+                WHERE so.OrderDate >= @Start
+                GROUP BY c.CategoryName", 
+            p => AddParameter(p, "@Start", currentMonthStart));
 
             // If empty (no data), add mock data to show UI
             if (stats.DepartmentPerformances.Count == 0)
