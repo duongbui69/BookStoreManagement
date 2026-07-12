@@ -21,6 +21,7 @@ namespace BookStoreManagement.Forms
             {
                 lblRole.Text = "Staff";
                 btnHR.Visible = false;
+                btnReports.Visible = false;
                 btnSettings.Visible = false;
             }
             else
@@ -41,6 +42,8 @@ namespace BookStoreManagement.Forms
             btnInventory.Click += BtnInventory_Click;
             btnOrders.Click += BtnOrders_Click;
             btnHR.Click += BtnHR_Click;
+            btnReports.Click += BtnReports_Click;
+            btnSettings.Click += BtnSettings_Click;
             btnThemeToggle.Click += BtnThemeToggle_Click;
 
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
@@ -84,6 +87,24 @@ namespace BookStoreManagement.Forms
             var hrControl = new UserControls.HRControl();
             hrControl.Dock = DockStyle.Fill;
             panelMain.Controls.Add(hrControl);
+        }
+
+        private void BtnReports_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnReports);
+            panelMain.Controls.Clear();
+            var reportsControl = new UserControls.ReportsControl();
+            reportsControl.Dock = DockStyle.Fill;
+            panelMain.Controls.Add(reportsControl);
+        }
+
+        private void BtnSettings_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnSettings);
+            panelMain.Controls.Clear();
+            var settingsControl = new UserControls.SettingsControl();
+            settingsControl.Dock = DockStyle.Fill;
+            panelMain.Controls.Add(settingsControl);
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)
