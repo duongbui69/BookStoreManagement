@@ -17,6 +17,7 @@ namespace BookStoreManagement.Repositories
 
     public class HREmployeeItem
     {
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string RoleName { get; set; } = string.Empty;
@@ -79,7 +80,7 @@ namespace BookStoreManagement.Repositories
             // Get paged data
             string dataQuery = $@"
                 SELECT 
-                    u.FullName, ISNULL(u.Email, ''), ISNULL(r.RoleName, 'Employee'), ISNULL(u.EmployeeId, '#EMP-0000'), 
+                    u.Id, u.FullName, ISNULL(u.Email, ''), ISNULL(r.RoleName, 'Employee'), ISNULL(u.EmployeeId, '#EMP-0000'), 
                     ISNULL(u.Department, 'Unassigned'), ISNULL(u.Status, 'ACTIVE'), ISNULL(u.JoinDate, GETDATE())
                 FROM Users u
                 LEFT JOIN Roles r ON u.RoleId = r.Id
@@ -95,13 +96,14 @@ namespace BookStoreManagement.Repositories
                 {
                     results.Add(new HREmployeeItem
                     {
-                        Name = reader.GetString(0),
-                        Email = reader.GetString(1),
-                        RoleName = reader.GetString(2),
-                        EmployeeId = reader.GetString(3),
-                        Department = reader.GetString(4),
-                        Status = reader.GetString(5),
-                        JoinDate = reader.GetDateTime(6)
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1),
+                        Email = reader.GetString(2),
+                        RoleName = reader.GetString(3),
+                        EmployeeId = reader.GetString(4),
+                        Department = reader.GetString(5),
+                        Status = reader.GetString(6),
+                        JoinDate = reader.GetDateTime(7)
                     });
                 }
                 return results;

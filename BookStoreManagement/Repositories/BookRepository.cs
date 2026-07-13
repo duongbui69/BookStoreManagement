@@ -195,17 +195,16 @@ namespace BookStoreManagement.Repositories
 
         public bool HasEnoughStock(int storeId, int bookId, int quantity)
         {
+            // Ignore storeId for single store DB
             const string sql = @"
                 SELECT COUNT(1)
-                FROM StoreBookInventories
-                WHERE StoreId = @StoreId
-                  AND BookId = @BookId
+                FROM Books
+                WHERE Id = @BookId
                   AND Quantity >= @Quantity
                   AND IsActive = 1;
             ";
             return ExecuteScalarInt(sql, parameters =>
             {
-                AddParameter(parameters, "@StoreId", storeId);
                 AddParameter(parameters, "@BookId", bookId);
                 AddParameter(parameters, "@Quantity", quantity);
             }) > 0;

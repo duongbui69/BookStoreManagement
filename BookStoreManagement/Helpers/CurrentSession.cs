@@ -6,6 +6,9 @@ namespace BookStoreManagement.Helpers
     public static class CurrentSession
     {
         public static int UserId { get; private set; }
+        public static string UserCode { get; private set; } = string.Empty;
+        public static int? StoreId { get; private set; }
+        public static string? StoreName { get; private set; }
         public static int RoleId { get; private set; }
         public static string RoleName { get; private set; } = string.Empty;
         public static string Username { get; private set; } = string.Empty;
@@ -18,14 +21,21 @@ namespace BookStoreManagement.Helpers
         public static void SetCurrentUser(User user)
         {
             UserId = user.Id;
+            UserCode = user.UserCode ?? string.Empty;
+            StoreId = user.StoreId;
+            StoreName = user.StoreName;
+            RoleId = user.RoleId;
+            RoleName = user.RoleName ?? string.Empty;
             Username = user.Username;
             FullName = user.FullName;
-            RoleId = user.RoleId;
         }
 
         public static void Clear()
         {
             UserId = 0;
+            UserCode = string.Empty;
+            StoreId = null;
+            StoreName = null;
             RoleId = 0;
             RoleName = string.Empty;
             Username = string.Empty;

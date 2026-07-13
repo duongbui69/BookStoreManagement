@@ -7,6 +7,7 @@ namespace BookStoreManagement.Repositories
 {
     public class LowStockItem
     {
+        public int Id { get; set; }
         public string BookCode { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Author { get; set; } = string.Empty;
@@ -112,17 +113,18 @@ namespace BookStoreManagement.Repositories
                 {
                     stats.LowStockItems.Add(new LowStockItem
                     {
-                        BookCode = reader.GetString(0),
-                        Title = reader.GetString(1),
-                        Author = reader.IsDBNull(2) ? "Unknown" : reader.GetString(2),
-                        Category = reader.IsDBNull(3) ? "Unknown" : reader.GetString(3),
-                        CurrentStock = reader.GetInt32(4),
-                        Threshold = reader.GetInt32(5)
+                        Id = reader.GetInt32(0),
+                        BookCode = reader.GetString(1),
+                        Title = reader.GetString(2),
+                        Author = reader.IsDBNull(3) ? "Unknown" : reader.GetString(3),
+                        Category = reader.IsDBNull(4) ? "Unknown" : reader.GetString(4),
+                        CurrentStock = reader.GetInt32(5),
+                        Threshold = reader.GetInt32(6)
                     });
                 }
                 return true;
             }, @"
-                SELECT b.BookCode, b.Title, a.AuthorName, c.CategoryName, b.Quantity, b.MinStock
+                SELECT b.Id, b.BookCode, b.Title, a.AuthorName, c.CategoryName, b.Quantity, b.MinStock
                 FROM Books b
                 LEFT JOIN Authors a ON b.AuthorId = a.Id
                 LEFT JOIN Categories c ON b.CategoryId = c.Id

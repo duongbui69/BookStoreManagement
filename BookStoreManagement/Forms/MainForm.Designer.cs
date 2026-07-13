@@ -317,14 +317,14 @@ namespace BookStoreManagement.Forms
             // lblBrand
             // 
             lblBrand.AutoSize = true;
-            lblBrand.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            lblBrand.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             lblBrand.ForeColor = System.Drawing.Color.White;
             lblBrand.Location = new System.Drawing.Point(20, 25);
             lblBrand.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             lblBrand.Name = "lblBrand";
             lblBrand.Size = new System.Drawing.Size(200, 30);
             lblBrand.TabIndex = 0;
-            lblBrand.Text = "Bibliotech Admin";
+            lblBrand.Text = "BOOKSTORE MANAGEMENT";
             lblBrand.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblSubBrand
@@ -337,7 +337,7 @@ namespace BookStoreManagement.Forms
             lblSubBrand.Name = "lblSubBrand";
             lblSubBrand.Size = new System.Drawing.Size(120, 15);
             lblSubBrand.TabIndex = 9;
-            lblSubBrand.Text = "Inventory Controller";
+            lblSubBrand.Text = "Admin Terminal";
             lblSubBrand.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panelTop

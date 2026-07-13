@@ -15,6 +15,7 @@ namespace BookStoreManagement.Repositories
 
     public class OrderItem
     {
+        public int Id { get; set; }
         public string OrderId { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public string CustomerName { get; set; } = string.Empty;
@@ -73,7 +74,7 @@ namespace BookStoreManagement.Repositories
             // Get paged data
             string dataQuery = $@"
                 SELECT 
-                    o.OrderCode, o.OrderDate, ISNULL(c.FullName, 'Guest'), ISNULL(c.Email, 'N/A'), 
+                    o.Id, o.OrderCode, o.OrderDate, ISNULL(c.FullName, 'Guest'), ISNULL(c.Email, 'N/A'), 
                     (SELECT ISNULL(SUM(Quantity), 0) FROM SalesOrderDetails d WHERE d.SalesOrderId = o.Id), 
                     o.TotalAmount, o.OrderStatus
                 FROM SalesOrders o
@@ -90,13 +91,14 @@ namespace BookStoreManagement.Repositories
                 {
                     results.Add(new OrderItem
                     {
-                        OrderId = reader.GetString(0),
-                        Date = reader.GetDateTime(1),
-                        CustomerName = reader.GetString(2),
-                        CustomerEmail = reader.GetString(3),
-                        ItemsCount = reader.GetInt32(4),
-                        Total = reader.GetDecimal(5),
-                        Status = reader.GetString(6)
+                        Id = reader.GetInt32(0),
+                        OrderId = reader.GetString(1),
+                        Date = reader.GetDateTime(2),
+                        CustomerName = reader.GetString(3),
+                        CustomerEmail = reader.GetString(4),
+                        ItemsCount = reader.GetInt32(5),
+                        Total = reader.GetDecimal(6),
+                        Status = reader.GetString(7)
                     });
                 }
                 return results;

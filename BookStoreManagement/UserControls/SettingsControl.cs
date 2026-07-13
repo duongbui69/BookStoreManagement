@@ -1,24 +1,36 @@
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BookStoreManagement.Themes;
+using BookStoreManagement.Interfaces;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class SettingsControl : UserControl
+    public partial class SettingsControl : UserControl, ISearchableControl
     {
-        private Panel pnlHeader;
-        private TextBox txtSearch;
+        private Guna2Panel pnlContent;
+        
+        // Header
+        private Guna2Panel pnlHeader;
         private Label lblTitle;
         private Label lblSubTitle;
 
-        private Panel pnlLeftMenu;
-        private Panel pnlRightContent;
+        // Layout
+        private TableLayoutPanel tlpMain;
+        private Guna2Panel pnlLeftCol;
+        private Guna2Panel pnlRightCol;
 
-        private System.Collections.Generic.List<Button> menuButtons = new System.Collections.Generic.List<Button>();
-        private System.Collections.Generic.List<Panel> sectionCards = new System.Collections.Generic.List<Panel>();
-        private bool isScrollingProgrammatically = false;
+        // Cards
+        private Guna2Panel cardBranch;
+        private Guna2Panel cardPermissions;
+        private Guna2Panel cardAlerts;
+        private Guna2Panel cardBackups;
+
+        public void PerformSearch(string keyword)
+        {
+            // Search not implemented for this layout
+        }
 
         public SettingsControl()
         {
@@ -28,292 +40,210 @@ namespace BookStoreManagement.UserControls
 
         private void InitializeUI()
         {
-            this.BackColor = ThemeManager.Background;
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(30);
+            int gutter = 20;
+            this.Padding = new Padding(0);
+            this.AutoScroll = true;
 
-            // Top Header
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.Transparent };
-            txtSearch = new TextBox { Width = 400, Font = new Font("Segoe UI", 11F), PlaceholderText = "Search system logs or settings...", Location = new Point(0, 10) };
-            pnlHeader.Controls.Add(txtSearch);
-            this.Controls.Add(pnlHeader);
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
-            // Container for Two Columns
-            Panel pnlMain = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
-            this.Controls.Add(pnlMain);
-            pnlMain.BringToFront();
+            // 1. Header
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Margin = new Padding(0, 0, 0, gutter) };
+            lblTitle = new Label { Text = "System Settings", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Manage core configuration and operational parameters.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
-            // Left Sidebar
-            pnlLeftMenu = new Panel { Dock = DockStyle.Left, Width = 280, BackColor = ThemeManager.CardBackground };
-            lblTitle = new Label { Text = "System Settings", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
-            lblSubTitle = new Label { Text = "Manage global configurations", Font = new Font("Segoe UI", 9F), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(22, 50) };
-            pnlLeftMenu.Controls.Add(lblTitle);
-            pnlLeftMenu.Controls.Add(lblSubTitle);
+            // 2. Main Layout
+            tlpMain = new TableLayoutPanel 
+            { 
+                Dock = DockStyle.Top, 
+                Height = 850, 
+                ColumnCount = 2, 
+                RowCount = 1,
+                Margin = new Padding(0)
+            };
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 66.66F));
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
 
-            // Menu Items
-            string[] menuItems = { "Store Information", "Financial Configuration", "System Preferences", "Security & Access", "Integrations", "Audit Logs" };
-            int y = 90;
-            for (int i = 0; i < menuItems.Length; i++)
-            {
-                Button btnMenu = new Button
-                {
-                    Text = "  " + menuItems[i],
-                    Font = new Font("Segoe UI", 10F, i == 0 ? FontStyle.Bold : FontStyle.Regular),
-                    ForeColor = i == 0 ? ThemeManager.TextPrimary : ThemeManager.TextSecondary,
-                    BackColor = i == 0 ? ThemeManager.HoverColor : Color.Transparent,
-                    FlatStyle = FlatStyle.Flat,
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    Width = 240,
-                    Height = 45,
-                    Location = new Point(20, y),
-                    Cursor = Cursors.Hand,
-                    Tag = i
-                };
-                btnMenu.FlatAppearance.BorderSize = 0;
-                btnMenu.Click += BtnMenu_Click;
-                pnlLeftMenu.Controls.Add(btnMenu);
-                menuButtons.Add(btnMenu);
-                y += 50;
-            }
+            pnlLeftCol = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0, 0, gutter, 0) };
+            pnlRightCol = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0) };
 
-            // Warning Box
-            Panel pnlWarning = new Panel { Width = 240, Height = 80, Location = new Point(20, pnlLeftMenu.Height - 100), Anchor = AnchorStyles.Bottom | AnchorStyles.Left, BackColor = ThemeManager.HoverColor };
-            Label lblWarning = new Label { Text = "Changes here affect all\nbookstore branches globally.\nUse caution.", Font = new Font("Segoe UI", 8.5F), ForeColor = ThemeManager.Sidebar, Location = new Point(50, 15), AutoSize = true };
-            pnlWarning.Controls.Add(lblWarning);
-            pnlLeftMenu.Controls.Add(pnlWarning);
-
-            // Right Content Area (Scrollable)
-            pnlRightContent = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.Transparent, Padding = new Padding(30, 0, 0, 0) };
-            pnlRightContent.Scroll += PnlRightContent_Scroll;
-            pnlRightContent.MouseWheel += PnlRightContent_Scroll;
+            // --- LEFT COLUMN ---
             
-            // Add Cards to Right Content
-            int currentY = 0;
-            sectionCards.Add(CreateCard1(ref currentY));
-            sectionCards.Add(CreateCard2(ref currentY));
-            sectionCards.Add(CreateCard3(ref currentY));
-            sectionCards.Add(CreatePlaceholderCard("Security & Access", ref currentY));
-            sectionCards.Add(CreatePlaceholderCard("Integrations", ref currentY));
-            sectionCards.Add(CreatePlaceholderCard("Audit Logs", ref currentY));
+            // Branch Details
+            cardBranch = CreateCard("Branch Details", "store", 350);
+            cardBranch.Dock = DockStyle.Top;
+            cardBranch.Margin = new Padding(0, 0, 0, gutter);
+            
+            var txtStoreName = CreateInputGroup("Store Name", "Bookwise Downtown", false);
+            var txtBranchId = CreateInputGroup("Branch ID", "BW-NYC-001", true);
+            var txtAddress = CreateInputGroup("Physical Address", "120 Broadway, New York, NY 10271", false);
+            txtAddress.Width = 520; // span across
+            var cbTimezone = CreateComboGroup("System Timezone", new[] { "Eastern Time (US & Canada)", "Central Time", "Pacific Time" });
+            var cbCurrency = CreateComboGroup("Currency", new[] { "USD ($)" });
+            cbCurrency.Enabled = false;
 
-            // Add extra space at bottom so last item can scroll to top
-            currentY += 400;
-            Panel pnlSpacer = new Panel { Location = new Point(30, currentY), Width = 10, Height = 10 };
-            pnlRightContent.Controls.Add(pnlSpacer);
+            txtStoreName.Location = new Point(20, 70);
+            txtBranchId.Location = new Point(280, 70);
+            txtAddress.Location = new Point(20, 150);
+            cbTimezone.Location = new Point(20, 230);
+            cbCurrency.Location = new Point(280, 230);
 
-            foreach(var card in sectionCards) {
-                pnlRightContent.Controls.Add(card);
-            }
+            var btnSave = new Guna2Button { Text = "Save Changes", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 300) };
+            btnSave.Click += (s, e) => MessageBox.Show("Settings saved!");
 
-            pnlMain.Controls.Add(pnlRightContent);
-            pnlMain.Controls.Add(pnlLeftMenu);
+            cardBranch.Controls.AddRange(new Control[] { txtStoreName, txtBranchId, txtAddress, cbTimezone, cbCurrency, btnSave });
+            cardBranch.Resize += (s, e) => {
+                int half = (cardBranch.Width - 60) / 2;
+                txtStoreName.Width = half;
+                txtBranchId.Width = half;
+                txtBranchId.Left = 40 + half;
+                txtAddress.Width = cardBranch.Width - 40;
+                cbTimezone.Width = half;
+                cbCurrency.Width = half;
+                cbCurrency.Left = 40 + half;
+                btnSave.Left = cardBranch.Width - btnSave.Width - 20;
+            };
+
+            // Default User Permissions
+            cardPermissions = CreateCard("Default User Permissions", "admin_panel_settings", 330);
+            cardPermissions.Dock = DockStyle.Top;
+            cardPermissions.Margin = new Padding(0, 0, 0, gutter);
+
+            var lblPermSub = new Label { Text = "These settings apply to newly created Staff accounts unless overridden specifically.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 65) };
+            cardPermissions.Controls.Add(lblPermSub);
+
+            var row1 = CreateToggleRow("Inventory Modification", "Allow users to manually adjust stock levels.", false, 100);
+            var row2 = CreateToggleRow("Price Overrides", "Permit changing listed prices at the Point of Sale.", true, 170);
+            var row3 = CreateToggleRow("Void Transactions", "Allow users to cancel completed sales records.", false, 240);
+            
+            cardPermissions.Controls.AddRange(new Control[] { row1, row2, row3 });
+
+            // Alert Rules
+            cardAlerts = CreateCard("Alert Rules", "notifications_active", 170);
+            cardAlerts.Dock = DockStyle.Top;
+
+            var lblAlertTitle = new Label { Text = "Global Low Stock Threshold", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 70) };
+            var lblAlertSub = new Label { Text = "Trigger a system alert when a title falls below this quantity.", Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(20, 90) };
+            
+            var txtThreshold = new Guna2TextBox { Text = "15", Size = new Size(60, 30), Location = new Point(200, 70), TextAlign = HorizontalAlignment.Center, BorderRadius = 4 };
+            var trackBar = new Guna2TrackBar { Location = new Point(20, 120), Width = 300, Minimum = 1, Maximum = 100, Value = 15 };
+            trackBar.ValueChanged += (s, e) => txtThreshold.Text = trackBar.Value.ToString();
+            
+            cardAlerts.Controls.AddRange(new Control[] { lblAlertTitle, lblAlertSub, txtThreshold, trackBar });
+            cardAlerts.Resize += (s, e) => {
+                txtThreshold.Left = cardAlerts.Width - txtThreshold.Width - 20;
+                trackBar.Width = cardAlerts.Width - 40;
+            };
+
+            // Order of insertion matters for Dock = Top (bottom up or bring to front)
+            pnlLeftCol.Controls.Add(cardAlerts);
+            pnlLeftCol.Controls.Add(cardPermissions);
+            pnlLeftCol.Controls.Add(cardBranch);
+            
+            cardBranch.BringToFront();
+            cardPermissions.BringToFront();
+            cardAlerts.BringToFront();
+
+            // --- RIGHT COLUMN ---
+            cardBackups = CreateCard("System Backups", "backup", 500);
+            cardBackups.Dock = DockStyle.Top;
+            
+            var pnlStatus = new Guna2Panel { Size = new Size(300, 90), Location = new Point(20, 70), BorderRadius = 8, BorderThickness = 1 };
+            var iconStatus = new Label { Text = "cloud_done", Font = new Font("Material Symbols Outlined", 20F), ForeColor = Color.FromArgb(0, 186, 97), AutoSize = true, Location = new Point(15, 25) };
+            var lblStatusTitle = new Label { Text = "STATUS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(60, 15) };
+            var lblStatusVal = new Label { Text = "Healthy", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(58, 32) };
+            var lblStatusSub = new Label { Text = "Last automated backup completed\nsuccessfully today at 02:00 AM.", Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(60, 55) };
+            pnlStatus.Controls.AddRange(new Control[] { iconStatus, lblStatusTitle, lblStatusVal, lblStatusSub });
+
+            var btnManual = new Guna2Button { Text = "▶ Run Manual Backup", Size = new Size(300, 40), Location = new Point(20, 180), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            
+            var lblLogsTitle = new Label { Text = "RECENT LOGS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 240) };
+            
+            var log1 = CreateLogItem("Auto Backup", "Oct 24, 02:00 AM", "Success", 270);
+            var log2 = CreateLogItem("Manual Backup", "Oct 23, 14:30 PM", "Success", 330);
+            var log3 = CreateLogItem("Auto Backup", "Oct 23, 02:00 AM", "Success", 390);
+
+            var linkAll = new LinkLabel { Text = "View all logs", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 460), LinkBehavior = LinkBehavior.HoverUnderline };
+
+            cardBackups.Controls.AddRange(new Control[] { pnlStatus, btnManual, lblLogsTitle, log1, log2, log3, linkAll });
+            cardBackups.Resize += (s, e) => {
+                pnlStatus.Width = cardBackups.Width - 40;
+                btnManual.Width = cardBackups.Width - 40;
+                log1.Width = cardBackups.Width - 40;
+                log2.Width = cardBackups.Width - 40;
+                log3.Width = cardBackups.Width - 40;
+            };
+
+            pnlRightCol.Controls.Add(cardBackups);
+
+            tlpMain.Controls.Add(pnlLeftCol, 0, 0);
+            tlpMain.Controls.Add(pnlRightCol, 1, 0);
+
+            pnlContent.Controls.Add(tlpMain);
+            pnlContent.Controls.Add(pnlHeader);
+
+            this.Controls.Add(pnlContent);
 
             ApplyTheme();
         }
 
-        private Panel CreateCard1(ref int y)
+        private Guna2Panel CreateCard(string title, string iconText, int height)
         {
-            Panel card = new Panel { Width = 800, Height = 280, Location = new Point(30, y), BackColor = ThemeManager.CardBackground };
-            y += 310;
+            var card = new Guna2Panel { Height = height, BorderRadius = 8, BorderThickness = 1 };
             
-            // Title
-            Label lbl = new Label { Text = "Store Information", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            card.Controls.Add(lbl);
-
-            // Fields
-            card.Controls.Add(CreateInputField("Store Display Name", "Bibliotech Central Plaza", 20, 70, 360));
-            card.Controls.Add(CreateInputField("Business Registration ID", "REG-9920-X1", 400, 70, 360));
+            var pnlTitle = new Guna2Panel { Dock = DockStyle.Top, Height = 50, CustomBorderThickness = new Padding(0,0,0,1) };
+            var icon = new Label { Text = iconText, Font = new Font("Material Symbols Outlined", 16F), AutoSize = true, Location = new Point(20, 15) };
+            var lbl = new Label { Text = title, Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(50, 15), Name = "CardTitle" };
+            pnlTitle.Controls.AddRange(new Control[] { icon, lbl });
             
-            card.Controls.Add(CreateInputField("Operational Address", "122 Inventory Boulevard, Book District, Metropolis 90210", 20, 140, 740));
-            
-            card.Controls.Add(CreateInputField("Official Website", "bibliotech-internal.com", 20, 210, 360, "https://"));
-            card.Controls.Add(CreateInputField("Store Contact Email", "admin@bibliotech.com", 400, 210, 360));
-
+            card.Controls.Add(pnlTitle);
             return card;
         }
 
-        private Panel CreateCard2(ref int y)
+        private Guna2Panel CreateInputGroup(string label, string value, bool readOnly)
         {
-            Panel card = new Panel { Width = 800, Height = 220, Location = new Point(30, y), BackColor = ThemeManager.CardBackground };
-            y += 250;
-
-            Label lbl = new Label { Text = "Financial Configuration", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            card.Controls.Add(lbl);
-
-            // Dropdowns
-            card.Controls.Add(CreateDropdownField("Base Currency", new[] { "USD ($) - United States Dollar", "VND (₫) - Vietnam Dong" }, 20, 70, 360));
-            card.Controls.Add(CreateDropdownField("Tax Profile", new[] { "Standard Retail Tax (8.5%)", "VAT (10%)" }, 20, 140, 360));
-
-            // Checkboxes
-            Panel pnlReporting = new Panel { Width = 360, Height = 140, Location = new Point(400, 60), BackColor = Color.Transparent };
-            pnlReporting.Paint += (s, e) => {
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1) { DashStyle = DashStyle.Dash };
-                e.Graphics.DrawRectangle(p, 0, 0, pnlReporting.Width - 1, pnlReporting.Height - 1);
-            };
-            Label lblRep = new Label { Text = "Automatic Reporting", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(15, 15), AutoSize = true };
-            pnlReporting.Controls.Add(lblRep);
-            
-            CheckBox chk1 = new CheckBox { Text = "Generate Daily P&L Statement", Checked = true, Location = new Point(15, 45), AutoSize = true, Font = new Font("Segoe UI", 9F) };
-            CheckBox chk2 = new CheckBox { Text = "Email EOD reports to Treasury", Checked = true, Location = new Point(15, 75), AutoSize = true, Font = new Font("Segoe UI", 9F) };
-            CheckBox chk3 = new CheckBox { Text = "Sync with QuickBooks Cloud", Checked = false, Location = new Point(15, 105), AutoSize = true, Font = new Font("Segoe UI", 9F) };
-            
-            pnlReporting.Controls.Add(chk1);
-            pnlReporting.Controls.Add(chk2);
-            pnlReporting.Controls.Add(chk3);
-            card.Controls.Add(pnlReporting);
-
-            return card;
-        }
-
-        private Panel CreateCard3(ref int y)
-        {
-            Panel card = new Panel { Width = 800, Height = 250, Location = new Point(30, y), BackColor = ThemeManager.CardBackground };
-            y += 280;
-
-            Label lbl = new Label { Text = "System Preferences", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            card.Controls.Add(lbl);
-
-            Label l1 = new Label { Text = "INVENTORY LOGIC", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 70), AutoSize = true };
-            card.Controls.Add(l1);
-            card.Controls.Add(CreateRadioBlock("FIFO", "First-in, First-out", true, 20, 95, 240));
-            card.Controls.Add(CreateRadioBlock("LIFO", "Last-in, First-out", false, 20, 165, 240));
-
-            Label l2 = new Label { Text = "UI SCALING", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(280, 70), AutoSize = true };
-            card.Controls.Add(l2);
-            card.Controls.Add(CreateRadioBlock("Standard", "14px Base Typography", true, 280, 95, 240));
-            card.Controls.Add(CreateRadioBlock("Compact (Guna2)", "Smaller spacing", false, 280, 165, 240));
-
-            Label l3 = new Label { Text = "SECURITY MODE", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(540, 70), AutoSize = true };
-            card.Controls.Add(l3);
-            card.Controls.Add(CreateRadioBlock("Standard", "Default system rules", true, 540, 95, 240));
-            card.Controls.Add(CreateRadioBlock("Lockdown", "High security mode", false, 540, 165, 240, true));
-
-            return card;
-        }
-
-        private Panel CreatePlaceholderCard(string title, ref int y)
-        {
-            Panel card = new Panel { Width = 800, Height = 150, Location = new Point(30, y), BackColor = ThemeManager.CardBackground };
-            y += 180;
-            Label lbl = new Label { Text = title, Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            card.Controls.Add(lbl);
-            Label desc = new Label { Text = "Configuration options for " + title + " will appear here.", Font = new Font("Segoe UI", 10F), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 60), AutoSize = true };
-            card.Controls.Add(desc);
-            return card;
-        }
-
-        private void BtnMenu_Click(object sender, EventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is int index)
-            {
-                if (index >= 0 && index < sectionCards.Count)
-                {
-                    isScrollingProgrammatically = true;
-                    UpdateActiveMenu(index);
-                    
-                    // Scroll to card
-                    pnlRightContent.AutoScrollPosition = new Point(
-                        Math.Abs(pnlRightContent.AutoScrollPosition.X), 
-                        sectionCards[index].Location.Y
-                    );
-                    
-                    // Delay to reset programmatic scroll flag so user scroll takes over again
-                    var t = new System.Windows.Forms.Timer { Interval = 100 };
-                    t.Tick += (s, ev) => { isScrollingProgrammatically = false; t.Stop(); };
-                    t.Start();
-                }
-            }
-        }
-
-        private void PnlRightContent_Scroll(object sender, EventArgs e)
-        {
-            if (isScrollingProgrammatically) return;
-
-            int scrollY = Math.Abs(pnlRightContent.AutoScrollPosition.Y);
-            
-            // Find which card is currently at the top
-            int activeIndex = 0;
-            for (int i = 0; i < sectionCards.Count; i++)
-            {
-                // If scroll position is past the top of this card (with a 50px buffer)
-                if (scrollY >= sectionCards[i].Location.Y - 50)
-                {
-                    activeIndex = i;
-                }
-            }
-            
-            UpdateActiveMenu(activeIndex);
-        }
-
-        private void UpdateActiveMenu(int index)
-        {
-            for (int i = 0; i < menuButtons.Count; i++)
-            {
-                if (i == index)
-                {
-                    menuButtons[i].Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-                    menuButtons[i].ForeColor = ThemeManager.TextPrimary;
-                    menuButtons[i].BackColor = ThemeManager.HoverColor;
-                }
-                else
-                {
-                    menuButtons[i].Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-                    menuButtons[i].ForeColor = ThemeManager.TextSecondary;
-                    menuButtons[i].BackColor = Color.Transparent;
-                }
-            }
-        }
-
-        private Panel CreateInputField(string label, string value, int x, int y, int width, string prefix = "")
-        {
-            Panel pnl = new Panel { Location = new Point(x, y), Width = width, Height = 65, BackColor = Color.Transparent };
-            Label lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F), ForeColor = ThemeManager.TextSecondary, Location = new Point(0, 0), AutoSize = true };
-            pnl.Controls.Add(lbl);
-
-            TextBox txt = new TextBox { Text = value, Font = new Font("Segoe UI", 10F), Location = new Point(0, 25), Width = width };
-            if (!string.IsNullOrEmpty(prefix))
-            {
-                Label lblPrefix = new Label { Text = prefix, Font = new Font("Segoe UI", 10F), BackColor = ThemeManager.HoverColor, TextAlign = ContentAlignment.MiddleCenter, Width = 60, Height = 25, Location = new Point(0, 25) };
-                txt.Location = new Point(60, 25);
-                txt.Width = width - 60;
-                pnl.Controls.Add(lblPrefix);
-            }
-            pnl.Controls.Add(txt);
-
+            var pnl = new Guna2Panel { Height = 60, Width = 240 };
+            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            var txt = new Guna2TextBox { Text = value, ReadOnly = readOnly, Location = new Point(0, 22), Size = new Size(240, 36), BorderRadius = 4 };
+            pnl.Controls.AddRange(new Control[] { lbl, txt });
+            pnl.Resize += (s, e) => txt.Width = pnl.Width;
             return pnl;
         }
 
-        private Panel CreateDropdownField(string label, string[] items, int x, int y, int width)
+        private Guna2Panel CreateComboGroup(string label, string[] items)
         {
-            Panel pnl = new Panel { Location = new Point(x, y), Width = width, Height = 65, BackColor = Color.Transparent };
-            Label lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F), ForeColor = ThemeManager.TextSecondary, Location = new Point(0, 0), AutoSize = true };
-            pnl.Controls.Add(lbl);
-
-            ComboBox cb = new ComboBox { Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 25), Width = width };
+            var pnl = new Guna2Panel { Height = 60, Width = 240 };
+            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            var cb = new Guna2ComboBox { Location = new Point(0, 22), Size = new Size(240, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
             cb.Items.AddRange(items);
             if (items.Length > 0) cb.SelectedIndex = 0;
-            pnl.Controls.Add(cb);
-
+            pnl.Controls.AddRange(new Control[] { lbl, cb });
+            pnl.Resize += (s, e) => cb.Width = pnl.Width;
             return pnl;
         }
 
-        private Panel CreateRadioBlock(string title, string desc, bool isChecked, int x, int y, int width, bool isAlert = false)
+        private Guna2Panel CreateToggleRow(string title, string desc, bool isChecked, int y)
         {
-            Panel pnl = new Panel { Location = new Point(x, y), Width = width, Height = 60, BackColor = Color.Transparent };
-            pnl.Paint += (s, e) => {
-                using var p = new Pen(isAlert ? Color.FromArgb(231, 76, 60) : ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawRectangle(p, 0, 0, pnl.Width - 1, pnl.Height - 1);
-            };
+            var pnl = new Guna2Panel { Location = new Point(20, y), Height = 60, Width = 500, BorderRadius = 8, BorderThickness = 1 };
+            var lbl1 = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 10), Name = "ToggleTitle" };
+            var lbl2 = new Label { Text = desc, Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(15, 30), Name = "ToggleDesc" };
+            var toggle = new Guna2ToggleSwitch { Checked = isChecked, Location = new Point(440, 20) };
+            pnl.Controls.AddRange(new Control[] { lbl1, lbl2, toggle });
+            pnl.Resize += (s, e) => toggle.Left = pnl.Width - toggle.Width - 20;
+            return pnl;
+        }
 
-            RadioButton rb = new RadioButton { Checked = isChecked, Location = new Point(15, 20), AutoSize = true };
-            pnl.Controls.Add(rb);
-
-            Label lbl1 = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = isAlert ? Color.FromArgb(231, 76, 60) : ThemeManager.TextPrimary, Location = new Point(40, 12), AutoSize = true };
-            Label lbl2 = new Label { Text = desc, Font = new Font("Segoe UI", 8F), ForeColor = ThemeManager.TextSecondary, Location = new Point(40, 32), AutoSize = true };
-            
-            pnl.Controls.Add(lbl1);
-            pnl.Controls.Add(lbl2);
-
+        private Guna2Panel CreateLogItem(string title, string time, string status, int y)
+        {
+            var pnl = new Guna2Panel { Location = new Point(20, y), Height = 60, Width = 300, CustomBorderThickness = new Padding(0,0,0,1) };
+            var lbl1 = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10), Name = "LogTitle" };
+            var lbl2 = new Label { Text = time, Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(0, 30), Name = "LogTime" };
+            var badge = new Guna2Panel { Size = new Size(60, 24), Location = new Point(240, 15), BorderRadius = 4, Name = "BadgePanel" };
+            var lblStatus = new Label { Text = status, Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(5, 5), Name = "BadgeLabel" };
+            badge.Controls.Add(lblStatus);
+            pnl.Controls.AddRange(new Control[] { lbl1, lbl2, badge });
+            pnl.Resize += (s, e) => badge.Left = pnl.Width - badge.Width;
             return pnl;
         }
 
@@ -325,57 +255,91 @@ namespace BookStoreManagement.UserControls
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            pnlLeftMenu.BackColor = ThemeManager.Background; // Actually left menu has no distinct background in the image, it's just divided by a line. Let's make it background color and draw line
-            pnlLeftMenu.Paint += (s, e) => {
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawLine(p, pnlLeftMenu.Width - 1, 0, pnlLeftMenu.Width - 1, pnlLeftMenu.Height);
-            };
-            
+            pnlContent.BackColor = ThemeManager.Background;
+
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
-            txtSearch.BackColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
 
-            foreach (Control c in pnlRightContent.Controls)
+            foreach (var card in new[] { cardBranch, cardPermissions, cardAlerts, cardBackups })
             {
-                if (c is Panel card)
+                card.FillColor = ThemeManager.CardBackground;
+                card.BorderColor = ThemeManager.TextBoxBorder;
+                
+                foreach (Control c in card.Controls)
                 {
-                    card.BackColor = ThemeManager.CardBackground;
-                    card.Paint += (s, e) => {
-                        using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                        e.Graphics.DrawRectangle(p, 0, 0, card.Width - 1, card.Height - 1);
-                    };
-                    
-                    foreach (Control child in card.Controls)
+                    if (c is Guna2Panel header && header.Height == 50)
                     {
-                        if (child is Label l) l.ForeColor = ThemeManager.TextPrimary;
+                        header.CustomBorderColor = ThemeManager.TextBoxBorder;
+                        foreach (Control hc in header.Controls)
+                        {
+                            if (hc is Label l && l.Name == "CardTitle") l.ForeColor = ThemeManager.TextPrimary;
+                            else if (hc is Label) hc.ForeColor = Color.FromArgb(0, 36, 64); // Icons
+                        }
+                    }
+                    else if (c is Label l)
+                    {
+                        l.ForeColor = (l.Font.Bold && l.Text.ToUpper() != l.Text) ? ThemeManager.TextPrimary : ThemeManager.TextSecondary;
+                    }
+                    else if (c is Guna2Panel group)
+                    {
+                        // Input Groups / Toggle Rows / Logs / Status
+                        if (group.BorderThickness > 0)
+                        {
+                            group.BorderColor = ThemeManager.TextBoxBorder;
+                            group.FillColor = ThemeManager.Background;
+                        }
+                        if (group.CustomBorderThickness.Bottom > 0)
+                        {
+                            group.CustomBorderColor = ThemeManager.TextBoxBorder;
+                        }
+
+                        foreach (Control gc in group.Controls)
+                        {
+                            if (gc is Label gl)
+                            {
+                                if (gl.Name == "ToggleTitle" || gl.Name == "LogTitle" || gl.Text == "Healthy" || (gl.Font.Bold && gl.Text.ToUpper() != gl.Text)) 
+                                    gl.ForeColor = ThemeManager.TextPrimary;
+                                else 
+                                    gl.ForeColor = ThemeManager.TextSecondary;
+                            }
+                            else if (gc is Guna2TextBox txt)
+                            {
+                                txt.FillColor = txt.ReadOnly ? ThemeManager.Background : ThemeManager.TextBoxBackground;
+                                txt.ForeColor = ThemeManager.TextPrimary;
+                                txt.BorderColor = ThemeManager.TextBoxBorder;
+                            }
+                            else if (gc is Guna2ComboBox cb)
+                            {
+                                cb.FillColor = cb.Enabled ? ThemeManager.TextBoxBackground : ThemeManager.Background;
+                                cb.ForeColor = ThemeManager.TextPrimary;
+                                cb.BorderColor = ThemeManager.TextBoxBorder;
+                            }
+                            else if (gc is Guna2Panel badge && badge.Name == "BadgePanel")
+                            {
+                                badge.FillColor = Color.FromArgb(40, 0, 186, 97);
+                                if (badge.Controls[0] is Label bl) bl.ForeColor = Color.FromArgb(0, 186, 97);
+                            }
+                        }
+                    }
+                    else if (c is Guna2Button btn)
+                    {
+                        if (btn.Text.Contains("Manual"))
+                        {
+                            btn.FillColor = ThemeManager.Background;
+                            btn.ForeColor = ThemeManager.TextPrimary;
+                            btn.BorderColor = ThemeManager.TextBoxBorder;
+                        }
+                        else
+                        {
+                            btn.FillColor = ThemeManager.ButtonFill;
+                            btn.ForeColor = ThemeManager.ButtonText;
+                        }
+                    }
+                    else if (c is LinkLabel ll)
+                    {
+                        ll.LinkColor = Color.FromArgb(0, 36, 64);
                     }
                 }
-            }
-            
-            // Re-apply to textboxes, combos, etc.
-            UpdateChildThemes(this);
-        }
-
-        private void UpdateChildThemes(Control parent)
-        {
-            foreach (Control c in parent.Controls)
-            {
-                if (c is TextBox txt)
-                {
-                    txt.BackColor = ThemeManager.TextBoxBackground;
-                    txt.ForeColor = ThemeManager.TextPrimary;
-                }
-                else if (c is ComboBox cb)
-                {
-                    cb.BackColor = ThemeManager.TextBoxBackground;
-                    cb.ForeColor = ThemeManager.TextPrimary;
-                }
-                else if (c is CheckBox chk)
-                {
-                    chk.ForeColor = ThemeManager.TextPrimary;
-                }
-                if (c.HasChildren) UpdateChildThemes(c);
             }
         }
     }

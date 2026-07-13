@@ -15,6 +15,7 @@ namespace BookStoreManagement.Repositories
 
     public class InventoryWarehouseItem
     {
+        public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Sku { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
@@ -47,7 +48,7 @@ namespace BookStoreManagement.Repositories
 
             string query = $@"
                 SELECT 
-                    b.Title, b.BookCode, b.SellingPrice, 
+                    b.Id, b.Title, b.BookCode, b.SellingPrice, 
                     ISNULL(b.StockNorth, 0), ISNULL(b.StockWest, 0), ISNULL(b.StockCentral, 0), 
                     b.Quantity
                 FROM Books b
@@ -61,17 +62,18 @@ namespace BookStoreManagement.Repositories
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    int qty = reader.GetInt32(6);
+                    int qty = reader.GetInt32(7);
                     string status = qty > 10 ? "IN STOCK" : (qty > 0 ? "LOW STOCK" : "OUT OF STOCK");
 
                     results.Add(new InventoryWarehouseItem
                     {
-                        Title = reader.GetString(0),
-                        Sku = "SKU: " + reader.GetString(1),
-                        UnitPrice = reader.GetDecimal(2),
-                        NorthHub = reader.GetInt32(3),
-                        WestHub = reader.GetInt32(4),
-                        CentralHub = reader.GetInt32(5),
+                        Id = reader.GetInt32(0),
+                        Title = reader.GetString(1),
+                        Sku = "SKU: " + reader.GetString(2),
+                        UnitPrice = reader.GetDecimal(3),
+                        NorthHub = reader.GetInt32(4),
+                        WestHub = reader.GetInt32(5),
+                        CentralHub = reader.GetInt32(6),
                         TotalStock = qty,
                         Status = status
                     });

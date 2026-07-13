@@ -77,14 +77,13 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, StoreId, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @StoreId, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 using var orderCommand = new SqlCommand(insertOrderSql, connection, transaction);
                 AddParameter(orderCommand, "@OrderCode", order.OrderCode);
-                AddParameter(orderCommand, "@StoreId", order.StoreId);
                 AddParameter(orderCommand, "@UserId", order.UserId);
                 AddParameter(orderCommand, "@CustomerId", order.CustomerId);
                 AddParameter(orderCommand, "@PaymentMethod", order.PaymentMethod);
@@ -128,7 +127,7 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetById(int id)
         {
             const string sql = @"
-                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE Id = @Id;
             ";
@@ -142,7 +141,7 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetByOrderCode(string orderCode)
         {
             const string sql = @"
-                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE OrderCode = @OrderCode;
             ";
@@ -199,7 +198,7 @@ namespace BookStoreManagement.Repositories
                     OR OrderStatus LIKE N'%' + @Keyword + N'%'
                 )
             ";
-            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            // if (storeId.HasValue) sql += " AND StoreId = @StoreId";
             sql += " ORDER BY OrderDate DESC;";
 
             return ExecuteQuery(command =>
@@ -210,11 +209,10 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters =>
             {
                 AddParameter(parameters, "@Keyword", keyword);
-                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
-        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
+        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate)
         {
             var orders = new List<SalesOrderListViewModel>();
             string sql = @"
@@ -222,7 +220,7 @@ namespace BookStoreManagement.Repositories
                 WHERE OrderDate >= @FromDate
                   AND OrderDate < DATEADD(DAY, 1, @ToDate)
             ";
-            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            // if (storeId.HasValue) sql += " AND StoreId = @StoreId";
             sql += " ORDER BY OrderDate DESC;";
 
             return ExecuteQuery(command =>
@@ -234,7 +232,7 @@ namespace BookStoreManagement.Repositories
             {
                 AddParameter(parameters, "@FromDate", fromDate.Date);
                 AddParameter(parameters, "@ToDate", toDate.Date);
-                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
+                // if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 

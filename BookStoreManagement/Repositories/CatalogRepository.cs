@@ -15,6 +15,7 @@ namespace BookStoreManagement.Repositories
 
     public class CatalogBookItem
     {
+        public int Id { get; set; }
         public string Isbn13 { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Author { get; set; } = string.Empty;
@@ -45,7 +46,7 @@ namespace BookStoreManagement.Repositories
 
             string query = $@"
                 SELECT 
-                    b.BookCode, b.Title, ISNULL(a.AuthorName, 'Unknown'), ISNULL(c.CategoryName, 'Unknown'), 
+                    b.Id, b.BookCode, b.Title, ISNULL(a.AuthorName, 'Unknown'), ISNULL(c.CategoryName, 'Unknown'), 
                     b.SellingPrice, b.Quantity, b.MinStock
                 FROM Books b
                 LEFT JOIN Authors a ON b.AuthorId = a.Id
@@ -60,17 +61,18 @@ namespace BookStoreManagement.Repositories
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    int qty = reader.GetInt32(5);
-                    int minStock = reader.GetInt32(6);
+                    int qty = reader.GetInt32(6);
+                    int minStock = reader.GetInt32(7);
                     string status = qty == 0 ? "OUT OF STOCK" : (qty <= minStock ? "LOW STOCK" : "IN STOCK");
 
                     results.Add(new CatalogBookItem
                     {
-                        Isbn13 = reader.GetString(0),
-                        Title = reader.GetString(1),
-                        Author = reader.GetString(2),
-                        Category = reader.GetString(3),
-                        Price = reader.GetDecimal(4),
+                        Id = reader.GetInt32(0),
+                        Isbn13 = reader.GetString(1),
+                        Title = reader.GetString(2),
+                        Author = reader.GetString(3),
+                        Category = reader.GetString(4),
+                        Price = reader.GetDecimal(5),
                         Status = status
                     });
                 }

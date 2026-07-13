@@ -53,6 +53,54 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
+        public int Add(User user)
+        {
+            const string sql = @"
+                INSERT INTO Users (UserCode, StoreId, RoleId, IdentityNumber, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt)
+                OUTPUT INSERTED.Id
+                VALUES (@UserCode, @StoreId, @RoleId, @IdentityNumber, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive, SYSDATETIME())";
+
+            return (int?)ExecuteScalar(sql, parameters =>
+            {
+                AddParameter(parameters, "@UserCode", user.UserCode);
+                AddParameter(parameters, "@StoreId", (object)user.StoreId ?? DBNull.Value);
+                AddParameter(parameters, "@RoleId", user.RoleId);
+                AddParameter(parameters, "@IdentityNumber", (object)user.IdentityNumber ?? DBNull.Value);
+                AddParameter(parameters, "@Username", user.Username);
+                AddParameter(parameters, "@PasswordHash", user.PasswordHash);
+                AddParameter(parameters, "@FullName", user.FullName);
+                AddParameter(parameters, "@Phone", (object)user.Phone ?? DBNull.Value);
+                AddParameter(parameters, "@Email", (object)user.Email ?? DBNull.Value);
+                AddParameter(parameters, "@Address", (object)user.Address ?? DBNull.Value);
+                AddParameter(parameters, "@IsActive", user.IsActive);
+            }) ?? 0;
+        }
+
+        public bool Update(User user)
+        {
+            const string sql = @"
+                UPDATE Users 
+                SET UserCode = @UserCode, StoreId = @StoreId, RoleId = @RoleId, IdentityNumber = @IdentityNumber, 
+                    Username = @Username, FullName = @FullName, Phone = @Phone, Email = @Email, Address = @Address, 
+                    IsActive = @IsActive, UpdatedAt = SYSDATETIME()
+                WHERE Id = @Id";
+
+            return ExecuteNonQuery(sql, parameters =>
+            {
+                AddParameter(parameters, "@Id", user.Id);
+                AddParameter(parameters, "@UserCode", user.UserCode);
+                AddParameter(parameters, "@StoreId", (object)user.StoreId ?? DBNull.Value);
+                AddParameter(parameters, "@RoleId", user.RoleId);
+                AddParameter(parameters, "@IdentityNumber", (object)user.IdentityNumber ?? DBNull.Value);
+                AddParameter(parameters, "@Username", user.Username);
+                AddParameter(parameters, "@FullName", user.FullName);
+                AddParameter(parameters, "@Phone", (object)user.Phone ?? DBNull.Value);
+                AddParameter(parameters, "@Email", (object)user.Email ?? DBNull.Value);
+                AddParameter(parameters, "@Address", (object)user.Address ?? DBNull.Value);
+                AddParameter(parameters, "@IsActive", user.IsActive);
+            }) > 0;
+        }
+
         public bool ChangePassword(int userId, string newPasswordHash)
         {
             const string sql = @"UPDATE Users SET PasswordHash = @PasswordHash, UpdatedAt = SYSDATETIME() WHERE Id = @Id";
@@ -62,6 +110,12 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@Id", userId);
                 AddParameter(parameters, "@PasswordHash", newPasswordHash);
             }) > 0;
+        }
+
+        public bool Delete(int userId)
+        {
+            const string sql = @"DELETE FROM Users WHERE Id = @Id";
+            return ExecuteNonQuery(sql, parameters => AddParameter(parameters, "@Id", userId)) > 0;
         }
 
         private User MapUser(SqlDataReader reader)

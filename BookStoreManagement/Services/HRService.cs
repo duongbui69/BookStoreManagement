@@ -6,10 +6,38 @@ namespace BookStoreManagement.Services
     public class HRService : ServiceBase
     {
         private readonly HRRepository _repo;
+        private readonly UserRepository _userRepo;
 
         public HRService()
         {
             _repo = new HRRepository();
+            _userRepo = new UserRepository();
+        }
+
+        public void CreateUser(Models.User user, string plainPassword)
+        {
+            PermissionService.RequireAdmin();
+            user.PasswordHash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(plainPassword);
+            _userRepo.Add(user);
+        }
+
+        public void UpdateUser(Models.User user)
+        {
+            PermissionService.RequireAdmin();
+            _userRepo.Update(user);
+        }
+
+        public void DeleteUser(int userId)
+        {
+            PermissionService.RequireAdmin();
+            _userRepo.Delete(userId);
+        }
+
+        public void ResetPassword(int userId, string newPlainPassword)
+        {
+            PermissionService.RequireAdmin();
+            string hash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(newPlainPassword);
+            _userRepo.ChangePassword(userId, hash);
         }
 
         public HRStats GetStats()

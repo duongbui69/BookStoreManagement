@@ -5,30 +5,57 @@ using System.Windows.Forms;
 using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
+using Guna.UI2.WinForms;
+using BookStoreManagement.Interfaces;
+using System.Collections.Generic;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class HRControl : UserControl
+    public partial class HRControl : UserControl, ISearchableControl
     {
         private readonly HRService _service;
-        
-        private Panel pnlHeader;
+
+        // Content Container
+        private Guna2Panel pnlContent;
+
+        // Page Header
+        private Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
-        private TextBox txtSearch;
-        private Button btnAdd;
-        private Button btnPermissions;
 
-        private FlowLayoutPanel flpCards;
-        private Panel pnlFilters;
-        private ComboBox cbDept;
-        private ComboBox cbStatus;
+        // Bento Metric Cards
+        private Guna2Panel pnlMetrics;
+        private Guna2Panel cardEmployees;
+        private Guna2Panel cardBranches;
+        private Guna2Panel cardPerformance;
+        private Guna2Panel cardLeaveRequests;
 
-        private DataGridView dgvStaff;
+        // Filters Bar
+        private Guna2Panel pnlFilters;
+        private Guna2ComboBox cbBranch;
+        private Guna2ComboBox cbRole;
+        private Guna2Button btnPayroll;
+        private Guna2Button btnAdd;
+
+        // Grid
+        private Guna2Panel pnlGridContainer;
+        private Guna2DataGridView dgvEmployees;
+
+        // Pagination
         private PaginationControl paginationControl;
 
         private int _currentPage = 1;
-        private int _pageSize = 10;
+        private int _pageSize = 5;
+        private string _currentBranch = "All Departments";
+        private string _currentRole = "Status: All";
+        private string _currentSearchTerm = "";
+
+        public void PerformSearch(string keyword)
+        {
+            _currentSearchTerm = keyword;
+            _currentPage = 1;
+            LoadData();
+        }
 
         public HRControl()
         {
@@ -36,89 +63,134 @@ namespace BookStoreManagement.UserControls
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += HRControl_Load;
-            this.Resize += HRControl_Resize;
         }
 
         private void InitializeUI()
         {
-            this.BackColor = ThemeManager.Background;
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(30);
+            int gutter = 20;
+            this.Padding = new Padding(0);
+            this.AutoScroll = true;
 
-            // Header
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.Transparent };
-            lblSubTitle = new Label { Text = "👥 HUMAN RESOURCES", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(0, 0) };
-            lblTitle = new Label { Text = "Staff Directory", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 20) };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+
+            // 1. Page Header
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
+            lblTitle = new Label { Text = "Employee Directory", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "View and manage all staff members across the organization.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
+
+            // 2. Metric Cards
+            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter) };
+            cardEmployees = CreateMetricCard("Total Employees", "badge", "+0 this month");
+            cardBranches = CreateMetricCard("Active Branches", "storefront", "");
+            cardPerformance = CreateMetricCard("Avg Performance", "trending_up", "94%");
+            cardLeaveRequests = CreateMetricCard("Pending Leaves", "event_busy", "0");
             
-            txtSearch = new TextBox { Width = 300, Font = new Font("Segoe UI", 12F), PlaceholderText = "Search employees, roles, or departments." };
-            txtSearch.TextChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            pnlMetrics.Controls.AddRange(new Control[] { cardEmployees, cardBranches, cardPerformance, cardLeaveRequests });
+            pnlMetrics.Resize += (s, e) => 
+            {
+                int cardWidth = (pnlMetrics.Width - (gutter * 3)) / 4;
+                if (cardWidth > 0)
+                {
+                    cardEmployees.Width = cardWidth; cardEmployees.Left = 0;
+                    cardBranches.Width = cardWidth; cardBranches.Left = cardWidth + gutter;
+                    cardPerformance.Width = cardWidth; cardPerformance.Left = (cardWidth + gutter) * 2;
+                    cardLeaveRequests.Width = cardWidth; cardLeaveRequests.Left = (cardWidth + gutter) * 3;
+                }
+            };
 
-            btnAdd = new Button { Text = "+ Add New Employee", Width = 180, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnPermissions = new Button { Text = "🛡 Edit Permissions", Width = 150, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            // 3. Filters Bar
+            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1, 1, 1, 0), Margin = new Padding(0), BorderRadius = 6 };
+            pnlFilters.CustomizableEdges.BottomLeft = false;
+            pnlFilters.CustomizableEdges.BottomRight = false;
 
-            pnlHeader.Controls.Add(lblSubTitle);
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(txtSearch);
-            pnlHeader.Controls.Add(btnAdd);
-            pnlHeader.Controls.Add(btnPermissions);
-            this.Controls.Add(pnlHeader);
+            cbBranch = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(20, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
+            cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Sales" });
+            cbBranch.SelectedIndex = 0;
+            cbBranch.SelectedIndexChanged += (s, e) => { _currentBranch = cbBranch.SelectedItem.ToString(); _currentPage = 1; LoadData(); };
 
-            // Cards
-            flpCards = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 130, Margin = new Padding(0, 20, 0, 20), WrapContents = false, BackColor = Color.Transparent };
-            this.Controls.Add(flpCards);
+            cbRole = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(220, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
+            cbRole.Items.AddRange(new object[] { "Status: All", "ACTIVE", "INACTIVE" });
+            cbRole.SelectedIndex = 0;
+            cbRole.SelectedIndexChanged += (s, e) => { _currentRole = cbRole.SelectedItem.ToString(); _currentPage = 1; LoadData(); };
 
-            // Filters
-            pnlFilters = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.Transparent };
-            cbDept = new ComboBox { Width = 180, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 10) };
-            cbDept.Items.Add("All Departments"); cbDept.SelectedIndex = 0;
-            cbDept.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            btnPayroll = new Guna2Button { Text = "Payroll", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnPayroll.Click += (s, e) => MessageBox.Show("Payroll feature is under development.", "Info");
 
-            cbStatus = new ComboBox { Width = 120, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(200, 10) };
-            cbStatus.Items.AddRange(new[] { "Status: All", "ACTIVE", "ON LEAVE" }); cbStatus.SelectedIndex = 0;
-            cbStatus.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(150, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnAdd.Click += (s, e) => MessageBox.Show("Add Employee form is under development.", "Info");
 
-            pnlFilters.Controls.Add(cbDept);
-            pnlFilters.Controls.Add(cbStatus);
-            this.Controls.Add(pnlFilters);
+            pnlFilters.Controls.AddRange(new Control[] { cbBranch, cbRole, btnPayroll, btnAdd });
+            pnlFilters.Resize += (s, e) =>
+            {
+                btnPayroll.Location = new Point(pnlFilters.Width - 300, 17);
+                btnAdd.Location = new Point(pnlFilters.Width - 170, 17);
+            };
+
+            // 4. Grid Container
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1, 0, 1, 1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 6 };
+            pnlGridContainer.CustomizableEdges.TopLeft = false;
+            pnlGridContainer.CustomizableEdges.TopRight = false;
+            
+            dgvEmployees = new Guna2DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                AutoGenerateColumns = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                RowHeadersVisible = false,
+                RowTemplate = { Height = 60 },
+                Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
+            };
+            
+            // Define Columns
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", Name = "Name", HeaderText = "EMPLOYEE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RoleName", HeaderText = "ROLE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Department", HeaderText = "BRANCH/DEPT", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Status", HeaderText = "STATUS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 100 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Email", Name = "Email", Visible = false });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "EmployeeId", Name = "EmployeeId", Visible = false });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "JoinDate", HeaderText = "SCORE (JOIN DATE)", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "MMM dd, yyyy" }, Width = 120 });
+            
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTIONS", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            dgvEmployees.Columns.Add(actionCol);
+
+            dgvEmployees.CellPainting += DgvEmployees_CellPainting;
+            dgvEmployees.CellMouseClick += DgvEmployees_CellMouseClick;
+            
+            pnlGridContainer.Controls.Add(dgvEmployees);
 
             // Pagination
             paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
             paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
-            this.Controls.Add(paginationControl);
+            pnlGridContainer.Controls.Add(paginationControl);
 
-            // DataGridView
-            dgvStaff = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.None,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowHeadersVisible = false,
-                RowTemplate = { Height = 70 }
-            };
-            dgvStaff.CellPainting += DgvStaff_CellPainting;
-            this.Controls.Add(dgvStaff);
-            
-            // Re-order controls
-            dgvStaff.BringToFront();
-            pnlFilters.BringToFront();
-            flpCards.BringToFront();
-            pnlHeader.BringToFront();
+            pnlContent.Controls.Add(pnlGridContainer);
+            pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(pnlMetrics);
+            pnlContent.Controls.Add(pnlPageHeader);
+
+            this.Controls.Add(pnlContent);
 
             ApplyTheme();
         }
 
-        private void HRControl_Resize(object sender, EventArgs e)
+        private Guna2Panel CreateMetricCard(string title, string iconText, string value)
         {
-            if (pnlHeader != null)
-            {
-                btnAdd.Location = new Point(pnlHeader.Width - 180, 10);
-                btnPermissions.Location = new Point(pnlHeader.Width - 340, 10);
-                txtSearch.Location = new Point(lblTitle.Right + 50, 15);
-            }
+            var card = new Guna2Panel { Height = 100, BorderRadius = 6, BorderThickness = 1 };
+            
+            var lblVal = new Label { Name = "ValueLabel", Text = value, Font = new Font("Segoe UI", 20F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 45) };
+            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(18, 15) };
+            
+            var lblIcon = new Label { Name = "IconLabel", Text = iconText, Font = new Font("Segoe UI", 12F), AutoSize = true, Location = new Point(card.Width - 40, 15), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+            
+            card.Controls.AddRange(new Control[] { lblVal, lblTitle, lblIcon });
+            return card;
         }
 
         private void HRControl_Load(object sender, EventArgs e)
@@ -130,170 +202,108 @@ namespace BookStoreManagement.UserControls
         {
             var stats = _service.GetStats();
             
-            flpCards.Controls.Clear();
-            int cardWidth = Math.Max(220, (this.Width - 160) / 3);
+            cardEmployees.Controls["ValueLabel"].Text = stats.TotalEmployees.ToString();
+            cardBranches.Controls["ValueLabel"].Text = stats.ActiveDepartments.ToString();
+            cardPerformance.Controls["ValueLabel"].Text = "94%";
+            cardLeaveRequests.Controls["ValueLabel"].Text = stats.NewThisMonth.ToString();
 
-            flpCards.Controls.Add(CreateStatCard("Total Employees", stats.TotalEmployees.ToString(), $"+{stats.NewThisMonth} this month", cardWidth));
-            flpCards.Controls.Add(CreateStatCard("Active Departments", stats.ActiveDepartments.ToString(), "", cardWidth));
-            flpCards.Controls.Add(CreateLoadCard(stats.LogisticsLoad, stats.SalesLoad, stats.ITLoad, cardWidth + 100));
-
-            string dept = cbDept.SelectedItem?.ToString() == "All Departments" ? null : cbDept.SelectedItem?.ToString();
-            string status = cbStatus.SelectedItem?.ToString().Replace("Status: ", "");
-            if (status == "All") status = null;
-
-            var (items, totalCount) = _service.GetPagedEmployees(_currentPage, _pageSize, dept, status, txtSearch.Text);
-            dgvStaff.DataSource = items;
-            
-            if (dgvStaff.Columns["Email"] != null) dgvStaff.Columns["Email"].Visible = false;
-            if (dgvStaff.Columns["EmployeeId"] != null) dgvStaff.Columns["EmployeeId"].Visible = false;
-            if (dgvStaff.Columns["JoinDate"] != null) dgvStaff.Columns["JoinDate"].DefaultCellStyle.Format = "dd MMM yyyy";
-
+            var (items, totalCount) = _service.GetPagedEmployees(_currentPage, _pageSize, _currentBranch, _currentRole, _currentSearchTerm);
+            dgvEmployees.DataSource = items;
             paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);
         }
 
-        private Panel CreateStatCard(string title, string value, string badge, int width)
+        private void DgvEmployees_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            var pnl = new Panel { Width = width, Height = 120, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 0, 20, 0) };
-            pnl.Paint += (s, e) => 
+            if (e.RowIndex >= 0 && dgvEmployees.Columns[e.ColumnIndex].Name == "Actions")
             {
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawRectangle(p, 0, 0, pnl.Width - 1, pnl.Height - 1);
+                int empId = Convert.ToInt32(dgvEmployees.Rows[e.RowIndex].Cells["Id"].Value);
+                var cellRect = dgvEmployees.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
                 
-                if (!string.IsNullOrEmpty(badge))
+                if (e.X < cellRect.Width / 2)
                 {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    using var b = new SolidBrush(Color.FromArgb(40, 46, 204, 113));
-                    e.Graphics.FillRoundedRectangle(b, pnl.Width - 90, 15, 75, 20, 10);
+                    // Edit
+                    MessageBox.Show("Edit Employee form is under development.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-            };
-            
-            pnl.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 20), AutoSize = true });
-            pnl.Controls.Add(new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), ForeColor = ThemeManager.TextPrimary, Location = new Point(15, 50), AutoSize = true });
-            
-            if (!string.IsNullOrEmpty(badge))
-            {
-                pnl.Controls.Add(new Label { Text = badge, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(46, 204, 113), Location = new Point(pnl.Width - 85, 17), AutoSize = true, BackColor = Color.Transparent });
+                else
+                {
+                    // Delete
+                    if (MessageBox.Show("Are you sure you want to delete this employee?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        try
+                        {
+                            _service.DeleteUser(empId);
+                            MessageBox.Show("Employee deleted successfully!");
+                            LoadData();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
             }
-            return pnl;
         }
 
-        private Panel CreateLoadCard(int logLoad, int salesLoad, int itLoad, int width)
-        {
-            var pnl = new Panel { Width = width, Height = 120, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 0, 20, 0) };
-            pnl.Paint += (s, e) => 
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawRectangle(p, 0, 0, pnl.Width - 1, pnl.Height - 1);
-                
-                // Draw Progress bars
-                int barWidth = (width - 60) / 3;
-                DrawProgressBar(e.Graphics, "LOGISTICS", logLoad, 20, 70, barWidth, Color.FromArgb(10, 35, 55));
-                DrawProgressBar(e.Graphics, "SALES", salesLoad, 20 + barWidth + 10, 70, barWidth, Color.FromArgb(128, 90, 213));
-                DrawProgressBar(e.Graphics, "IT", itLoad, 20 + (barWidth + 10) * 2, 70, barWidth, Color.FromArgb(46, 204, 113));
-            };
-            
-            pnl.Controls.Add(new Label { Text = "Department Load", Font = new Font("Segoe UI", 12F, FontStyle.Bold), ForeColor = ThemeManager.TextPrimary, Location = new Point(20, 20), AutoSize = true });
-            return pnl;
-        }
-
-        private void DrawProgressBar(Graphics g, string label, int percent, int x, int y, int width, Color color)
-        {
-            using (var b = new SolidBrush(ThemeManager.TextSecondary))
-                g.DrawString(label, new Font("Segoe UI", 8F, FontStyle.Bold), b, x, y - 20);
-                
-            using (var b = new SolidBrush(ThemeManager.TextSecondary))
-            {
-                var format = new StringFormat { Alignment = StringAlignment.Far };
-                g.DrawString($"{percent}%", new Font("Segoe UI", 8F, FontStyle.Bold), b, new RectangleF(x, y - 20, width, 20), format);
-            }
-
-            using (var b = new SolidBrush(ThemeManager.TextBoxBorder))
-                g.FillRoundedRectangle(b, x, y, width, 6, 3);
-            
-            using (var b = new SolidBrush(color))
-                g.FillRoundedRectangle(b, x, y, width * percent / 100f, 6, 3);
-        }
-
-        private void DgvStaff_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void DgvEmployees_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             if (e.RowIndex < 0) return;
 
-            // Custom Paint for Employee Name (Index 0)
-            if (dgvStaff.Columns[e.ColumnIndex].Name == "Name")
+            // Custom Paint for Actions
+            if (dgvEmployees.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
+                
+                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                
+                e.Handled = true;
+            }
+            // Custom Paint for Employee Name
+            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Name")
             {
                 e.PaintBackground(e.CellBounds, true);
-                
+
                 string name = e.Value?.ToString() ?? "Unknown";
-                string email = dgvStaff.Rows[e.RowIndex].Cells["Email"].Value?.ToString() ?? "";
-                string initials = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
-                if (name.Contains(" ")) initials = name.Split(' ')[0].Substring(0, 1).ToUpper() + name.Split(' ')[1].Substring(0, 1).ToUpper();
+                string email = dgvEmployees.Rows[e.RowIndex].Cells["EmployeeId"].Value?.ToString() ?? "";
 
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                // Avatar Circle
-                Rectangle avatarRect = new Rectangle(e.CellBounds.X + 15, e.CellBounds.Y + 15, 40, 40);
-                using (var brush = new SolidBrush(ThemeManager.Sidebar)) // Dark blue like the sidebar
-                {
-                    g.FillEllipse(brush, avatarRect);
-                }
+                var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Near };
                 
-                using (var brush = new SolidBrush(Color.White))
-                {
-                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    g.DrawString(initials, new Font("Segoe UI", 10F, FontStyle.Bold), brush, avatarRect, format);
-                }
-
-                // Name
                 using (var brush = new SolidBrush(ThemeManager.TextPrimary))
                 {
-                    g.DrawString(name, new Font("Segoe UI", 10F, FontStyle.Bold), brush, e.CellBounds.X + 65, e.CellBounds.Y + 15);
+                    g.DrawString(name, new Font("Segoe UI", 9.5F, FontStyle.Bold), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 12, e.CellBounds.Width, e.CellBounds.Height), format);
                 }
 
-                // Email
                 using (var brush = new SolidBrush(ThemeManager.TextSecondary))
                 {
-                    g.DrawString(email, new Font("Segoe UI", 8.5F), brush, e.CellBounds.X + 65, e.CellBounds.Y + 38);
+                    g.DrawString(email, new Font("Segoe UI", 8.5F), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 32, e.CellBounds.Width, e.CellBounds.Height), format);
                 }
 
                 e.Handled = true;
             }
-            // Custom Paint for Role / ID (Index 2)
-            else if (dgvStaff.Columns[e.ColumnIndex].Name == "RoleName")
-            {
-                e.PaintBackground(e.CellBounds, true);
-                string role = e.Value?.ToString() ?? "";
-                string empId = dgvStaff.Rows[e.RowIndex].Cells["EmployeeId"].Value?.ToString() ?? "";
-
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                using (var brush = new SolidBrush(ThemeManager.TextPrimary))
-                    g.DrawString(role, new Font("Segoe UI", 9F), brush, e.CellBounds.X + 5, e.CellBounds.Y + 15);
-
-                using (var brush = new SolidBrush(ThemeManager.TextSecondary))
-                    g.DrawString(empId, new Font("Segoe UI", 8.5F), brush, e.CellBounds.X + 5, e.CellBounds.Y + 38);
-
-                e.Handled = true;
-            }
-            // Custom Paint for Status (Index 5)
-            else if (dgvStaff.Columns[e.ColumnIndex].Name == "Status")
+            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Status")
             {
                 e.PaintBackground(e.CellBounds, true);
                 string status = e.Value?.ToString() ?? "";
-                
+
                 Color bgColor = ThemeManager.TextBoxBorder;
                 Color textColor = ThemeManager.TextPrimary;
 
-                if (status == "ACTIVE") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
-                else if (status == "ON LEAVE") { bgColor = Color.FromArgb(40, 128, 90, 213); textColor = Color.FromArgb(128, 90, 213); }
+                if (status.ToUpper() == "ACTIVE") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
+                else if (status.ToUpper() == "INACTIVE" || status.ToUpper() == "TERMINATED") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
+                else { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
 
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                SizeF textSize = g.MeasureString(status.ToUpper(), new Font("Segoe UI", 8F, FontStyle.Bold));
-                RectangleF badgeRect = new RectangleF(e.CellBounds.X + 5, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
+                SizeF textSize = g.MeasureString(status, new Font("Segoe UI", 8F, FontStyle.Bold));
+                RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
 
                 using (var brush = new SolidBrush(bgColor))
                 {
@@ -303,7 +313,7 @@ namespace BookStoreManagement.UserControls
                 using (var brush = new SolidBrush(textColor))
                 {
                     var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    g.DrawString(status.ToUpper(), new Font("Segoe UI", 8F, FontStyle.Bold), brush, badgeRect, format);
+                    g.DrawString(status, new Font("Segoe UI", 8F, FontStyle.Bold), brush, badgeRect, format);
                 }
 
                 e.Handled = true;
@@ -313,41 +323,64 @@ namespace BookStoreManagement.UserControls
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
             ApplyTheme();
-            LoadData(); // Redraw cards and grid
         }
 
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
+            pnlContent.BackColor = ThemeManager.Background;
+
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+
+            btnAdd.FillColor = ThemeManager.ButtonFill;
+            btnAdd.ForeColor = ThemeManager.ButtonText;
+
+            btnPayroll.FillColor = ThemeManager.CardBackground;
+            btnPayroll.ForeColor = ThemeManager.TextPrimary;
+            btnPayroll.BorderColor = ThemeManager.TextBoxBorder;
+
+            // Metrics Cards
+            var cards = new[] { cardEmployees, cardBranches, cardPerformance, cardLeaveRequests };
+            foreach (var card in cards)
+            {
+                card.FillColor = ThemeManager.CardBackground;
+                card.CustomBorderColor = ThemeManager.TextBoxBorder;
+                if (card.Controls["TitleLabel"] is Label lTitle) lTitle.ForeColor = ThemeManager.TextSecondary;
+                if (card.Controls["ValueLabel"] is Label lVal) lVal.ForeColor = ThemeManager.TextPrimary;
+            }
+
+            // Filters
+            pnlFilters.BackColor = ThemeManager.Background;
+            pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+            pnlFilters.FillColor = ThemeManager.CardBackground;
+
+            cbBranch.FillColor = ThemeManager.TextBoxBackground;
+            cbBranch.ForeColor = ThemeManager.TextPrimary;
+            cbBranch.BorderColor = ThemeManager.TextBoxBorder;
+
+            cbRole.FillColor = ThemeManager.TextBoxBackground;
+            cbRole.ForeColor = ThemeManager.TextPrimary;
+            cbRole.BorderColor = ThemeManager.TextBoxBorder;
+
+            // Grid
+            pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
+            dgvEmployees.BackgroundColor = ThemeManager.CardBackground;
+            dgvEmployees.GridColor = ThemeManager.TextBoxBorder;
+            dgvEmployees.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvEmployees.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvEmployees.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvEmployees.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
             
-            btnAdd.BackColor = ThemeManager.Sidebar;
-            btnAdd.ForeColor = Color.White;
-            btnAdd.FlatAppearance.BorderSize = 0;
+            dgvEmployees.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvEmployees.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvEmployees.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvEmployees.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
 
-            btnPermissions.BackColor = ThemeManager.CardBackground;
-            btnPermissions.ForeColor = ThemeManager.TextPrimary;
-            btnPermissions.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
-
-            txtSearch.BackColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-
-            cbDept.BackColor = ThemeManager.TextBoxBackground;
-            cbDept.ForeColor = ThemeManager.TextPrimary;
-            cbStatus.BackColor = ThemeManager.TextBoxBackground;
-            cbStatus.ForeColor = ThemeManager.TextPrimary;
-
-            dgvStaff.BackgroundColor = ThemeManager.CardBackground;
-            dgvStaff.GridColor = ThemeManager.TextBoxBorder;
-            dgvStaff.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvStaff.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvStaff.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvStaff.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvStaff.EnableHeadersVisualStyles = false;
-            dgvStaff.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvStaff.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvStaff.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvEmployees.EnableHeadersVisualStyles = false;
+            dgvEmployees.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
+            dgvEmployees.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+            dgvEmployees.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         }
     }
 }

@@ -18,6 +18,11 @@ namespace BookStoreManagement.Services
             _bookRepository = new BookRepository();
         }
 
+        public SalesOrder? GetByOrderCode(string orderCode)
+        {
+            return _salesOrderRepository.GetByOrderCode(orderCode);
+        }
+
         public int CreateOrder(int storeId, int? customerId, string paymentMethod, string? note, List<SalesOrderDetail> details)
         {
             PermissionService.RequireStaffOrAdmin();
@@ -95,10 +100,8 @@ namespace BookStoreManagement.Services
         public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(fromDate <= toDate, "Khoảng ngày không hợp lệ.");
-            int? resolvedStoreId = ResolveStoreIdForRead(storeId);
             if (CurrentSession.IsStaff) return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
-            return _salesOrderRepository.GetByDateRange(fromDate, toDate, resolvedStoreId);
+            return _salesOrderRepository.GetByDateRange(fromDate, toDate);
         }
 
         public bool CancelOrder(int salesOrderId)

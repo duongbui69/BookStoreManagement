@@ -6,134 +6,201 @@ using System.Windows.Forms;
 using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
+using BookStoreManagement.Models;
+using BookStoreManagement.Interfaces;
+using Guna.UI2.WinForms;
+using System.Collections.Generic;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class DashboardControl : UserControl
+    public partial class DashboardControl : UserControl, ISearchableControl
     {
         private readonly DashboardService _dashboardService;
-        private Label lblHeader;
-        private FlowLayoutPanel flpCards;
-        private Panel pnlChartsContainer;
+        private readonly BookService _bookService;
+
+        private Guna2Panel pnlContent;
+        
+        private Guna2Panel pnlPageHeader;
+        private Label lblTitle;
+        private Label lblSubTitle;
+        private Guna2Button btnExport;
+
+        private TableLayoutPanel tlpStats;
+        private Guna2Panel card1, card2, card3, card4;
+
+        private TableLayoutPanel tlpMain;
+        
+        private Guna2Panel pnlChartContainer;
+        private Label lblChartTitle;
         private Panel pnlLineChart;
-        private Panel pnlPieChart;
-        private DataGridView dgvLowStock;
-        private Label lblLowStockTitle;
-        private Panel pnlLowStockContainer;
+
+        private Guna2Panel pnlTableContainer;
+        private Guna2Panel pnlTableHeader;
+        private Label lblTableTitle;
+        private DataGridView dgvProducts;
+        private PaginationControl paginationControl;
         
         private DashboardStats currentStats;
+        private int _currentPage = 1;
+        private int _pageSize = 5;
+
+        public void PerformSearch(string keyword)
+        {
+            // Dashboard search not specifically scoped, maybe reload data
+            LoadData();
+        }
 
         public DashboardControl()
         {
             _dashboardService = new DashboardService();
+            _bookService = new BookService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += DashboardControl_Load;
-            this.Resize += DashboardControl_Resize;
         }
 
         private void InitializeUI()
         {
-            this.BackColor = ThemeManager.Background;
             this.Dock = DockStyle.Fill;
-            this.AutoScroll = true; // IMPORTANT for large dashboard
-            this.Padding = new Padding(30);
+            int gutter = 20;
+            this.Padding = new Padding(0);
 
-            // Header
-            lblHeader = new Label
-            {
-                Text = "Dashboard Overview",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = ThemeManager.TextPrimary,
-                AutoSize = true,
-                Location = new Point(30, 20)
-            };
-            this.Controls.Add(lblHeader);
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
-            // FlowLayout for Cards
-            flpCards = new FlowLayoutPanel
-            {
-                Location = new Point(30, 70),
-                Width = this.Width - 60,
-                Height = 150,
-                WrapContents = false,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                BackColor = Color.Transparent
-            };
-            this.Controls.Add(flpCards);
-
-            // Charts Container
-            pnlChartsContainer = new Panel
-            {
-                Location = new Point(30, 240),
-                Width = this.Width - 60,
-                Height = 350,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                BackColor = Color.Transparent
-            };
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0,0,0,gutter) };
+            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
+            lblSubTitle = new Label { Text = "Welcome back, here's what's happening with your store today.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0,30) };
             
-            pnlLineChart = new Panel
-            {
-                BackColor = ThemeManager.CardBackground,
-                Dock = DockStyle.Fill
+            btnExport = new Guna2Button { Text = "Export Report", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnExport });
+            pnlPageHeader.Resize += (s, e) => {
+                btnExport.Location = new Point(pnlPageHeader.Width - 140, 12);
             };
+
+            tlpStats = new TableLayoutPanel 
+            { 
+                Dock = DockStyle.Top, Height = 100, 
+                ColumnCount = 4, RowCount = 1,
+                Margin = new Padding(0,0,0,gutter)
+            };
+            for(int i=0; i<4; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            
+            card1 = CreateStatCard("Total Sales", "$0", Color.FromArgb(41, 128, 185));
+            card2 = CreateStatCard("Net Profit", "$0", Color.FromArgb(128, 90, 213));
+            card3 = CreateStatCard("Total Orders", "0", Color.FromArgb(46, 204, 113));
+            card4 = CreateStatCard("Low Stock Alerts", "0", Color.FromArgb(231, 76, 60));
+            
+            tlpStats.Controls.Add(card1, 0, 0);
+            tlpStats.Controls.Add(card2, 1, 0);
+            tlpStats.Controls.Add(card3, 2, 0);
+            tlpStats.Controls.Add(card4, 3, 0);
+
+            tlpMain = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                Height = 450,
+                ColumnCount = 2,
+                RowCount = 1,
+                Margin = new Padding(0, 0, 0, gutter),
+                BackColor = Color.Transparent
+            };
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+
+            pnlChartContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,10,0) };
+            lblChartTitle = new Label { Text = "Sales Trends", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            lblChartTitle.Tag = "ChartTitle";
+            pnlChartContainer.Controls.Add(lblChartTitle);
+            
+            pnlLineChart = new Panel { Location = new Point(20, 60), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, BackColor = Color.Transparent };
             pnlLineChart.Paint += PnlLineChart_Paint;
-
-            pnlPieChart = new Panel
-            {
-                BackColor = ThemeManager.CardBackground,
-                Dock = DockStyle.Right,
-                Width = 350
+            pnlChartContainer.Controls.Add(pnlLineChart);
+            pnlChartContainer.Resize += (s, e) => {
+                pnlLineChart.Size = new Size(pnlChartContainer.Width - 40, pnlChartContainer.Height - 80);
+                pnlLineChart.Invalidate();
             };
-            pnlPieChart.Paint += PnlPieChart_Paint;
             
-            // Add margin between charts
-            Panel chartSpacer = new Panel { Dock = DockStyle.Right, Width = 20, BackColor = Color.Transparent };
+            tlpMain.Controls.Add(pnlChartContainer, 0, 0);
 
-            pnlChartsContainer.Controls.Add(pnlLineChart);
-            pnlChartsContainer.Controls.Add(chartSpacer);
-            pnlChartsContainer.Controls.Add(pnlPieChart);
-            this.Controls.Add(pnlChartsContainer);
-
-            // Low Stock Grid Container
-            pnlLowStockContainer = new Panel
+            pnlTableContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(10,0,0,0) };
+            
+            pnlTableHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, CustomBorderThickness = new Padding(0,0,0,1) };
+            lblTableTitle = new Label { Text = "Low Stock Products", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            lblTableTitle.Tag = "TableTitle";
+            pnlTableHeader.Controls.Add(lblTableTitle);
+            pnlTableContainer.Controls.Add(pnlTableHeader);
+            
+            dgvProducts = new DataGridView
             {
-                Location = new Point(30, 620),
-                Width = this.Width - 60,
-                Height = 300,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                BackColor = ThemeManager.CardBackground
-            };
-
-            lblLowStockTitle = new Label
-            {
-                Text = "Low Stock Inventory Alerts",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = ThemeManager.TextPrimary,
-                AutoSize = true,
-                Location = new Point(20, 20)
-            };
-            pnlLowStockContainer.Controls.Add(lblLowStockTitle);
-
-            dgvLowStock = new DataGridView
-            {
-                Location = new Point(20, 60),
-                Width = pnlLowStockContainer.Width - 40,
-                Height = 220,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
-                BackgroundColor = ThemeManager.CardBackground,
-                BorderStyle = BorderStyle.None,
+                Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowHeadersVisible = false
+                RowHeadersVisible = false,
+                RowTemplate = { Height = 50 },
+                AutoGenerateColumns = false,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
             };
-            dgvLowStock.CellFormatting += DgvLowStock_CellFormatting;
-            pnlLowStockContainer.Controls.Add(dgvLowStock);
             
-            this.Controls.Add(pnlLowStockContainer);
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCode", HeaderText = "Book Code", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Title", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 150 });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "Category", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Stock", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 60 });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Threshold", HeaderText = "Min", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 50 });
+            
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Actions", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            dgvProducts.Columns.Add(actionCol);
+
+            dgvProducts.CellPainting += DgvProducts_CellPainting;
+            dgvProducts.CellMouseClick += DgvProducts_CellMouseClick;
+            dgvProducts.CellFormatting += DgvProducts_CellFormatting;
+            
+            pnlTableContainer.Controls.Add(dgvProducts);
+
+            paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
+            paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadTableData(); };
+            pnlTableContainer.Controls.Add(paginationControl);
+            
+            pnlTableHeader.BringToFront();
+            dgvProducts.BringToFront();
+            paginationControl.BringToFront();
+
+            tlpMain.Controls.Add(pnlTableContainer, 1, 0);
+
+            pnlContent.Controls.Add(tlpMain);
+            pnlContent.Controls.Add(tlpStats);
+            pnlContent.Controls.Add(pnlPageHeader);
+            
+            pnlPageHeader.BringToFront();
+            tlpStats.BringToFront();
+            tlpMain.BringToFront();
+
+            this.Controls.Add(pnlContent);
+
+            ApplyTheme();
+        }
+
+        private Guna2Panel CreateStatCard(string title, string value, Color leftColor)
+        {
+            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,10,0) };
+            
+            var leftBar = new Panel { Dock = DockStyle.Left, Width = 4, BackColor = leftColor };
+            leftBar.Tag = "LeftBarColor";
+            pnl.Controls.Add(leftBar);
+            
+            Label lblTitle = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 15) };
+            lblTitle.Tag = "CardTitle";
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(12, 35) };
+            lblValue.Tag = "CardValue";
+
+            pnl.Controls.Add(lblTitle);
+            pnl.Controls.Add(lblValue);
+            return pnl;
         }
 
         private void DashboardControl_Load(object sender, EventArgs e)
@@ -141,84 +208,116 @@ namespace BookStoreManagement.UserControls
             LoadData();
         }
 
-        private void DashboardControl_Resize(object sender, EventArgs e)
-        {
-            if (flpCards != null)
-            {
-                flpCards.Width = this.Width - 60;
-                pnlChartsContainer.Width = this.Width - 60;
-                pnlLowStockContainer.Width = this.Width - 60;
-                pnlPieChart.Width = Math.Min(400, (this.Width - 60) / 3);
-            }
-        }
-
         private void LoadData()
         {
-            try
-            {
-                currentStats = _dashboardService.GetStats();
-
-                flpCards.Controls.Clear();
-                int cardWidth = Math.Max(220, (this.Width - 140) / 4);
-
-                // Revenue Card
-                flpCards.Controls.Add(CreateSummaryCard("TOTAL REVENUE", $"${currentStats.TotalRevenue:N2}", currentStats.RevenueGrowth, Color.FromArgb(10, 50, 90), cardWidth));
-                // Profit Card
-                flpCards.Controls.Add(CreateSummaryCard("NET PROFIT", $"${currentStats.NetProfit:N2}", currentStats.ProfitGrowth, Color.FromArgb(128, 90, 213), cardWidth));
-                // Orders Card
-                flpCards.Controls.Add(CreateSummaryCard("TOTAL ORDERS", $"{currentStats.TotalOrders:N0}", currentStats.OrdersGrowth, Color.FromArgb(46, 204, 113), cardWidth));
-                // Alerts Card
-                flpCards.Controls.Add(CreateAlertCard("LOW STOCK ALERTS", $"{currentStats.LowStockCount} Items", "Requires action", Color.FromArgb(231, 76, 60), cardWidth));
-
-                // Redraw charts
-                pnlLineChart.Invalidate();
-                pnlPieChart.Invalidate();
-
-                // Bind grid
-                dgvLowStock.DataSource = null;
-                dgvLowStock.DataSource = currentStats.LowStockItems;
-
-                ApplyThemeToGrid();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading dashboard data: " + ex.Message);
-            }
+            currentStats = _dashboardService.GetStats();
+            
+            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.TotalRevenue:N0}";
+            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.NetProfit:N0}";
+            foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
+            foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
+            
+            pnlLineChart.Invalidate();
+            
+            _currentPage = 1;
+            LoadTableData();
         }
 
-        private Panel CreateSummaryCard(string title, string value, decimal growth, Color borderColor, int width)
+        private void LoadTableData()
         {
-            var pnl = new Panel { Width = width, Height = 130, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 0, 20, 0) };
-            pnl.Controls.Add(new Panel { Width = 6, Dock = DockStyle.Left, BackColor = borderColor });
-            pnl.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 20), AutoSize = true });
-            pnl.Controls.Add(new Label { Text = value, Font = new Font("Segoe UI", 18F, FontStyle.Bold), ForeColor = ThemeManager.TextPrimary, Location = new Point(18, 50), AutoSize = true });
-
-            string trendSymbol = growth >= 0 ? "↗" : "↘";
-            Color trendColor = growth >= 0 ? Color.FromArgb(46, 204, 113) : Color.FromArgb(231, 76, 60);
-            pnl.Controls.Add(new Label { Text = $"{trendSymbol} {Math.Abs(growth):N1}% from last month", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = trendColor, Location = new Point(20, 95), AutoSize = true });
-
-            return pnl;
+            if (currentStats == null) return;
+            
+            var pagedItems = currentStats.LowStockItems.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+            dgvProducts.DataSource = pagedItems;
+            
+            paginationControl.UpdatePagination(currentStats.LowStockItems.Count, _currentPage, _pageSize);
         }
 
-        private Panel CreateAlertCard(string title, string value, string subtitle, Color borderColor, int width)
+        private void DgvProducts_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            var pnl = new Panel { Width = width, Height = 130, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 0, 0, 0) };
-            pnl.Controls.Add(new Panel { Width = 6, Dock = DockStyle.Left, BackColor = borderColor });
-            pnl.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 20), AutoSize = true });
-            pnl.Controls.Add(new Label { Text = value, Font = new Font("Segoe UI", 18F, FontStyle.Bold), ForeColor = Color.FromArgb(231, 76, 60), Location = new Point(18, 50), AutoSize = true });
-            pnl.Controls.Add(new Label { Text = "!" + subtitle, Font = new Font("Segoe UI", 9F, FontStyle.Regular), ForeColor = Color.FromArgb(231, 76, 60), Location = new Point(20, 95), AutoSize = true });
-
-            return pnl;
+            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
+                
+                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                
+                e.Handled = true;
+            }
         }
 
+        private void DgvProducts_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                int bookId = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells[0].Value);
+                var cellRect = dgvProducts.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+                
+                if (e.X < cellRect.Width / 2)
+                {
+                    // Edit
+                    var book = _bookService.GetById(bookId);
+                    if (book != null)
+                    {
+                        var frm = new Forms.BookForm(book);
+                        if (frm.ShowDialog() == DialogResult.OK)
+                        {
+                            LoadData();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Book not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    // Delete
+                    if (MessageBox.Show("Are you sure you want to delete this book?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        try
+                        {
+                            _bookService.SetActive(bookId, false);
+                            MessageBox.Show("Book deleted successfully!");
+                            LoadData();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DgvProducts_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (dgvProducts.Columns[e.ColumnIndex].Name == "CurrentStock")
+            {
+                int currentStock = (int)e.Value;
+                int threshold = (int)dgvProducts.Rows[e.RowIndex].Cells["Threshold"].Value;
+                
+                e.CellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+                if (currentStock == 0)
+                {
+                    e.CellStyle.ForeColor = Color.FromArgb(231, 76, 60); // Red
+                }
+                else if (currentStock <= threshold)
+                {
+                    e.CellStyle.ForeColor = Color.FromArgb(243, 156, 18); // Orange
+                }
+            }
+        }
+        
         private void PnlLineChart_Paint(object sender, PaintEventArgs e)
         {
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             var rect = pnlLineChart.ClientRectangle;
-
-            g.DrawString("Revenue Trends", new Font("Segoe UI", 14F, FontStyle.Bold), new SolidBrush(ThemeManager.TextPrimary), new Point(20, 20));
-            g.DrawString("Annual sales performance overview", new Font("Segoe UI", 9F), new SolidBrush(ThemeManager.TextSecondary), new Point(20, 50));
 
             if (currentStats == null || currentStats.MonthlyRevenue.Count == 0) return;
 
@@ -229,10 +328,10 @@ namespace BookStoreManagement.UserControls
             if (maxVal == 0) maxVal = 1;
 
             float paddingX = 40f;
-            float paddingY = 80f;
-            float bottomY = rect.Height - 40f;
+            float paddingY = 40f;
+            float bottomY = rect.Height - paddingY;
             float chartWidth = rect.Width - (paddingX * 2);
-            float chartHeight = rect.Height - paddingY - 40f;
+            float chartHeight = rect.Height - paddingY - 20f;
 
             PointF[] points = new PointF[sortedMonths.Count];
             for (int i = 0; i < sortedMonths.Count; i++)
@@ -241,11 +340,9 @@ namespace BookStoreManagement.UserControls
                 float y = bottomY - ((float)sortedMonths[i].Value / maxVal * chartHeight);
                 points[i] = new PointF(x, y);
 
-                // Draw X-axis labels (Month numbers for simplicity)
                 g.DrawString($"Tháng {sortedMonths[i].Key}", new Font("Segoe UI", 8F), new SolidBrush(ThemeManager.TextSecondary), new PointF(x - 15, bottomY + 10));
             }
 
-            // Draw shadow/gradient under the curve
             using (var path = new GraphicsPath())
             {
                 path.AddCurve(points);
@@ -258,13 +355,11 @@ namespace BookStoreManagement.UserControls
                 }
             }
 
-            // Draw the curve line
             using (var pen = new Pen(Color.FromArgb(41, 128, 185), 3f))
             {
                 g.DrawCurve(pen, points);
             }
             
-            // Draw dots at data points
             foreach (var p in points)
             {
                 g.FillEllipse(Brushes.White, p.X - 4, p.Y - 4, 8, 8);
@@ -272,118 +367,70 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void PnlPieChart_Paint(object sender, PaintEventArgs e)
-        {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            var rect = pnlPieChart.ClientRectangle;
-
-            g.DrawString("Sales by Category", new Font("Segoe UI", 12F, FontStyle.Bold), new SolidBrush(ThemeManager.TextPrimary), new Point(20, 20));
-
-            if (currentStats == null || currentStats.SalesByCategory.Count == 0) return;
-
-            decimal total = currentStats.SalesByCategory.Values.Sum();
-            if (total == 0) return;
-
-            float startAngle = -90f;
-            Color[] colors = { Color.FromArgb(41, 128, 185), Color.FromArgb(128, 90, 213), Color.FromArgb(46, 204, 113), Color.FromArgb(241, 196, 15), Color.FromArgb(231, 76, 60), Color.Gray };
-            int colorIndex = 0;
-
-            float diameter = Math.Min(rect.Width - 40, rect.Height - 160);
-            float cx = rect.Width / 2f;
-            float cy = 60 + (diameter / 2f);
-            var pieRect = new RectangleF(cx - (diameter / 2f), 60, diameter, diameter);
-
-            // Calculate Legend Positions
-            float legendY = cy + (diameter / 2f) + 30;
-            float legendX = 20;
-
-            foreach (var kvp in currentStats.SalesByCategory)
-            {
-                float sweepAngle = (float)((kvp.Value / total) * 360m);
-                Color segmentColor = colors[colorIndex % colors.Length];
-                
-                using (var brush = new SolidBrush(segmentColor))
-                {
-                    g.FillPie(brush, pieRect.X, pieRect.Y, pieRect.Width, pieRect.Height, startAngle, sweepAngle);
-                }
-
-                // Legend
-                using (var brush = new SolidBrush(segmentColor))
-                {
-                    g.FillEllipse(brush, legendX, legendY, 12, 12);
-                }
-                
-                string legendText = $"{kvp.Key} ({(kvp.Value/total)*100:N0}%)";
-                g.DrawString(legendText, new Font("Segoe UI", 9F), new SolidBrush(ThemeManager.TextPrimary), new PointF(legendX + 20, legendY - 2));
-
-                legendX += 120;
-                if (legendX + 100 > rect.Width)
-                {
-                    legendX = 20;
-                    legendY += 25;
-                }
-
-                startAngle += sweepAngle;
-                colorIndex++;
-            }
-            
-            // Draw a donut hole to make it look modern
-            using (var brush = new SolidBrush(ThemeManager.CardBackground))
-            {
-                float holeDiameter = diameter * 0.5f;
-                g.FillEllipse(brush, cx - (holeDiameter / 2f), cy - (holeDiameter / 2f), holeDiameter, holeDiameter);
-            }
-        }
-
-        private void DgvLowStock_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (dgvLowStock.Columns[e.ColumnIndex].Name == "CurrentStock")
-            {
-                int currentStock = (int)e.Value;
-                int threshold = (int)dgvLowStock.Rows[e.RowIndex].Cells["Threshold"].Value;
-                
-                e.CellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-                if (currentStock == 0)
-                {
-                    e.CellStyle.ForeColor = Color.FromArgb(231, 76, 60); // Red
-                }
-                else if (currentStock <= threshold)
-                {
-                    e.CellStyle.ForeColor = Color.FromArgb(243, 156, 18); // Orange/Warning
-                }
-            }
-        }
-
-        private void ApplyThemeToGrid()
-        {
-            dgvLowStock.BackgroundColor = ThemeManager.CardBackground;
-            dgvLowStock.GridColor = ThemeManager.TextBoxBorder;
-            dgvLowStock.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvLowStock.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvLowStock.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvLowStock.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            
-            dgvLowStock.EnableHeadersVisualStyles = false;
-            dgvLowStock.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvLowStock.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvLowStock.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dgvLowStock.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            
-            dgvLowStock.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-        }
-
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
-            this.BackColor = ThemeManager.Background;
-            lblHeader.ForeColor = ThemeManager.TextPrimary;
-            pnlLowStockContainer.BackColor = ThemeManager.CardBackground;
-            lblLowStockTitle.ForeColor = ThemeManager.TextPrimary;
-            pnlLineChart.BackColor = ThemeManager.CardBackground;
-            pnlPieChart.BackColor = ThemeManager.CardBackground;
+            ApplyTheme();
+        }
 
-            ApplyThemeToGrid();
-            LoadData(); 
+        private void ApplyTheme()
+        {
+            this.BackColor = ThemeManager.Background;
+            pnlContent.BackColor = ThemeManager.Background;
+
+            lblTitle.ForeColor = ThemeManager.TextPrimary;
+            lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+            
+            btnExport.FillColor = ThemeManager.ButtonFill;
+            btnExport.ForeColor = ThemeManager.ButtonText;
+
+            ApplyThemeToCard(card1);
+            ApplyThemeToCard(card2);
+            ApplyThemeToCard(card3);
+            ApplyThemeToCard(card4);
+
+            pnlChartContainer.FillColor = ThemeManager.CardBackground;
+            pnlChartContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
+            lblChartTitle.ForeColor = ThemeManager.TextPrimary;
+            
+            pnlTableContainer.FillColor = ThemeManager.CardBackground;
+            pnlTableContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
+            pnlTableHeader.FillColor = ThemeManager.Background;
+            pnlTableHeader.CustomBorderColor = ThemeManager.TextBoxBorder;
+            lblTableTitle.ForeColor = ThemeManager.TextPrimary;
+
+            dgvProducts.BackgroundColor = ThemeManager.CardBackground;
+            dgvProducts.GridColor = ThemeManager.TextBoxBorder;
+            
+            dgvProducts.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvProducts.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvProducts.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.ButtonFill;
+            dgvProducts.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+
+            dgvProducts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvProducts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvProducts.DefaultCellStyle.SelectionBackColor = ThemeManager.ButtonFill;
+            dgvProducts.DefaultCellStyle.SelectionForeColor = Color.White;
+            
+            dgvProducts.EnableHeadersVisualStyles = false;
+            dgvProducts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
+            dgvProducts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+            dgvProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dgvProducts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
+            dgvProducts.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            
+            pnlLineChart.Invalidate();
+        }
+        
+        private void ApplyThemeToCard(Guna2Panel card)
+        {
+            card.FillColor = ThemeManager.CardBackground;
+            card.CustomBorderColor = ThemeManager.TextBoxBorder;
+
+            foreach(Control ctrl in card.Controls)
+            {
+                if (ctrl.Tag?.ToString() == "CardTitle") ctrl.ForeColor = ThemeManager.TextSecondary;
+                if (ctrl.Tag?.ToString() == "CardValue") ctrl.ForeColor = ThemeManager.TextPrimary;
+            }
         }
     }
 }

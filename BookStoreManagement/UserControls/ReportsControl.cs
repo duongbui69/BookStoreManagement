@@ -3,32 +3,64 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Linq;
+using System.Collections.Generic;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 using BookStoreManagement.Services;
+using BookStoreManagement.Interfaces;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class ReportsControl : UserControl
+    public class MonthlyPerformance
+    {
+        public int Id { get; set; }
+        public string Month { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+        public decimal Expenses { get; set; }
+        public decimal NetProfit => Revenue - Expenses;
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public partial class ReportsControl : UserControl, ISearchableControl
     {
         private readonly ReportService _service;
         private ReportStats _stats;
+        private List<MonthlyPerformance> _allMonths = new List<MonthlyPerformance>();
         
-        private Panel pnlHeader;
+        // Content Container
+        private Guna2Panel pnlContent;
+
+        // Header & Actions
+        private Guna2Panel pnlHeader;
         private Label lblTitle;
-        private TextBox txtSearch;
-        private ComboBox cbDateRange;
-        private ComboBox cbCategory;
-        private Button btnExportPDF;
-        private Button btnExportExcel;
+        private Label lblSubTitle;
+        private Guna2ComboBox cbDateRange;
+        private Guna2Button btnExportPDF;
+        private Guna2Button btnExportExcel;
 
-        private FlowLayoutPanel flpCards;
-        private Panel pnlChart;
-        private Panel pnlBottom;
-        private Panel pnlDeptPerf;
-        private Panel pnlInsights;
+        // KPI Cards
+        private Guna2Panel pnlMetrics;
+        private Guna2Panel cardRevenue;
+        private Guna2Panel cardExpenses;
+        private Guna2Panel cardNetProfit;
 
-        private DataGridView dgvDept;
+        // Chart
+        private Guna2Panel pnlChart;
+
+        // Grid
+        private Guna2Panel pnlGridContainer;
+        private Guna2DataGridView dgvReports;
+        
+        // Pagination
+        private PaginationControl paginationControl;
+        private int _currentPage = 1;
+        private int _pageSize = 5;
+
+        public void PerformSearch(string keyword)
+        {
+            // Optional: filter months by name
+        }
 
         public ReportsControl()
         {
@@ -36,318 +68,423 @@ namespace BookStoreManagement.UserControls
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += ReportsControl_Load;
-            this.Resize += ReportsControl_Resize;
         }
 
         private void InitializeUI()
         {
-            this.BackColor = ThemeManager.Background;
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(30);
+            int gutter = 20;
+            this.Padding = new Padding(0);
+            this.AutoScroll = true;
 
-            // Header
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 90, BackColor = Color.Transparent };
-            lblTitle = new Label { Text = "Financial Reports", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            txtSearch = new TextBox { Width = 300, Font = new Font("Segoe UI", 12F), PlaceholderText = "Search reports...", Location = new Point(250, 0) };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+
+            // 1. Page Header
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Margin = new Padding(0, 0, 0, gutter) };
+            lblTitle = new Label { Text = "Financial Reports", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Comprehensive overview of Q3 performance and revenue metrics.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
             
-            cbDateRange = new ComboBox { Width = 220, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 50) };
-            cbDateRange.Items.Add("Jan 1, 2024 - Dec 31, 2024"); cbDateRange.SelectedIndex = 0;
+            cbDateRange = new Guna2ComboBox { Size = new Size(200, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
+            cbDateRange.Items.Add("Jul 01, 2023 - Sep 30, 2023"); 
+            cbDateRange.Items.Add("Past 12 Months");
+            cbDateRange.SelectedIndex = 1;
             
-            cbCategory = new ComboBox { Width = 180, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(240, 50) };
-            cbCategory.Items.Add("All Categories"); cbCategory.SelectedIndex = 0;
-
-            btnExportPDF = new Button { Text = "Export PDF", Width = 110, Height = 35, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnExportExcel = new Button { Text = "Export Excel", Width = 120, Height = 35, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(txtSearch);
-            pnlHeader.Controls.Add(cbDateRange);
-            pnlHeader.Controls.Add(cbCategory);
-            pnlHeader.Controls.Add(btnExportPDF);
-            pnlHeader.Controls.Add(btnExportExcel);
-            this.Controls.Add(pnlHeader);
-
-            // Cards
-            flpCards = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 130, Margin = new Padding(0, 20, 0, 20), WrapContents = false, BackColor = Color.Transparent };
-            this.Controls.Add(flpCards);
-
-            // Chart
-            pnlChart = new Panel { Dock = DockStyle.Top, Height = 350, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 20, 0, 20) };
-            pnlChart.Paint += PnlChart_Paint;
-            this.Controls.Add(pnlChart);
-
-            // Bottom Area
-            pnlBottom = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent, Padding = new Padding(0, 20, 0, 0) };
+            btnExportPDF = new Guna2Button { Text = "Export PDF", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnExportExcel = new Guna2Button { Text = "Export Excel", Size = new Size(120, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             
-            // Insights (Right)
-            pnlInsights = new Panel { Dock = DockStyle.Right, Width = 350, BackColor = ThemeManager.CardBackground };
-            pnlInsights.Paint += PnlInsights_Paint;
-            
-            // Dept Performance (Left)
-            pnlDeptPerf = new Panel { Dock = DockStyle.Fill, BackColor = ThemeManager.CardBackground, Padding = new Padding(20) };
-            Label lblDeptTitle = new Label { Text = "Departmental Performance", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 15) };
-            Label lblViewAll = new Label { Text = "View All", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, ForeColor = ThemeManager.TextSecondary, Cursor = Cursors.Hand };
-            pnlDeptPerf.Controls.Add(lblDeptTitle);
-            pnlDeptPerf.Controls.Add(lblViewAll);
-            pnlDeptPerf.Resize += (s, e) => { lblViewAll.Location = new Point(pnlDeptPerf.Width - 80, 20); };
-
-            dgvDept = new DataGridView
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, cbDateRange, btnExportPDF, btnExportExcel });
+            pnlHeader.Resize += (s, e) => 
             {
-                Location = new Point(20, 60),
-                Width = pnlDeptPerf.Width - 40,
-                Height = pnlDeptPerf.Height - 80,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                BorderStyle = BorderStyle.None,
+                btnExportExcel.Location = new Point(pnlHeader.Width - 120, 10);
+                btnExportPDF.Location = new Point(pnlHeader.Width - 250, 10);
+                cbDateRange.Location = new Point(pnlHeader.Width - 470, 10);
+            };
+
+            // 2. Metric Cards
+            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 130, Margin = new Padding(0, 0, 0, gutter) };
+            cardRevenue = CreateMetricCard("Total Revenue", "payments", "+12.5%");
+            cardExpenses = CreateMetricCard("Total Expenses", "receipt_long", "-2.4%");
+            cardNetProfit = CreateMetricCard("Net Profit Margin", "donut_large", "+4.1%");
+            
+            pnlMetrics.Controls.AddRange(new Control[] { cardRevenue, cardExpenses, cardNetProfit });
+            pnlMetrics.Resize += (s, e) => 
+            {
+                int cardWidth = (pnlMetrics.Width - (gutter * 2)) / 3;
+                if (cardWidth > 0)
+                {
+                    cardRevenue.Width = cardWidth; cardRevenue.Left = 0;
+                    cardExpenses.Width = cardWidth; cardExpenses.Left = cardWidth + gutter;
+                    cardNetProfit.Width = cardWidth; cardNetProfit.Left = (cardWidth + gutter) * 2;
+                }
+            };
+
+            // 3. Chart
+            pnlChart = new Guna2Panel 
+            { 
+                Dock = DockStyle.Top, Height = 400, 
+                BorderRadius = 12,
+                BorderThickness = 1,
+                Margin = new Padding(0, 0, 0, gutter)
+            };
+            pnlChart.Paint += PnlChart_Paint;
+
+            // 4. Grid Container
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 450, BorderRadius = 12, BorderThickness = 1, Margin = new Padding(0, 0, 0, gutter) };
+            
+            var pnlTableToolbar = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(0,0,0,1) };
+            Label lblTableTitle = new Label { Text = "Monthly Growth Breakdown", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 15), AutoSize = true, Name = "TableTitle" };
+            Label lblTableSub = new Label { Text = "Detailed financial metrics per month.", Font = new Font("Segoe UI", 9F), Location = new Point(20, 40), AutoSize = true, Name = "TableSub" };
+            pnlTableToolbar.Controls.AddRange(new Control[] { lblTableTitle, lblTableSub });
+
+            dgvReports = new Guna2DataGridView
+            {
+                Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
+                AutoGenerateColumns = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false,
-                RowTemplate = { Height = 50 }
+                RowTemplate = { Height = 50 },
+                Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
             };
-            dgvDept.CellFormatting += DgvDept_CellFormatting;
-            pnlDeptPerf.Controls.Add(dgvDept);
+            
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Month", HeaderText = "MONTH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Revenue", HeaderText = "REVENUE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "C2" } });
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Expenses", HeaderText = "EXPENSES", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "C2" } });
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NetProfit", HeaderText = "NET PROFIT", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "C2" } });
+            dgvReports.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Status", HeaderText = "STATUS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTIONS", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            dgvReports.Columns.Add(actionCol);
 
-            pnlBottom.Controls.Add(pnlDeptPerf);
-            // Add a splitter panel for margin
-            Panel pnlMargin = new Panel { Dock = DockStyle.Right, Width = 20, BackColor = Color.Transparent };
-            pnlBottom.Controls.Add(pnlMargin);
-            pnlBottom.Controls.Add(pnlInsights);
+            dgvReports.CellPainting += DgvReports_CellPainting;
+            dgvReports.CellMouseClick += DgvReports_CellMouseClick;
 
-            this.Controls.Add(pnlBottom);
+            pnlGridContainer.Controls.Add(dgvReports);
+            pnlGridContainer.Controls.Add(pnlTableToolbar);
+            dgvReports.BringToFront();
 
-            // Re-order
-            pnlBottom.BringToFront();
-            pnlChart.BringToFront();
-            flpCards.BringToFront();
-            pnlHeader.BringToFront();
+            paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
+            paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; UpdateGrid(); };
+            pnlGridContainer.Controls.Add(paginationControl);
+
+            pnlContent.Controls.Add(pnlGridContainer);
+            pnlContent.Controls.Add(pnlChart);
+            pnlContent.Controls.Add(pnlMetrics);
+            pnlContent.Controls.Add(pnlHeader);
+
+            this.Controls.Add(pnlContent);
 
             ApplyTheme();
         }
 
-        private void ReportsControl_Resize(object sender, EventArgs e)
+        private Guna2Panel CreateMetricCard(string title, string iconText, string growthText)
         {
-            if (pnlHeader != null)
-            {
-                btnExportExcel.Location = new Point(pnlHeader.Width - 120, 50);
-                btnExportPDF.Location = new Point(pnlHeader.Width - 250, 50);
-            }
+            var card = new Guna2Panel { Height = 130, BorderRadius = 12, BorderThickness = 1 };
+            
+            var lblTitle = new Label { Name = "TitleLabel", Text = title.ToUpper(), Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            var lblVal = new Label { Name = "ValueLabel", Text = "$0.00", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 45) };
+            
+            var lblIcon = new Label { Name = "IconLabel", Text = iconText, Font = new Font("Segoe UI", 16F), AutoSize = true, Location = new Point(card.Width - 50, 20), Anchor = AnchorStyles.Top | AnchorStyles.Right };
+            
+            var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(20, 95) };
+            var lblBadge = new Label { Name = "BadgeLabel", Text = growthText, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Padding = new Padding(4) };
+            pnlBadge.Controls.Add(lblBadge);
+
+            var lblCompare = new Label { Name = "CompareLabel", Text = "vs previous quarter", Font = new Font("Segoe UI", 9F), AutoSize = true };
+            
+            card.Controls.AddRange(new Control[] { lblTitle, lblVal, lblIcon, pnlBadge, lblCompare });
+
+            card.Resize += (s, e) => {
+                lblCompare.Location = new Point(pnlBadge.Right + 5, 99);
+            };
+
+            return card;
         }
 
         private void ReportsControl_Load(object sender, EventArgs e)
         {
-            _stats = _service.GetFinancialReports();
             LoadData();
         }
 
         private void LoadData()
         {
+            _stats = _service.GetFinancialReports();
             if (_stats == null) return;
             
-            flpCards.Controls.Clear();
-            int cardWidth = Math.Max(200, (this.Width - 140) / 4);
+            cardRevenue.Controls["ValueLabel"].Text = $"${_stats.TotalRevenue:N2}";
+            cardExpenses.Controls["ValueLabel"].Text = $"${_stats.OperatingExpenses:N2}";
+            cardNetProfit.Controls["ValueLabel"].Text = $"{_stats.AverageMargin:N1}%";
 
-            flpCards.Controls.Add(CreateStatCard("TOTAL REVENUE", $"${_stats.TotalRevenue:N2}", _stats.RevenueGrowth, Color.FromArgb(46, 204, 113), cardWidth));
-            flpCards.Controls.Add(CreateStatCard("OPERATING EXPENSES", $"${_stats.OperatingExpenses:N2}", _stats.ExpensesGrowth, Color.FromArgb(231, 76, 60), cardWidth));
-            flpCards.Controls.Add(CreateStatCard("NET PROFIT", $"${_stats.NetProfit:N2}", _stats.ProfitGrowth, Color.FromArgb(128, 90, 213), cardWidth));
+            // Process Monthly Data
+            _allMonths.Clear();
+            string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
             
-            string marginText = _stats.MarginGrowth == 0 ? "Stable vs last period" : $"{Math.Abs(_stats.MarginGrowth):N1}% vs last period";
-            flpCards.Controls.Add(CreateStatCard("AVERAGE MARGIN", $"{_stats.AverageMargin:N1}%", _stats.MarginGrowth, Color.FromArgb(41, 128, 185), cardWidth, true));
+            int idCounter = 1;
+            foreach (var kvp in _stats.MonthlyRevenue)
+            {
+                int m = kvp.Key;
+                decimal rev = kvp.Value;
+                decimal exp = _stats.MonthlyExpenses.ContainsKey(m) ? _stats.MonthlyExpenses[m] : 0;
+                decimal profit = rev - exp;
+                string status = profit >= 100000 ? "Exceeded" : (profit > 0 ? "On Target" : "Below Target");
 
-            dgvDept.DataSource = _stats.DepartmentPerformances;
-            if (dgvDept.Columns["GrossSales"] != null) dgvDept.Columns["GrossSales"].DefaultCellStyle.Format = "C0";
-            if (dgvDept.Columns["COGS"] != null) dgvDept.Columns["COGS"].DefaultCellStyle.Format = "C0";
-            if (dgvDept.Columns["Margin"] != null) dgvDept.Columns["Margin"].DefaultCellStyle.Format = "N1";
+                _allMonths.Add(new MonthlyPerformance
+                {
+                    Id = idCounter++,
+                    Month = $"{monthNames[m - 1]} 2023",
+                    Revenue = rev,
+                    Expenses = exp,
+                    Status = status
+                });
+            }
 
+            // sort descending by ID
+            _allMonths = _allMonths.OrderByDescending(x => x.Id).ToList();
+
+            UpdateGrid();
             pnlChart.Invalidate();
-            pnlInsights.Invalidate();
         }
 
-        private Panel CreateStatCard(string title, string value, decimal growth, Color iconColor, int width, bool isMargin = false)
+        private void UpdateGrid()
         {
-            var pnl = new Panel { Width = width, Height = 110, BackColor = ThemeManager.CardBackground, Margin = new Padding(0, 0, 20, 0) };
-            pnl.Paint += (s, e) => 
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawRectangle(p, 0, 0, pnl.Width - 1, pnl.Height - 1);
-                
-                // Draw Icon Box
-                using var b = new SolidBrush(Color.FromArgb(30, iconColor));
-                e.Graphics.FillRoundedRectangle(b, pnl.Width - 50, 20, 35, 35, 5);
-            };
-            
-            pnl.Controls.Add(new Label { Text = title, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = ThemeManager.TextSecondary, Location = new Point(20, 20), AutoSize = true });
-            pnl.Controls.Add(new Label { Text = value, Font = new Font("Segoe UI", 20F, FontStyle.Bold), ForeColor = ThemeManager.TextPrimary, Location = new Point(15, 40), AutoSize = true });
-            
-            string growthText = "";
-            Color growthColor = ThemeManager.TextSecondary;
-            if (isMargin && growth == 0)
-            {
-                growthText = "Stable vs last period";
-            }
-            else
-            {
-                growthText = growth > 0 ? $"↑ {Math.Abs(growth):N1}% vs last period" : (growth < 0 ? $"↓ {Math.Abs(growth):N1}% vs last period" : "Stable vs last period");
-                growthColor = growth > 0 ? Color.FromArgb(46, 204, 113) : (growth < 0 ? Color.FromArgb(231, 76, 60) : ThemeManager.TextSecondary);
-                if (title.Contains("EXPENSES")) growthColor = growth > 0 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(46, 204, 113); // expenses up = bad
-            }
-
-            pnl.Controls.Add(new Label { Text = growthText, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = growthColor, Location = new Point(20, 80), AutoSize = true });
-            return pnl;
+            int total = _allMonths.Count;
+            var paged = _allMonths.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+            dgvReports.DataSource = paged;
+            paginationControl.UpdatePagination(total, _currentPage, _pageSize);
         }
 
         private void PnlChart_Paint(object sender, PaintEventArgs e)
         {
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            
-            using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-            g.DrawRectangle(p, 0, 0, pnlChart.Width - 1, pnlChart.Height - 1);
 
-            // Title and Legend
             using (var b = new SolidBrush(ThemeManager.TextPrimary))
-                g.DrawString("Monthly Financials (Revenue vs Expenses)", new Font("Segoe UI", 12F, FontStyle.Bold), b, 20, 20);
+                g.DrawString("Revenue vs Expenses", new Font("Segoe UI", 16F, FontStyle.Bold), b, 20, 20);
+            
+            using (var b = new SolidBrush(ThemeManager.TextSecondary))
+                g.DrawString("Monthly comparison for Q3 2023", new Font("Segoe UI", 10F), b, 20, 50);
             
             using (var b = new SolidBrush(ThemeManager.TextSecondary))
             {
-                g.FillEllipse(new SolidBrush(ThemeManager.Sidebar), pnlChart.Width - 250, 25, 10, 10);
-                g.DrawString("Revenue", new Font("Segoe UI", 9F, FontStyle.Bold), b, pnlChart.Width - 235, 20);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(27, 58, 87)), pnlChart.Width - 250, 25, 12, 12);
+                g.DrawString("Revenue", new Font("Segoe UI", 9F, FontStyle.Bold), b, pnlChart.Width - 230, 22);
                 
-                g.FillEllipse(new SolidBrush(Color.FromArgb(128, 90, 213)), pnlChart.Width - 150, 25, 10, 10);
-                g.DrawString("Expenses", new Font("Segoe UI", 9F, FontStyle.Bold), b, pnlChart.Width - 135, 20);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(172, 201, 237)), pnlChart.Width - 150, 25, 12, 12);
+                g.DrawString("Expenses", new Font("Segoe UI", 9F, FontStyle.Bold), b, pnlChart.Width - 130, 22);
             }
 
             if (_stats == null || _stats.MonthlyRevenue.Count == 0) return;
 
-            // Draw Grid & Bars
-            int padding = 40;
-            int chartWidth = pnlChart.Width - padding * 2;
-            int chartHeight = pnlChart.Height - padding * 2 - 40; // 40 for title
-            int barWidth = Math.Min(30, chartWidth / 24 - 5);
+            int paddingX = 80;
+            int paddingY = 60;
+            int chartWidth = pnlChart.Width - paddingX - 40;
+            int chartHeight = pnlChart.Height - paddingY - 90; 
+            int barWidth = Math.Min(30, chartWidth / 12 - 10);
             
             decimal maxVal = Math.Max(_stats.MonthlyRevenue.Values.Max(), _stats.MonthlyExpenses.Values.Max());
-            if (maxVal == 0) maxVal = 1000;
+            if (maxVal == 0) maxVal = 500000;
 
             string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
             
+            using (var penGrid = new Pen(Color.FromArgb(50, ThemeManager.TextBoxBorder), 1))
+            {
+                penGrid.DashStyle = DashStyle.Dash;
+                for (int i = 0; i <= 5; i++)
+                {
+                    int y = pnlChart.Height - paddingY - (i * chartHeight / 5);
+                    g.DrawLine(penGrid, paddingX, y, pnlChart.Width - 40, y);
+                    
+                    using (var b = new SolidBrush(ThemeManager.TextSecondary))
+                    {
+                        string val = $"${(maxVal * i / 5 / 1000):N0}k";
+                        g.DrawString(val, new Font("Segoe UI", 9F), b, 15, y - 8);
+                    }
+                }
+            }
+
             for (int i = 0; i < 12; i++)
             {
-                int x = padding + (i * chartWidth / 12) + (chartWidth / 12 / 2);
+                int x = paddingX + (i * chartWidth / 12) + (chartWidth / 12 / 2);
                 
-                // Draw Grid line
-                using (var penGrid = new Pen(ThemeManager.TextBoxBorder, 1))
-                    g.DrawLine(penGrid, x, 60, x, pnlChart.Height - padding);
-
-                // Month Label
                 using (var b = new SolidBrush(ThemeManager.TextSecondary))
-                    g.DrawString(months[i], new Font("Segoe UI", 8F, FontStyle.Bold), b, x - 10, pnlChart.Height - padding + 10);
+                {
+                    var size = g.MeasureString(months[i], new Font("Segoe UI", 9F, FontStyle.Bold));
+                    g.DrawString(months[i], new Font("Segoe UI", 9F, FontStyle.Bold), b, x - size.Width / 2, pnlChart.Height - paddingY + 10);
+                }
 
-                // Draw Revenue Bar
                 decimal rev = _stats.MonthlyRevenue.ContainsKey(i + 1) ? _stats.MonthlyRevenue[i + 1] : 0;
                 int hRev = (int)((rev / maxVal) * chartHeight);
                 if (hRev > 0)
                 {
-                    using (var b = new SolidBrush(ThemeManager.Sidebar))
-                        g.FillRectangle(b, x - barWidth - 2, pnlChart.Height - padding - hRev, barWidth, hRev);
+                    using (var b = new SolidBrush(Color.FromArgb(27, 58, 87)))
+                        g.FillRoundedRectangle(b, x - barWidth - 1, pnlChart.Height - paddingY - hRev, barWidth, hRev, 4);
                 }
 
-                // Draw Expense Bar
                 decimal exp = _stats.MonthlyExpenses.ContainsKey(i + 1) ? _stats.MonthlyExpenses[i + 1] : 0;
                 int hExp = (int)((exp / maxVal) * chartHeight);
                 if (hExp > 0)
                 {
-                    using (var b = new SolidBrush(Color.FromArgb(128, 90, 213)))
-                        g.FillRectangle(b, x + 2, pnlChart.Height - padding - hExp, barWidth, hExp);
+                    using (var b = new SolidBrush(Color.FromArgb(172, 201, 237)))
+                        g.FillRoundedRectangle(b, x + 1, pnlChart.Height - paddingY - hExp, barWidth, hExp, 4);
                 }
             }
         }
 
-        private void PnlInsights_Paint(object sender, PaintEventArgs e)
+        private void DgvReports_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-            g.DrawRectangle(p, 0, 0, pnlInsights.Width - 1, pnlInsights.Height - 1);
-
-            using (var b = new SolidBrush(ThemeManager.TextPrimary))
-                g.DrawString("Financial Insights", new Font("Segoe UI", 12F, FontStyle.Bold), b, 20, 20);
-
-            // Insight Card 1
-            RectangleF card1Rect = new RectangleF(20, 60, pnlInsights.Width - 40, 90);
-            using (var b = new SolidBrush(Color.FromArgb(20, 46, 204, 113)))
-                g.FillRoundedRectangle(b, card1Rect.X, card1Rect.Y, card1Rect.Width, card1Rect.Height, 8);
-            using (var pen = new Pen(Color.FromArgb(80, 46, 204, 113), 1))
-                g.DrawRoundedRectangle(pen, card1Rect.X, card1Rect.Y, card1Rect.Width, card1Rect.Height, 8);
-
-            using (var b = new SolidBrush(Color.FromArgb(46, 204, 113)))
-                g.DrawString("Optimization Opportunity", new Font("Segoe UI", 9F, FontStyle.Bold), b, 45, 70);
-            
-            using (var b = new SolidBrush(ThemeManager.TextSecondary))
-                g.DrawString("Fiction margins are 5% above\nindustry average. Consider\nincreasing inventory depth for\ntop 10 bestsellers.", new Font("Segoe UI", 8.5F), b, 45, 90);
+            if (e.RowIndex >= 0 && dgvReports.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                var cellRect = dgvReports.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+                
+                if (e.X < cellRect.Width / 2)
+                {
+                    MessageBox.Show("Cannot edit aggregated monthly report data.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Cannot delete aggregated monthly report data.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
         }
 
-        private void DgvDept_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void DgvReports_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             if (e.RowIndex < 0) return;
-            if (dgvDept.Columns[e.ColumnIndex].Name == "Status")
+
+            if (dgvReports.Columns[e.ColumnIndex].Name == "Actions")
             {
-                string status = e.Value?.ToString() ?? "";
-                if (status == "OPTIMAL") e.CellStyle.ForeColor = Color.FromArgb(46, 204, 113);
-                else if (status == "NEEDS REVIEW") e.CellStyle.ForeColor = Color.FromArgb(231, 76, 60);
-                else e.CellStyle.ForeColor = Color.FromArgb(128, 90, 213);
-                e.CellStyle.Font = new Font(dgvDept.Font, FontStyle.Bold);
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
+                
+                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                
+                e.Handled = true;
             }
-            if (dgvDept.Columns[e.ColumnIndex].Name == "Margin")
+            else if (dgvReports.Columns[e.ColumnIndex].Name == "Status")
             {
-                e.Value = e.Value?.ToString() + "%";
-                e.FormattingApplied = true;
+                e.PaintBackground(e.CellBounds, true);
+                string status = e.Value?.ToString() ?? "";
+
+                Color bgColor = ThemeManager.TextBoxBorder;
+                Color textColor = ThemeManager.TextPrimary;
+
+                if (status == "Exceeded") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
+                else if (status == "Below Target") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
+                else { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                SizeF textSize = g.MeasureString(status, new Font("Segoe UI", 8F, FontStyle.Bold));
+                RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
+
+                using (var brush = new SolidBrush(bgColor))
+                {
+                    g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
+                }
+
+                using (var brush = new SolidBrush(textColor))
+                {
+                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    g.DrawString(status, new Font("Segoe UI", 8F, FontStyle.Bold), brush, badgeRect, format);
+                }
+
+                e.Handled = true;
             }
         }
 
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
             ApplyTheme();
-            LoadData(); 
         }
 
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
+            pnlContent.BackColor = ThemeManager.Background;
+
             lblTitle.ForeColor = ThemeManager.TextPrimary;
-            
-            btnExportPDF.BackColor = ThemeManager.CardBackground;
+            lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+
+            btnExportExcel.FillColor = ThemeManager.ButtonFill;
+            btnExportExcel.ForeColor = ThemeManager.ButtonText;
+
+            btnExportPDF.FillColor = ThemeManager.CardBackground;
             btnExportPDF.ForeColor = ThemeManager.TextPrimary;
-            btnExportPDF.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            btnExportPDF.BorderColor = ThemeManager.TextBoxBorder;
 
-            btnExportExcel.BackColor = ThemeManager.Sidebar;
-            btnExportExcel.ForeColor = Color.White;
-            btnExportExcel.FlatAppearance.BorderSize = 0;
-
-            txtSearch.BackColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-
-            cbDateRange.BackColor = ThemeManager.TextBoxBackground;
+            cbDateRange.FillColor = ThemeManager.TextBoxBackground;
             cbDateRange.ForeColor = ThemeManager.TextPrimary;
-            cbCategory.BackColor = ThemeManager.TextBoxBackground;
-            cbCategory.ForeColor = ThemeManager.TextPrimary;
+            cbDateRange.BorderColor = ThemeManager.TextBoxBorder;
 
-            pnlChart.BackColor = ThemeManager.CardBackground;
-            pnlDeptPerf.BackColor = ThemeManager.CardBackground;
-            pnlInsights.BackColor = ThemeManager.Background; // Wait, insight panel should have background to match image? Actually card background is fine.
+            // Metrics Cards
+            var cards = new[] { cardRevenue, cardExpenses, cardNetProfit };
+            foreach (var card in cards)
+            {
+                card.FillColor = ThemeManager.CardBackground;
+                card.CustomBorderColor = ThemeManager.TextBoxBorder;
+                if (card.Controls["TitleLabel"] is Label lTitle) lTitle.ForeColor = ThemeManager.TextSecondary;
+                if (card.Controls["ValueLabel"] is Label lVal) lVal.ForeColor = ThemeManager.TextPrimary;
+                if (card.Controls["CompareLabel"] is Label lComp) lComp.ForeColor = ThemeManager.TextSecondary;
+                
+                if (card.Controls["BadgePanel"] is Guna2Panel bPnl)
+                {
+                    if (bPnl.Controls["BadgeLabel"] is Label bLbl)
+                    {
+                        if (bLbl.Text.Contains("+"))
+                        {
+                            bPnl.FillColor = Color.FromArgb(40, 46, 204, 113);
+                            bLbl.ForeColor = Color.FromArgb(46, 204, 113);
+                        }
+                        else
+                        {
+                            bPnl.FillColor = Color.FromArgb(40, 231, 76, 60);
+                            bLbl.ForeColor = Color.FromArgb(231, 76, 60);
+                        }
+                    }
+                }
+            }
 
-            dgvDept.BackgroundColor = ThemeManager.CardBackground;
-            dgvDept.GridColor = ThemeManager.TextBoxBorder;
-            dgvDept.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvDept.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvDept.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvDept.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvDept.EnableHeadersVisualStyles = false;
-            dgvDept.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvDept.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvDept.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            pnlChart.FillColor = ThemeManager.CardBackground;
+            pnlChart.BorderColor = ThemeManager.TextBoxBorder;
+
+            pnlGridContainer.FillColor = ThemeManager.CardBackground;
+            pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+
+            foreach (Control c in pnlGridContainer.Controls)
+            {
+                if (c is Guna2Panel tb && tb.Height == 70)
+                {
+                    tb.CustomBorderColor = ThemeManager.TextBoxBorder;
+                    if (tb.Controls["TableTitle"] is Label l1) l1.ForeColor = ThemeManager.TextPrimary;
+                    if (tb.Controls["TableSub"] is Label l2) l2.ForeColor = ThemeManager.TextSecondary;
+                }
+            }
+
+            dgvReports.BackgroundColor = ThemeManager.CardBackground;
+            dgvReports.GridColor = ThemeManager.TextBoxBorder;
+            dgvReports.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvReports.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvReports.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvReports.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+
+            dgvReports.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvReports.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvReports.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvReports.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+
+            dgvReports.EnableHeadersVisualStyles = false;
+            dgvReports.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
+            dgvReports.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+            dgvReports.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         }
     }
 }
