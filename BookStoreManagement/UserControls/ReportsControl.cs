@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -67,13 +67,13 @@ namespace BookStoreManagement.UserControls
 
             // 1. Page Header
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
-            lblTitle = new Label { Text = "Thống kê tổng hợp", Font = new Font("Inter", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblTitle = new Label { Text = "Thống kê tổng hợp", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
             
             btnExportExcel = new Guna2Button { 
                 Text = "Xuất Excel", 
                 Size = new Size(130, 36), 
                 BorderRadius = 4, 
-                Font = new Font("Inter", 12F, FontStyle.Bold)
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold)
             };
             
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnExportExcel });
@@ -105,7 +105,7 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1,
                 Margin = new Padding(0, 0, 0, gutter)
             };
-            var lblChartTitle = new Label { Text = "Biểu đồ doanh thu 12 tháng gần nhất", Font = new Font("Inter", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), Name = "ChartTitle" };
+            var lblChartTitle = new Label { Text = "Biểu đồ doanh thu 12 tháng gần nhất", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), Name = "ChartTitle" };
             pnlChart.Controls.Add(lblChartTitle);
             pnlChart.Paint += PnlChart_Paint;
 
@@ -118,13 +118,13 @@ namespace BookStoreManagement.UserControls
             // Configure Top Selling Grid
             dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Rank", HeaderText = "Hạng", Width = 60, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QuantitySold", HeaderText = "Số lượng bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Inter", 11, FontStyle.Bold) } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QuantitySold", HeaderText = "Số lượng bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
             dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Revenue", HeaderText = "Doanh thu", Width = 150, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N0" } });
             
             // Configure Warnings Grid
             dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Sku", HeaderText = "ISBN", Width = 120 });
             dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Inter", 11, FontStyle.Bold) } });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
             dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Trạng thái", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
 
             dgvWarnings.CellPainting += DgvWarnings_CellPainting;
@@ -160,7 +160,7 @@ namespace BookStoreManagement.UserControls
             var pnl = new Guna2Panel { Dock = DockStyle.Left, BorderRadius = 4, BorderThickness = 1 };
             
             var pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 50, CustomBorderThickness = new Padding(0,0,0,1) };
-            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Inter", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 12) };
+            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 12) };
             pnlHeader.Controls.Add(lblTitle);
 
             grid = new DataGridView
@@ -191,11 +191,11 @@ namespace BookStoreManagement.UserControls
         {
             var card = new Guna2Panel { Height = 130, BorderRadius = 4, BorderThickness = 1 };
             
-            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Inter", 14F), AutoSize = true, Location = new Point(20, 20) };
-            var lblVal = new Label { Name = "ValueLabel", Text = val, Font = new Font("Inter", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 45) };
+            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 14F), AutoSize = true, Location = new Point(20, 20) };
+            var lblVal = new Label { Name = "ValueLabel", Text = val, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 45) };
             
             var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(20, 95) };
-            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Inter", 11F, FontStyle.Bold), AutoSize = true, Padding = new Padding(4) };
+            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Segoe UI", 11F, FontStyle.Bold), AutoSize = true, Padding = new Padding(4) };
             pnlBadge.Controls.Add(lblBadge);
 
             // Store info in Tag
@@ -269,7 +269,7 @@ namespace BookStoreManagement.UserControls
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                using (var statusFont = new Font("Inter", 10F, FontStyle.Bold))
+                using (var statusFont = new Font("Segoe UI", 10F, FontStyle.Bold))
                 {
                     SizeF textSize = g.MeasureString(status, statusFont);
                     RectangleF badgeRect = new RectangleF(
@@ -311,8 +311,8 @@ namespace BookStoreManagement.UserControls
             // Round up to nearest nice number
             decimal steps = maxVal / 5;
             
-            using (var font1 = new Font("Inter", 9F))
-            using (var font2 = new Font("Inter", 9F, FontStyle.Bold))
+            using (var font1 = new Font("Segoe UI", 9F))
+            using (var font2 = new Font("Segoe UI", 9F, FontStyle.Bold))
             {
                 using (var penGrid = new Pen(Color.FromArgb(80, ThemeManager.TextBoxBorder), 1))
                 {
@@ -467,7 +467,7 @@ namespace BookStoreManagement.UserControls
 
                 grid.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
                 grid.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-                grid.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 12F, FontStyle.Bold);
+                grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             }
         }
     

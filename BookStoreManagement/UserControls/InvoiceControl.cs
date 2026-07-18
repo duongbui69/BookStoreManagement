@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -77,7 +77,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Quản lý Hoá đơn", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
             lblSubTitle = new Label { Text = "Danh sách hoá đơn bán hàng từ khách hàng", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 5, 0, 0) };
             
-            txtSearch = new TextBox { Width = 250, Font = new Font("Inter", 10F), Margin = new Padding(0, 15, 10, 0), BorderStyle = BorderStyle.FixedSingle };
+            txtSearch = new TextBox { Width = 250, Font = new Font("Segoe UI", 10F), Margin = new Padding(0, 15, 10, 0), BorderStyle = BorderStyle.FixedSingle };
             txtSearch.PlaceholderText = "Tìm kiếm hoá đơn...";
             txtSearch.KeyDown += async (s, e) => {
                 if (e.KeyCode == Keys.Enter)
@@ -89,9 +89,9 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            btnFilter = new Button { Text = " Lọc", Size = new Size(100, 36), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 10, 0) };
+            btnFilter = new Button { Text = " Lọc", Size = new Size(100, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 10, 0) };
             
-            btnAdd = new Button { Text = "+ Tạo Hoá đơn", Size = new Size(160, 36), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 0, 0) };
+            btnAdd = new Button { Text = "+ Tạo Hoá đơn", Size = new Size(160, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -207,14 +207,14 @@ namespace BookStoreManagement.UserControls
             
             dgvInvoices.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
             dgvInvoices.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvInvoices.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 9.5F, FontStyle.Bold);
+            dgvInvoices.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             dgvInvoices.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
 
             dgvInvoices.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvInvoices.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvInvoices.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
             dgvInvoices.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvInvoices.DefaultCellStyle.Font = new Font("Inter", 9.5F);
+            dgvInvoices.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
             
             dgvInvoices.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvInvoices.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
@@ -285,14 +285,14 @@ namespace BookStoreManagement.UserControls
             if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["OrderCode"].Index && e.Value != null)
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Inter", 9.5F, FontStyle.Bold), e.CellBounds, ThemeManager.ButtonFill, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Segoe UI", 9.5F, FontStyle.Bold), e.CellBounds, ThemeManager.ButtonFill, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["TotalAmount"].Index && e.Value != null)
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 Rectangle textRect = new Rectangle(e.CellBounds.Left, e.CellBounds.Top, e.CellBounds.Width - 15, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Inter", 9.5F, FontStyle.Bold), textRect, ThemeManager.ButtonFill, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Segoe UI", 9.5F, FontStyle.Bold), textRect, ThemeManager.ButtonFill, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["SubTotal"].Index && e.Value != null)
@@ -373,7 +373,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
                 e.Handled = true;
             }

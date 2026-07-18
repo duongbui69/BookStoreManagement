@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Themes;
@@ -77,32 +77,32 @@ namespace BookStoreManagement.Forms
             
             // Header
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, FillColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = "Quản lý tồn kho", ForeColor = Color.White, Font = new Font("Inter", 14, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), BackColor = Color.Transparent };
-            btnClose = new Guna2Button { Text = "✕", Size = new Size(40, 40), Location = new Point(450, 10), FillColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Inter", 12, FontStyle.Bold), Cursor = Cursors.Hand };
+            lblTitle = new Label { Text = "Quản lý tồn kho", ForeColor = Color.White, Font = new Font("Segoe UI", 14, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), BackColor = Color.Transparent };
+            btnClose = new Guna2Button { Text = "✕", Size = new Size(40, 40), Location = new Point(450, 10), FillColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Segoe UI", 12, FontStyle.Bold), Cursor = Cursors.Hand };
             btnClose.Click += (s, e) => this.Close();
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnClose });
             
             // Content
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(30), FillColor = ThemeManager.Background };
             
-            lblBook = new Label { Text = "Sản phẩm", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 20), ForeColor = ThemeManager.TextPrimary };
-            cbBook = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 45), BorderRadius = 4, Font = new Font("Inter", 10) };
+            lblBook = new Label { Text = "Sản phẩm", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 20), ForeColor = ThemeManager.TextPrimary };
+            cbBook = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 45), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
             
-            lblWarehouse = new Label { Text = "Kho hàng", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 95), ForeColor = ThemeManager.TextPrimary };
-            cbWarehouse = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 120), BorderRadius = 4, Font = new Font("Inter", 10) };
+            lblWarehouse = new Label { Text = "Kho hàng", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 95), ForeColor = ThemeManager.TextPrimary };
+            cbWarehouse = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 120), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
             cbWarehouse.Items.AddRange(new object[] { "Kho Tổng (Hà Nội)", "Kho Chi Nhánh (HCM)", "Kho Miền Trung" });
             cbWarehouse.SelectedIndex = 0;
             
-            lblCurrentStock = new Label { Text = "Tồn hiện tại", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 170), ForeColor = ThemeManager.TextPrimary };
-            txtCurrentStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 195), BorderRadius = 4, Font = new Font("Inter", 10) };
+            lblCurrentStock = new Label { Text = "Tồn hiện tại", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 170), ForeColor = ThemeManager.TextPrimary };
+            txtCurrentStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 195), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
             
-            lblMinStock = new Label { Text = "Tồn tối thiểu", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 245), ForeColor = ThemeManager.TextPrimary };
-            txtMinStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 270), BorderRadius = 4, Font = new Font("Inter", 10) };
+            lblMinStock = new Label { Text = "Tồn tối thiểu", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 245), ForeColor = ThemeManager.TextPrimary };
+            txtMinStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 270), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
             
-            btnCancel = new Guna2Button { Text = "Hủy bỏ", Size = new Size(120, 40), Location = new Point(220, 340), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Size = new Size(120, 40), Location = new Point(220, 340), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
             btnCancel.Click += (s, e) => this.Close();
             
-            btnSave = new Guna2Button { Text = "Lưu thông tin", Size = new Size(140, 40), Location = new Point(350, 340), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "Lưu thông tin", Size = new Size(140, 40), Location = new Point(350, 340), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
             
             pnlContent.Controls.AddRange(new Control[] { lblBook, cbBook, lblWarehouse, cbWarehouse, lblCurrentStock, txtCurrentStock, lblMinStock, txtMinStock, btnCancel, btnSave });
@@ -193,3 +193,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

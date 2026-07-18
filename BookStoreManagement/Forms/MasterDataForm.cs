@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -66,7 +66,7 @@ namespace BookStoreManagement.Forms
             lblTitle = new Label
             {
                 Text = recordId.HasValue ? "Cập nhật dữ liệu" : "Thêm mới dữ liệu",
-                Font = new Font("Inter", 14, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(24, 24)
             };
@@ -74,7 +74,7 @@ namespace BookStoreManagement.Forms
             btnClose = new Button
             {
                 Text = "✕",
-                Font = new Font("Inter", 12),
+                Font = new Font("Segoe UI", 12),
                 Size = new Size(32, 32),
                 Location = new Point(this.Width - 56, 20),
                 FlatStyle = FlatStyle.Flat,
@@ -88,37 +88,37 @@ namespace BookStoreManagement.Forms
 
             int yPos = 80;
 
-            lblName = new Label { Text = "Tên", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Inter", 10) };
-            txtName = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Inter", 10), Padding = new Padding(8) };
+            lblName = new Label { Text = "Tên", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+            txtName = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
             pnlMain.Controls.Add(lblName);
             pnlMain.Controls.Add(txtName);
             yPos += 70;
 
             if (dataType == "Publisher")
             {
-                lblPhone = new Label { Text = "Số điện thoại", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Inter", 10) };
-                txtPhone = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Inter", 10), Padding = new Padding(8) };
+                lblPhone = new Label { Text = "Số điện thoại", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+                txtPhone = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
                 pnlMain.Controls.Add(lblPhone);
                 pnlMain.Controls.Add(txtPhone);
                 yPos += 70;
 
-                lblEmail = new Label { Text = "Email", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Inter", 10) };
-                txtEmail = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Inter", 10), Padding = new Padding(8) };
+                lblEmail = new Label { Text = "Email", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+                txtEmail = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
                 pnlMain.Controls.Add(lblEmail);
                 pnlMain.Controls.Add(txtEmail);
                 yPos += 70;
             }
             else
             {
-                lblDesc = new Label { Text = "Mô tả", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Inter", 10) };
-                txtDesc = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Height = 80, Multiline = true, Font = new Font("Inter", 10), Padding = new Padding(8) };
+                lblDesc = new Label { Text = "Mô tả", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+                txtDesc = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Height = 80, Multiline = true, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
                 pnlMain.Controls.Add(lblDesc);
                 pnlMain.Controls.Add(txtDesc);
                 yPos += 120;
             }
 
-            lblStatus = new Label { Text = "Trạng thái", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Inter", 10) };
-            cboStatus = new ComboBox { Location = new Point(24, yPos + 25), Width = 150, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Inter", 10) };
+            lblStatus = new Label { Text = "Trạng thái", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+            cboStatus = new ComboBox { Location = new Point(24, yPos + 25), Width = 150, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
             cboStatus.Items.Add("Hoạt động");
             cboStatus.Items.Add("Tạm khóa");
             cboStatus.SelectedIndex = 0;
@@ -134,7 +134,7 @@ namespace BookStoreManagement.Forms
                 Size = new Size(100, 36),
                 Location = new Point(this.Width - 232, this.Height - 60),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Inter", 10, FontStyle.Regular)
+                Font = new Font("Segoe UI", 10, FontStyle.Regular)
             };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
@@ -144,7 +144,7 @@ namespace BookStoreManagement.Forms
                 Size = new Size(120, 36),
                 Location = new Point(this.Width - 148, this.Height - 60),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Inter", 10, FontStyle.Regular)
+                Font = new Font("Segoe UI", 10, FontStyle.Regular)
             };
             btnSave.Click += BtnSave_Click;
 
@@ -321,3 +321,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

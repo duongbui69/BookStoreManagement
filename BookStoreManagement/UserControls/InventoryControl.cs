@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -103,9 +103,9 @@ namespace BookStoreManagement.UserControls
             
             // 1. Header
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
-            lblTitle = new Label { Text = "Thống kê hàng tồn kho", Font = new Font("Inter", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu tồn kho hiện tại.", Font = new Font("Inter", 14), AutoSize = true, Location = new Point(0, 40) };
-            lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Inter", 13), AutoSize = true, Location = new Point(700, 20) };
+            lblTitle = new Label { Text = "Thống kê hàng tồn kho", Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu tồn kho hiện tại.", Font = new Font("Segoe UI", 14), AutoSize = true, Location = new Point(0, 40) };
+            lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Segoe UI", 13), AutoSize = true, Location = new Point(700, 20) };
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, lblLastUpdated });
             
             // 2. KPI Cards
@@ -127,19 +127,19 @@ namespace BookStoreManagement.UserControls
             // 3. Toolbar (Filters)
             pnlToolbar = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Padding = new Padding(0, 15, 0, 15) };
             
-            txtSearch = new Guna2TextBox { PlaceholderText = "Tìm sản phẩm (SKU, Tên)...", Size = new Size(250, 40), Location = new Point(0, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
-            cbWarehouse = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(270, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
-            cbCategory = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(490, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
+            txtSearch = new Guna2TextBox { PlaceholderText = "Tìm sản phẩm (SKU, Tên)...", Size = new Size(250, 40), Location = new Point(0, 15), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
+            cbWarehouse = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(270, 15), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
+            cbCategory = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(490, 15), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
             
-            btnAddNew = new Guna2Button { Text = "+ Thêm mới", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAddNew = new Guna2Button { Text = "+ Thêm mới", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAddNew.Click += (s, e) => {
                 var frm = new Forms.InventoryEditForm();
                 if (frm.ShowDialog() == DialogResult.OK) LoadData();
             };
             
-            btnExport = new Guna2Button { Text = "📥 Xuất Excel", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Text = "📥 Xuất Excel", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
             
-            btnFilterWarning = new Guna2Button { Text = "Cảnh báo tồn", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
+            btnFilterWarning = new Guna2Button { Text = "Cảnh báo tồn", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
             
             pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnFilterWarning, btnExport, btnAddNew });
             pnlToolbar.Resize += (s, e) => {
@@ -195,8 +195,8 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel CreateKpiCard(string title, string value, int type)
         {
             var card = new Guna2Panel { BorderRadius = 8, BorderThickness = 1 };
-            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Inter", 11, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
-            var lblV = new Label { Text = value, Font = new Font("Inter", 24, FontStyle.Bold), AutoSize = true, Location = new Point(20, 45) };
+            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 11, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            var lblV = new Label { Text = value, Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(20, 45) };
             card.Controls.AddRange(new Control[] { lblT, lblV });
             
             // Add a reference to the value label so we can update it
@@ -214,7 +214,7 @@ namespace BookStoreManagement.UserControls
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sku", HeaderText = "SKU", Width = 120 });
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Title", HeaderText = "Tên sách", Width = 280 });
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Warehouse", HeaderText = "Kho", Width = 150 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Inter", 11, FontStyle.Bold) } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "MinStock", HeaderText = "Tồn tối thiểu", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
             
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Category", HeaderText = "Danh mục", Width = 150 });
@@ -314,7 +314,7 @@ namespace BookStoreManagement.UserControls
                 else if (status == "Hết hàng") { bgColor = Color.FromArgb(250, 200, 200); textColor = Color.FromArgb(180, 0, 0); }
                 else { bgColor = Color.FromArgb(255, 230, 200); textColor = Color.FromArgb(180, 100, 0); }
                 
-                var size = TextRenderer.MeasureText(status, new Font("Inter", 10, FontStyle.Bold));
+                var size = TextRenderer.MeasureText(status, new Font("Segoe UI", 10, FontStyle.Bold));
                 var rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - size.Width - 16) / 2, e.CellBounds.Y + (e.CellBounds.Height - size.Height - 8) / 2, size.Width + 16, size.Height + 8);
                 
                 using (var path = new GraphicsPath())
@@ -331,7 +331,7 @@ namespace BookStoreManagement.UserControls
                     using (var pen = new Pen(textColor, 1)) e.Graphics.DrawPath(pen, path);
                 }
                 
-                TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 10, FontStyle.Bold), rect, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 10, FontStyle.Bold), rect, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 e.Handled = true;
             }
         }
@@ -484,7 +484,7 @@ namespace BookStoreManagement.UserControls
             dgvInventory.EnableHeadersVisualStyles = false;
             dgvInventory.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
             dgvInventory.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvInventory.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10F, FontStyle.Bold);
+            dgvInventory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             dgvInventory.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
             dgvInventory.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -87,8 +87,8 @@ namespace BookStoreManagement.UserControls
             tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            btnFilter = new Guna2Button { Text = "Lọc", Size = new Size(100, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1, Margin = new Padding(0, 0, 15, 0) };
-            btnAdd = new Guna2Button { Text = "+ Add User", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0) };
+            btnFilter = new Guna2Button { Text = "Lọc", Size = new Size(100, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1, Margin = new Padding(0, 0, 15, 0) };
+            btnAdd = new Guna2Button { Text = "+ Add User", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0) };
             
             btnAdd.Click += BtnAdd_Click;
 
@@ -328,7 +328,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillEllipse(dotBrush, x + 8, y + 9, 6, 6);
                     }
                     
-                    using (Font f = new Font("Inter", 9f, FontStyle.Bold))
+                    using (Font f = new Font("Segoe UI", 9f, FontStyle.Bold))
                     {
                         TextRenderer.DrawText(e.Graphics, status, f, new Rectangle(x + 18, y, w - 18, h), textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
                     }
@@ -359,7 +359,7 @@ namespace BookStoreManagement.UserControls
                     using (SolidBrush bgBrush = new SolidBrush(bgColor))
                         e.Graphics.FillPath(bgBrush, path);
                     
-                    using (Font f = new Font("Inter", 8.5f, FontStyle.Bold))
+                    using (Font f = new Font("Segoe UI", 8.5f, FontStyle.Bold))
                         TextRenderer.DrawText(e.Graphics, role.ToUpper(), f, new Rectangle(x, y, w, h), textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
                 
@@ -398,13 +398,13 @@ namespace BookStoreManagement.UserControls
             dgvAccounts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.TextBoxBackground;
             dgvAccounts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
             dgvAccounts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.TextBoxBackground;
-            dgvAccounts.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10F, FontStyle.Bold);
+            dgvAccounts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             
             dgvAccounts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvAccounts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvAccounts.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
             dgvAccounts.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvAccounts.DefaultCellStyle.Font = new Font("Inter", 9.5F);
+            dgvAccounts.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
             
             dgvAccounts.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             

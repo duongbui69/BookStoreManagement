@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -48,38 +48,38 @@ namespace BookStoreManagement.Forms
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            lblTitle = new Label { Location = new Point(24, 24), AutoSize = true, Font = new Font("Inter", 16, FontStyle.Bold) };
+            lblTitle = new Label { Location = new Point(24, 24), AutoSize = true, Font = new Font("Segoe UI", 16, FontStyle.Bold) };
             this.Controls.Add(lblTitle);
 
             int startY = 80;
 
-            lblId = new Label { Text = "Mã NCC", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            txtId = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10), ReadOnly = true, Enabled = false };
+            lblId = new Label { Text = "Mã NCC", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            txtId = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10), ReadOnly = true, Enabled = false };
             this.Controls.AddRange(new Control[] { lblId, txtId });
             startY += 70;
 
-            lblName = new Label { Text = "Tên nhà cung cấp (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            txtName = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            lblName = new Label { Text = "Tên nhà cung cấp (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            txtName = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblName, txtName });
             startY += 70;
 
-            lblPhone = new Label { Text = "Số điện thoại", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            txtPhone = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            lblPhone = new Label { Text = "Số điện thoại", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            txtPhone = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblPhone, txtPhone });
             startY += 70;
 
-            lblEmail = new Label { Text = "Email", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            txtEmail = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            lblEmail = new Label { Text = "Email", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            txtEmail = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblEmail, txtEmail });
             startY += 70;
 
-            lblAddress = new Label { Text = "Địa chỉ", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            txtAddress = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            lblAddress = new Label { Text = "Địa chỉ", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            txtAddress = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblAddress, txtAddress });
             startY += 70;
 
-            lblStatus = new Label { Text = "Trạng thái", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
-            chkIsActive = new CheckBox { Text = "Đang giao dịch", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Inter", 10) };
+            lblStatus = new Label { Text = "Trạng thái", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            chkIsActive = new CheckBox { Text = "Đang giao dịch", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblStatus, chkIsActive });
 
             btnCancel = new Button
@@ -88,7 +88,7 @@ namespace BookStoreManagement.Forms
                 Size = new Size(100, 36),
                 Location = new Point(this.Width - 250, this.Height - 80),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Inter", 10)
+                Font = new Font("Segoe UI", 10)
             };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
@@ -98,7 +98,7 @@ namespace BookStoreManagement.Forms
                 Size = new Size(120, 36),
                 Location = new Point(this.Width - 140, this.Height - 80),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Inter", 10)
+                Font = new Font("Segoe UI", 10)
             };
             btnSave.Click += BtnSave_Click;
 
@@ -210,3 +210,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

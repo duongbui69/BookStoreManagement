@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -82,7 +82,7 @@ namespace BookStoreManagement.Forms
 
             // 1. Header
             pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = "CHI TIẾT HOÁ ĐƠN", Font = new Font("Inter", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
+            lblTitle = new Label { Text = "CHI TIẾT HOÁ ĐƠN", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
             
             btnClose = new Button { Text = "X", Size = new Size(40, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Cursor = Cursors.Hand };
             btnClose.FlatAppearance.BorderSize = 0;
@@ -98,13 +98,13 @@ namespace BookStoreManagement.Forms
             Panel pnlFooterTopBorder = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = ThemeManager.TextBoxBorder };
             pnlFooter.Controls.Add(pnlFooterTopBorder);
 
-            btnExportPdf = new Button { Text = "Xuất PDF", Size = new Size(120, 40), Font = new Font("Inter", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.ButtonFill, ForeColor = Color.White, Location = new Point(650, 15) };
+            btnExportPdf = new Button { Text = "Xuất PDF", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.ButtonFill, ForeColor = Color.White, Location = new Point(650, 15) };
             btnExportPdf.FlatAppearance.BorderSize = 0;
 
-            btnPrint = new Button { Text = "In Hoá đơn", Size = new Size(120, 40), Font = new Font("Inter", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.ButtonFill, Location = new Point(515, 15) };
+            btnPrint = new Button { Text = "In Hoá đơn", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.ButtonFill, Location = new Point(515, 15) };
             btnPrint.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
 
-            btnCloseFooter = new Button { Text = "Đóng", Size = new Size(100, 40), Font = new Font("Inter", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.TextPrimary, Location = new Point(400, 15) };
+            btnCloseFooter = new Button { Text = "Đóng", Size = new Size(100, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.TextPrimary, Location = new Point(400, 15) };
             btnCloseFooter.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
             btnCloseFooter.Click += (s, e) => this.Close();
 
@@ -147,7 +147,7 @@ namespace BookStoreManagement.Forms
             // Product Grid
             pnlProductContainer = new Panel { Dock = DockStyle.Top, Height = 250, Margin = new Padding(0, 24, 0, 24) };
             
-            lblProductTitle = new Label { Text = "CHI TIẾT SẢN PHẨM", Dock = DockStyle.Top, Height = 40, Font = new Font("Inter", 10F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleCenter, BackColor = ThemeManager.CardBackground, ForeColor = ThemeManager.ButtonFill };
+            lblProductTitle = new Label { Text = "CHI TIẾT SẢN PHẨM", Dock = DockStyle.Top, Height = 40, Font = new Font("Segoe UI", 10F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleCenter, BackColor = ThemeManager.CardBackground, ForeColor = ThemeManager.ButtonFill };
             Panel pnlGridBorder = new Panel { Dock = DockStyle.Fill, Padding = new Padding(1), BackColor = ThemeManager.TextBoxBorder };
             pnlProductContainer.Controls.Add(pnlGridBorder);
             pnlGridBorder.Controls.Add(lblProductTitle); // Will be pushed down. Wait, Dock = Fill. Better: Top for label, Fill for Grid.
@@ -207,8 +207,8 @@ namespace BookStoreManagement.Forms
             Panel pnlLine = new Panel { Width = 280, Height = 1, BackColor = ThemeManager.TextBoxBorder, Location = new Point(10, 90) };
             pnlSummaryBox.Controls.Add(pnlLine);
 
-            Label lblTotalText = new Label { Text = "TỔNG CỘNG:", Font = new Font("Inter", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(10, 105) };
-            lblTotalAmount = new Label { Text = "0 ₫", Font = new Font("Inter", 14F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 150, Location = new Point(140, 100) };
+            Label lblTotalText = new Label { Text = "TỔNG CỘNG:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(10, 105) };
+            lblTotalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 150, Location = new Point(140, 100) };
             
             pnlSummaryBox.Controls.Add(lblTotalText);
             pnlSummaryBox.Controls.Add(lblTotalAmount);
@@ -228,7 +228,7 @@ namespace BookStoreManagement.Forms
         private Panel CreateInfoBox(string title, out Label lblTitle)
         {
             Panel p = new Panel { Dock = DockStyle.Fill, BorderStyle = BorderStyle.FixedSingle, BackColor = ThemeManager.Background };
-            lblTitle = new Label { Text = title, Dock = DockStyle.Top, Height = 30, Font = new Font("Inter", 9.5F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, TextAlign = ContentAlignment.MiddleCenter };
+            lblTitle = new Label { Text = title, Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, TextAlign = ContentAlignment.MiddleCenter };
             Panel line = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = ThemeManager.TextBoxBorder };
             p.Controls.Add(line);
             p.Controls.Add(lblTitle);
@@ -237,8 +237,8 @@ namespace BookStoreManagement.Forms
 
         private Label AddInfoRow(Panel parent, string label, string value, int yPos, bool isBold = false, Color? valueColor = null)
         {
-            Label lblKey = new Label { Text = label, Font = new Font("Inter", 9.5F), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(15, yPos) };
-            Label lblValue = new Label { Text = value, Font = new Font("Inter", 9.5F, isBold ? FontStyle.Bold : FontStyle.Regular), ForeColor = valueColor ?? ThemeManager.TextPrimary, AutoSize = false, Width = 200, TextAlign = ContentAlignment.MiddleRight, Location = new Point(140, yPos) };
+            Label lblKey = new Label { Text = label, Font = new Font("Segoe UI", 9.5F), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(15, yPos) };
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 9.5F, isBold ? FontStyle.Bold : FontStyle.Regular), ForeColor = valueColor ?? ThemeManager.TextPrimary, AutoSize = false, Width = 200, TextAlign = ContentAlignment.MiddleRight, Location = new Point(140, yPos) };
             parent.Controls.Add(lblKey);
             parent.Controls.Add(lblValue);
             // Resize parent handle
@@ -248,8 +248,8 @@ namespace BookStoreManagement.Forms
 
         private Label AddSummaryRow(Panel parent, string label, string value, int yPos)
         {
-            Label lblKey = new Label { Text = label, Font = new Font("Inter", 9.5F), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(10, yPos) };
-            Label lblValue = new Label { Text = value, Font = new Font("Inter", 9.5F), ForeColor = ThemeManager.TextPrimary, AutoSize = false, Width = 150, TextAlign = ContentAlignment.MiddleRight, Location = new Point(140, yPos) };
+            Label lblKey = new Label { Text = label, Font = new Font("Segoe UI", 9.5F), ForeColor = ThemeManager.TextSecondary, AutoSize = true, Location = new Point(10, yPos) };
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 9.5F), ForeColor = ThemeManager.TextPrimary, AutoSize = false, Width = 150, TextAlign = ContentAlignment.MiddleRight, Location = new Point(140, yPos) };
             parent.Controls.Add(lblKey);
             parent.Controls.Add(lblValue);
             return lblValue;
@@ -266,7 +266,7 @@ namespace BookStoreManagement.Forms
 
             dgvProducts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
             dgvProducts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 9F, FontStyle.Bold);
+            dgvProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             dgvProducts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
 
             dgvProducts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
@@ -358,3 +358,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -82,10 +82,10 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Quản lý Đơn hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
             lblSubTitle = new Label { Text = "Danh sách tất cả các đơn hàng từ khách hàng.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Button { Text = "+ TẠO ĐƠN HÀNG MỚI", Size = new Size(200, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Button { Text = "+ TẠO ĐƠN HÀNG MỚI", Size = new Size(200, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -99,19 +99,19 @@ namespace BookStoreManagement.UserControls
             // 2. Filters Bar
             pnlFilters = new Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(15, 10, 15, 10) };
             
-            Label lblStatus = new Label { Text = "Trạng thái:", AutoSize = true, Location = new Point(15, 20), Font = new Font("Inter", 9F, FontStyle.Bold) };
-            cbStatus = new ComboBox { Location = new Point(95, 15), Width = 140, Font = new Font("Inter", 9F), DropDownStyle = ComboBoxStyle.DropDownList };
+            Label lblStatus = new Label { Text = "Trạng thái:", AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbStatus = new ComboBox { Location = new Point(95, 15), Width = 140, Font = new Font("Segoe UI", 9F), DropDownStyle = ComboBoxStyle.DropDownList };
             cbStatus.Items.AddRange(new object[] { "Tất cả", "Pending", "Completed", "Cancelled" });
             cbStatus.SelectedIndex = 0;
             cbStatus.SelectedIndexChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
-            Label lblTime = new Label { Text = "Thời gian:", AutoSize = true, Location = new Point(255, 20), Font = new Font("Inter", 9F, FontStyle.Bold) };
-            dtpFrom = new DateTimePicker { Location = new Point(330, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Inter", 9F) };
+            Label lblTime = new Label { Text = "Thời gian:", AutoSize = true, Location = new Point(255, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            dtpFrom = new DateTimePicker { Location = new Point(330, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
             dtpFrom.Value = DateTime.Now.AddDays(-30);
             dtpFrom.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
             
-            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(455, 18), Font = new Font("Inter", 10F) };
-            dtpTo = new DateTimePicker { Location = new Point(475, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Inter", 9F) };
+            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(455, 18), Font = new Font("Segoe UI", 10F) };
+            dtpTo = new DateTimePicker { Location = new Point(475, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
             dtpTo.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
             pnlFilters.Controls.AddRange(new Control[] { lblStatus, cbStatus, lblTime, dtpFrom, lblDash, dtpTo });
@@ -226,14 +226,14 @@ namespace BookStoreManagement.UserControls
             
             dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 9F, FontStyle.Bold);
+            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             dgvOrders.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
 
             dgvOrders.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvOrders.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvOrders.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
             dgvOrders.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvOrders.DefaultCellStyle.Font = new Font("Inter", 10F);
+            dgvOrders.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
             
             dgvOrders.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvOrders.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
@@ -400,7 +400,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, initial, new Font("Inter", 8F, FontStyle.Bold), new Rectangle(x, y, circleSize, circleSize), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, initial, new Font("Segoe UI", 8F, FontStyle.Bold), new Rectangle(x, y, circleSize, circleSize), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
 
                 Rectangle textRect = new Rectangle(e.CellBounds.Left + 45, e.CellBounds.Top, e.CellBounds.Width - 45, e.CellBounds.Height);
@@ -502,7 +502,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
                 e.Handled = true;
             }

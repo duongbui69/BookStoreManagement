@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -100,7 +100,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label 
             { 
                 Text = "Danh sách danh mục", 
-                Font = new Font("Inter", 16, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 16, FontStyle.Bold), 
                 AutoSize = true, 
                 Location = new Point(0, 0) 
             };
@@ -108,7 +108,7 @@ namespace BookStoreManagement.UserControls
             lblSubtitle = new Label 
             { 
                 Text = "Quản lý và phân loại dữ liệu nền", 
-                Font = new Font("Inter", 10), 
+                Font = new Font("Segoe UI", 10), 
                 AutoSize = true, 
                 Location = new Point(0, 30) 
             };
@@ -116,7 +116,7 @@ namespace BookStoreManagement.UserControls
             cboDataType = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Inter", 10),
+                Font = new Font("Segoe UI", 10),
                 Width = 200,
                 Location = new Point(0, 0) // Position will be updated in layout
             };
@@ -126,7 +126,7 @@ namespace BookStoreManagement.UserControls
             btnAdd = new Button 
             { 
                 Text = "+ Thêm mới", 
-                Font = new Font("Inter", 10, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 10, FontStyle.Bold), 
                 Width = 120, 
                 Height = 36, 
                 FlatStyle = FlatStyle.Flat 
@@ -137,7 +137,7 @@ namespace BookStoreManagement.UserControls
             btnExport = new Button 
             { 
                 Text = "Xuất Excel", 
-                Font = new Font("Inter", 10), 
+                Font = new Font("Segoe UI", 10), 
                 Width = 110, 
                 Height = 36, 
                 FlatStyle = FlatStyle.Flat 
@@ -173,7 +173,7 @@ namespace BookStoreManagement.UserControls
             { 
                 Width = 250, 
                 Location = new Point(0, 16),
-                Font = new Font("Inter", 10)
+                Font = new Font("Segoe UI", 10)
             };
             // Placeholder text logic
             txtSearch.Text = "Lọc dữ liệu...";
@@ -214,7 +214,7 @@ namespace BookStoreManagement.UserControls
 
             // Pagination Panel
             pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(16) };
-            lblPageInfo = new Label { AutoSize = true, Location = new Point(16, 20), Font = new Font("Inter", 9) };
+            lblPageInfo = new Label { AutoSize = true, Location = new Point(16, 20), Font = new Font("Segoe UI", 9) };
             flpPagination = new FlowLayoutPanel 
             { 
                 AutoSize = true, 
@@ -476,7 +476,7 @@ namespace BookStoreManagement.UserControls
                         }
                     }
 
-                    TextRenderer.DrawText(e.Graphics, text, new Font("Inter", 9, FontStyle.Regular), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, text, new Font("Segoe UI", 9, FontStyle.Regular), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                     e.Handled = true;
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
@@ -662,7 +662,7 @@ namespace BookStoreManagement.UserControls
                 FlatStyle = FlatStyle.Flat,
                 Enabled = enabled,
                 Cursor = enabled ? Cursors.Hand : Cursors.Default,
-                Font = new Font("Inter", 9),
+                Font = new Font("Segoe UI", 9),
                 Margin = new Padding(2)
             };
 
@@ -683,3 +683,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

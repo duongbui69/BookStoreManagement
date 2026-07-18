@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -76,10 +76,10 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Quản lý Khách hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
             lblSubTitle = new Label { Text = "Quản lý thông tin, điểm thưởng và trạng thái khách hàng.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Button { Text = "+ Thêm Khách hàng", Size = new Size(160, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Button { Text = "+ Thêm Khách hàng", Size = new Size(160, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -198,14 +198,14 @@ namespace BookStoreManagement.UserControls
             
             dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 9F, FontStyle.Bold);
+            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             dgvCustomers.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
 
             dgvCustomers.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvCustomers.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvCustomers.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground; // No selection color highlight
             dgvCustomers.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvCustomers.DefaultCellStyle.Font = new Font("Inter", 10F);
+            dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
             
             // Disable alternating colors explicitly to ensure 1 single background color
             dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
@@ -375,7 +375,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 9F, FontStyle.Regular), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 9F, FontStyle.Regular), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
                 e.Handled = true;
             }

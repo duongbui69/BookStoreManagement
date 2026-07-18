@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -62,7 +62,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label 
             { 
                 Text = "Quản lý nhà cung cấp", 
-                Font = new Font("Inter", 18, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 18, FontStyle.Bold), 
                 Location = new Point(0, 0), 
                 AutoSize = true 
             };
@@ -121,7 +121,7 @@ namespace BookStoreManagement.UserControls
             
             lblPaginationInfo = new Label 
             { 
-                Font = new Font("Inter", 11), 
+                Font = new Font("Segoe UI", 11), 
                 AutoSize = true, 
                 Location = new Point(0, 20) 
             };
@@ -161,7 +161,7 @@ namespace BookStoreManagement.UserControls
             foreach (DataGridViewColumn col in dgvData.Columns)
             {
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                col.HeaderCell.Style.Font = new Font("Inter", 10, FontStyle.Bold);
+                col.HeaderCell.Style.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             }
         }
 
@@ -293,7 +293,7 @@ namespace BookStoreManagement.UserControls
                 FlatStyle = FlatStyle.Flat,
                 BackColor = ThemeManager.CardBackground,
                 ForeColor = ThemeManager.TextPrimary,
-                Font = new Font("Inter", 10),
+                Font = new Font("Segoe UI", 10),
                 Cursor = Cursors.Hand
             };
         }
@@ -339,7 +339,7 @@ namespace BookStoreManagement.UserControls
                         }
                     }
 
-                    TextRenderer.DrawText(e.Graphics, text.ToUpper(), new Font("Inter", 8, FontStyle.Bold), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(e.Graphics, text.ToUpper(), new Font("Segoe UI", 8, FontStyle.Bold), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                     e.Handled = true;
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")

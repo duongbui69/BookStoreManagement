@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -45,7 +45,7 @@ namespace BookStoreManagement.UserControls
 
             // Header
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, BorderThickness = 1 };
-            lblTitle = new Label { Text = _vt.Id == 0 ? "Thêm Loại phiếu" : "Sửa Loại phiếu", Font = new Font("Inter", 14, FontStyle.Bold), AutoSize = true, Location = new Point(20, 18) };
+            lblTitle = new Label { Text = _vt.Id == 0 ? "Thêm Loại phiếu" : "Sửa Loại phiếu", Font = new Font("Segoe UI", 14, FontStyle.Bold), AutoSize = true, Location = new Point(20, 18) };
             btnClose = new Guna2Button { Text = "X", Size = new Size(40, 40), Location = new Point(this.Width - 50, 10), FillColor = Color.Transparent, Cursor = Cursors.Hand };
             btnClose.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnClose });
@@ -77,7 +77,7 @@ namespace BookStoreManagement.UserControls
 
         private Guna2TextBox CreateInput(string label, int y)
         {
-            var lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Inter", 10) };
+            var lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Segoe UI", 10) };
             var txt = new Guna2TextBox { Location = new Point(24, y + 25), Size = new Size(452, 36), BorderRadius = 4 };
             pnlContent.Controls.AddRange(new Control[] { lbl, txt });
             return txt;
@@ -85,7 +85,7 @@ namespace BookStoreManagement.UserControls
 
         private Guna2ComboBox CreateDropdown(string label, int y, string[] items)
         {
-            var lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Inter", 10) };
+            var lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Segoe UI", 10) };
             var cb = new Guna2ComboBox { Location = new Point(24, y + 25), Size = new Size(452, 36), BorderRadius = 4 };
             cb.Items.AddRange(items);
             pnlContent.Controls.AddRange(new Control[] { lbl, cb });
@@ -157,3 +157,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

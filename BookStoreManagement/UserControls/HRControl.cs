@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -87,7 +87,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Employee Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
             lblSubTitle = new Label { Text = "Manage staff records, roles, and branch assignments.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
                 var frm = new Forms.EmployeeForm(null);
                 if (frm.ShowDialog() == DialogResult.OK)
@@ -496,3 +496,4 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
+

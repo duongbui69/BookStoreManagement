@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -59,7 +59,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Store Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
             lblSubTitle = new Label { Text = "Manage bookstore locations, personnel, and operational status.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Add Store", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Add Store", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
                 var frm = new StoreForm(null);
                 if (frm.ShowDialog() == DialogResult.OK)
@@ -453,3 +453,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

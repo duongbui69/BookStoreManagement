@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -75,7 +75,7 @@ namespace BookStoreManagement.Forms
 
             // Header
             pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = this.Text.ToUpper(), Font = new Font("Inter", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
+            lblTitle = new Label { Text = this.Text.ToUpper(), Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
             
             btnClose = new Button { Text = "X", Size = new Size(40, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Cursor = Cursors.Hand };
             btnClose.FlatAppearance.BorderSize = 0;
@@ -92,16 +92,16 @@ namespace BookStoreManagement.Forms
             // Top Section (Order Search / Info)
             Panel pnlTop = new Panel { Dock = DockStyle.Top, Height = 100 };
             
-            Label lblOrder = new Label { Text = "Mã Đơn Hàng (*):", Font = new Font("Inter", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
-            txtOrderCode = new TextBox { Font = new Font("Inter", 12F), Width = 200, Location = new Point(140, 5) };
+            Label lblOrder = new Label { Text = "Mã Đơn Hàng (*):", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
+            txtOrderCode = new TextBox { Font = new Font("Segoe UI", 12F), Width = 200, Location = new Point(140, 5) };
             
-            btnSearchOrder = new Button { Text = "Tìm Đơn", Font = new Font("Inter", 10F), Size = new Size(100, 30), Location = new Point(350, 5), FlatStyle = FlatStyle.Flat };
+            btnSearchOrder = new Button { Text = "Tìm Đơn", Font = new Font("Segoe UI", 10F), Size = new Size(100, 30), Location = new Point(350, 5), FlatStyle = FlatStyle.Flat };
             btnSearchOrder.Click += BtnSearchOrder_Click;
 
-            lblCustomerInfo = new Label { Text = "Khách hàng: -", Font = new Font("Inter", 10F), AutoSize = true, Location = new Point(0, 45) };
+            lblCustomerInfo = new Label { Text = "Khách hàng: -", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 45) };
 
-            Label lblStatus = new Label { Text = "Trạng thái:", Font = new Font("Inter", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(550, 10) };
-            cboStatus = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Inter", 12F), Width = 150, Location = new Point(650, 5) };
+            Label lblStatus = new Label { Text = "Trạng thái:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(550, 10) };
+            cboStatus = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 12F), Width = 150, Location = new Point(650, 5) };
             cboStatus.Items.AddRange(new object[] { "Chờ xử lý", "Đã duyệt", "Đã hoàn tiền", "Từ chối" });
             cboStatus.SelectedIndex = 0;
             
@@ -152,12 +152,12 @@ namespace BookStoreManagement.Forms
             // Bottom Section
             Panel pnlBottom = new Panel { Dock = DockStyle.Bottom, Height = 140, Padding = new Padding(0, 10, 0, 0) };
             
-            Label lblNote = new Label { Text = "Ghi chú phiếu:", Font = new Font("Inter", 10F), AutoSize = true, Location = new Point(0, 10) };
-            txtNote = new TextBox { Font = new Font("Inter", 10F), Multiline = true, Width = 400, Height = 70, Location = new Point(0, 30) };
+            Label lblNote = new Label { Text = "Ghi chú phiếu:", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 10) };
+            txtNote = new TextBox { Font = new Font("Segoe UI", 10F), Multiline = true, Width = 400, Height = 70, Location = new Point(0, 30) };
             
-            lblTotalRefund = new Label { Text = "TỔNG HOÀN TIỀN: 0 ₫", Font = new Font("Inter", 14F, FontStyle.Bold), AutoSize = true, Location = new Point(450, 30) };
+            lblTotalRefund = new Label { Text = "TỔNG HOÀN TIỀN: 0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = true, Location = new Point(450, 30) };
 
-            btnSave = new Button { Text = _refundId == 0 ? "Tạo Phiếu" : "Cập Nhật", Font = new Font("Inter", 12F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), FlatStyle = FlatStyle.Flat };
+            btnSave = new Button { Text = _refundId == 0 ? "Tạo Phiếu" : "Cập Nhật", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), FlatStyle = FlatStyle.Flat };
             btnSave.Click += BtnSave_Click;
 
             pnlBottom.Controls.Add(lblNote);
@@ -420,3 +420,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

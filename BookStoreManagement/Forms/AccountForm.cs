@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -44,7 +44,7 @@ namespace BookStoreManagement.Forms
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            Label lblTitle = new Label { Text = this.Text, Font = new Font("Inter", 16F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
+            Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 16F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
             this.Controls.Add(lblTitle);
 
             int y = 70;
@@ -52,7 +52,7 @@ namespace BookStoreManagement.Forms
             
             Label lblPass = new Label { Text = "Mật khẩu (Bỏ trống nếu không đổi)", Location = new Point(20, y), AutoSize = true };
             this.Controls.Add(lblPass);
-            txtPassword = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Inter", 10F), PasswordChar = '*' };
+            txtPassword = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), PasswordChar = '*' };
             this.Controls.Add(txtPassword);
             y += 60;
 
@@ -62,17 +62,17 @@ namespace BookStoreManagement.Forms
             txtAddress = CreateInput("Địa chỉ", ref y);
 
             Label lblRole = new Label { Text = "Vai trò", Location = new Point(20, y), AutoSize = true };
-            cbRole = new ComboBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Inter", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
+            cbRole = new ComboBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
             this.Controls.AddRange(new Control[] { lblRole, cbRole });
             y += 60;
 
-            chkIsActive = new CheckBox { Text = "Hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Inter", 10F) };
+            chkIsActive = new CheckBox { Text = "Hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
             y += 40;
 
-            btnSave = new Button { Text = "Lưu", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Inter", 10F, FontStyle.Bold) };
+            btnSave = new Button { Text = "Lưu", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Hủy", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Inter", 10F) };
+            btnCancel = new Button { Text = "Hủy", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F) };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
@@ -80,8 +80,8 @@ namespace BookStoreManagement.Forms
 
         private TextBox CreateInput(string label, ref int y)
         {
-            Label lbl = new Label { Text = label, Location = new Point(20, y), AutoSize = true, Font = new Font("Inter", 9.5F) };
-            TextBox txt = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Inter", 10F) };
+            Label lbl = new Label { Text = label, Location = new Point(20, y), AutoSize = true, Font = new Font("Segoe UI", 9.5F) };
+            TextBox txt = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F) };
             this.Controls.AddRange(new Control[] { lbl, txt });
             y += 60;
             return txt;
@@ -175,3 +175,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

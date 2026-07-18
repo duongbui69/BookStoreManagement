@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -55,14 +55,14 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Loại phiếu",
-                Font = new Font("Inter", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
             lblSubTitle = new Label
             {
                 Text = "Admin manages document types for accounting/inventory.",
-                Font = new Font("Inter", 10, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 AutoSize = true,
                 Location = new Point(0, 35)
             };
@@ -273,7 +273,7 @@ namespace BookStoreManagement.UserControls
 
         private void DrawPillTag(Graphics g, Rectangle bounds, string text, Color bg, Color fg)
         {
-            SizeF size = g.MeasureString(text, new Font("Inter", 9, FontStyle.Bold));
+            SizeF size = g.MeasureString(text, new Font("Segoe UI", 9, FontStyle.Bold));
             int width = (int)size.Width + 16;
             int height = 24;
             int x = bounds.Left + (bounds.Width - width) / 2;
@@ -281,7 +281,7 @@ namespace BookStoreManagement.UserControls
 
             using var brush = new SolidBrush(bg);
             g.FillRectangle(brush, x, y, width, height); // Simplified for WinForms without complex GraphicsPath
-            TextRenderer.DrawText(g, text, new Font("Inter", 9, FontStyle.Bold), new Rectangle(x, y, width, height), fg, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+            TextRenderer.DrawText(g, text, new Font("Segoe UI", 9, FontStyle.Bold), new Rectangle(x, y, width, height), fg, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
         }
 
         private void DgvData_CellClick(object sender, DataGridViewCellEventArgs e)

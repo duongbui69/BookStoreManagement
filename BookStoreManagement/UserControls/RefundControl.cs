@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -87,7 +87,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label 
             { 
                 Text = "Quản lý Hoàn tiền", 
-                Font = new Font("Inter", 24F, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 AutoSize = true, 
                 Location = new Point(0, 0) 
             };
@@ -95,7 +95,7 @@ namespace BookStoreManagement.UserControls
             lblSubtitle = new Label 
             { 
                 Text = "Quản lý danh sách phiếu trả hàng và yêu cầu hoàn tiền từ khách hàng.", 
-                Font = new Font("Inter", 10F), 
+                Font = new Font("Segoe UI", 10F), 
                 AutoSize = true, 
                 Location = new Point(0, 40) 
             };
@@ -114,7 +114,7 @@ namespace BookStoreManagement.UserControls
                 Text = "+ Tạo Phiếu Trả Hàng", 
                 Size = new Size(180, 40), 
                 FlatStyle = FlatStyle.Flat, 
-                Font = new Font("Inter", 10F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Margin = new Padding(10, 0, 0, 0)
             };
@@ -126,7 +126,7 @@ namespace BookStoreManagement.UserControls
                 Text = "In danh sách", 
                 Size = new Size(120, 40), 
                 FlatStyle = FlatStyle.Flat, 
-                Font = new Font("Inter", 10F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Margin = new Padding(10, 0, 0, 0)
             };
@@ -164,7 +164,7 @@ namespace BookStoreManagement.UserControls
             cboStatusFilter = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Inter", 10F),
+                Font = new Font("Segoe UI", 10F),
                 Width = 200,
                 Location = new Point(15, 15)
             };
@@ -175,7 +175,7 @@ namespace BookStoreManagement.UserControls
             dtpFilter = new DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
-                Font = new Font("Inter", 10F),
+                Font = new Font("Segoe UI", 10F),
                 Width = 200,
                 Location = new Point(15, 50)
             };
@@ -198,7 +198,7 @@ namespace BookStoreManagement.UserControls
             lblGridTitle = new Label 
             { 
                 Text = "Danh sách Phiếu trả hàng", 
-                Font = new Font("Inter", 12F, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold), 
                 AutoSize = true,
                 Location = new Point(15, 15)
             };
@@ -227,7 +227,7 @@ namespace BookStoreManagement.UserControls
             dgvRefunds.CellMouseLeave += DgvRefunds_CellMouseLeave;
 
             pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(15, 0, 15, 0) };
-            lblPageInfo = new Label { AutoSize = true, Location = new Point(15, 20), Font = new Font("Inter", 10F) };
+            lblPageInfo = new Label { AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 10F) };
             flpPagination = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true, Location = new Point(0, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right };
             pnlPagination.Controls.Add(lblPageInfo);
             pnlPagination.Controls.Add(flpPagination);
@@ -245,8 +245,8 @@ namespace BookStoreManagement.UserControls
         {
             Panel pnl = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5) };
             
-            Label lblTitle = new Label { Text = title, Font = new Font("Inter", 10F), AutoSize = true, Location = new Point(15, 15) };
-            lblValue = new Label { Text = "0", Font = new Font("Inter", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 40) };
+            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(15, 15) };
+            lblValue = new Label { Text = "0", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 40) };
             
             pnl.Controls.Add(lblTitle);
             pnl.Controls.Add(lblValue);
@@ -323,10 +323,10 @@ namespace BookStoreManagement.UserControls
             dgvRefunds.GridColor = ThemeManager.TextBoxBorder;
             dgvRefunds.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvRefunds.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvRefunds.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10F, FontStyle.Bold);
+            dgvRefunds.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             dgvRefunds.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvRefunds.DefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvRefunds.DefaultCellStyle.Font = new Font("Inter", 10F);
+            dgvRefunds.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
             dgvRefunds.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
             dgvRefunds.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
         }
@@ -455,7 +455,7 @@ namespace BookStoreManagement.UserControls
                 FlatStyle = FlatStyle.Flat,
                 Enabled = enabled,
                 Cursor = enabled ? Cursors.Hand : Cursors.Default,
-                Font = new Font("Inter", 10F, FontStyle.Bold)
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
             };
 
             if (isActive)
@@ -520,7 +520,7 @@ namespace BookStoreManagement.UserControls
                     e.Graphics.FillRectangle(bgBrush, badgeRect);
                 }
 
-                TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 9F, FontStyle.Bold), badgeRect, txtColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 9F, FontStyle.Bold), badgeRect, txtColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
@@ -593,3 +593,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

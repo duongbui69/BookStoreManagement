@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -69,7 +69,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Chi tiết Phiếu xuất",
-                Font = new Font("Inter", 14, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(20, 18)
             };
@@ -93,12 +93,12 @@ namespace BookStoreManagement.UserControls
                 Padding = new Padding(24)
             };
 
-            lblReceiptCode = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Inter", 10) };
-            lblCustomer = new Label { Location = new Point(24, 50), AutoSize = true, Font = new Font("Inter", 10) };
-            lblReason = new Label { Location = new Point(400, 20), AutoSize = true, Font = new Font("Inter", 10) };
-            lblDate = new Label { Location = new Point(400, 50), AutoSize = true, Font = new Font("Inter", 10) };
+            lblReceiptCode = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblCustomer = new Label { Location = new Point(24, 50), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblReason = new Label { Location = new Point(400, 20), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblDate = new Label { Location = new Point(400, 50), AutoSize = true, Font = new Font("Segoe UI", 10) };
 
-            lblStatus = new Label { Text = "Trạng thái:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Inter", 10, FontStyle.Bold) };
+            lblStatus = new Label { Text = "Trạng thái:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             cbStatus = new Guna2ComboBox
             {
                 Location = new Point(120, 85),

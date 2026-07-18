@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -67,14 +67,14 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Xuất kho",
-                Font = new Font("Inter", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 20)
             };
             lblSubTitle = new Label
             {
                 Text = "Inventory Management > Xuất kho",
-                Font = new Font("Inter", 10, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
@@ -257,7 +257,7 @@ namespace BookStoreManagement.UserControls
             var lblTitle = new Label
             {
                 Text = title,
-                Font = new Font("Inter", 10, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(16, 16)
             };
@@ -265,7 +265,7 @@ namespace BookStoreManagement.UserControls
             lblValue = new Label
             {
                 Text = "0",
-                Font = new Font("Inter", 24, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(16, 45)
             };
@@ -360,9 +360,9 @@ namespace BookStoreManagement.UserControls
                 {
                     var rect = e.CellBounds;
                     rect.Y += 5;
-                    TextRenderer.DrawText(e.Graphics, item.CustomerName, new Font("Inter", 10, FontStyle.Regular), rect, ThemeManager.TextPrimary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    TextRenderer.DrawText(e.Graphics, item.CustomerName, new Font("Segoe UI", 10, FontStyle.Regular), rect, ThemeManager.TextPrimary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
                     rect.Y += 20;
-                    TextRenderer.DrawText(e.Graphics, item.Reason, new Font("Inter", 9, FontStyle.Regular), rect, ThemeManager.TextSecondary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    TextRenderer.DrawText(e.Graphics, item.Reason, new Font("Segoe UI", 9, FontStyle.Regular), rect, ThemeManager.TextSecondary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
                 }
                 e.Handled = true;
             }
@@ -523,13 +523,13 @@ namespace BookStoreManagement.UserControls
             dgvReceipts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
             dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
             dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionForeColor = ThemeManager.TextSecondary;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10, FontStyle.Bold);
+            dgvReceipts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
             dgvReceipts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvReceipts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvReceipts.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
             dgvReceipts.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvReceipts.DefaultCellStyle.Font = new Font("Inter", 10, FontStyle.Regular);
+            dgvReceipts.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
         }
     }
 }

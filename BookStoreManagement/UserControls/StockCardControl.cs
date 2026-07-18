@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -83,7 +83,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Thẻ kho",
-                Font = new Font("Inter", 24, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
@@ -91,7 +91,7 @@ namespace BookStoreManagement.UserControls
             lblSubTitle = new Label
             {
                 Text = "Lịch sử giao dịch nhập / xuất kho",
-                Font = new Font("Inter", 10, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 AutoSize = true,
                 Location = new Point(0, 40)
             };
@@ -113,7 +113,7 @@ namespace BookStoreManagement.UserControls
             };
             pnlFilterBar.Margin = new Padding(0, 16, 0, 16);
 
-            Label lblFrom = new Label { Text = "Từ ngày", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(16, 16) };
+            Label lblFrom = new Label { Text = "Từ ngày", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(16, 16) };
             dtpFromDate = new Guna2DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
@@ -124,7 +124,7 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1
             };
 
-            Label lblTo = new Label { Text = "Đến ngày", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(162, 16) };
+            Label lblTo = new Label { Text = "Đến ngày", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(162, 16) };
             dtpToDate = new Guna2DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
@@ -135,7 +135,7 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1
             };
 
-            Label lblBook = new Label { Text = "Sản phẩm", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(308, 16) };
+            Label lblBook = new Label { Text = "Sản phẩm", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(308, 16) };
             cbBookFilter = new Guna2ComboBox
             {
                 Size = new Size(200, 36),
@@ -144,7 +144,7 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1
             };
 
-            Label lblStore = new Label { Text = "Kho", Font = new Font("Inter", 10, FontStyle.Bold), AutoSize = true, Location = new Point(524, 16) };
+            Label lblStore = new Label { Text = "Kho", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(524, 16) };
             cbStoreFilter = new Guna2ComboBox
             {
                 Size = new Size(180, 36),
@@ -159,7 +159,7 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(120, 36),
                 Location = new Point(720, 40),
                 BorderRadius = 4,
-                Font = new Font("Inter", 10, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 Cursor = Cursors.Hand
             };
             btnFilter.Click += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
@@ -171,7 +171,7 @@ namespace BookStoreManagement.UserControls
                 Text = "Xuất Excel",
                 Size = new Size(120, 36),
                 BorderRadius = 4,
-                Font = new Font("Inter", 10, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 BorderThickness = 1,
                 FillColor = Color.Transparent
@@ -182,7 +182,7 @@ namespace BookStoreManagement.UserControls
                 Text = "In Thẻ Kho",
                 Size = new Size(120, 36),
                 BorderRadius = 4,
-                Font = new Font("Inter", 10, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
 
@@ -219,9 +219,9 @@ namespace BookStoreManagement.UserControls
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Voucher", HeaderText = "Số chứng từ", Width = 120, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Product", HeaderText = "Tên sản phẩm", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Desc", HeaderText = "Diễn giải", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Import", HeaderText = "Nhập", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Inter", 10, FontStyle.Bold) } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Export", HeaderText = "Xuất", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Inter", 10, FontStyle.Bold) } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Balance", HeaderText = "Tồn", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Inter", 10, FontStyle.Bold) } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Import", HeaderText = "Nhập", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Export", HeaderText = "Xuất", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Balance", HeaderText = "Tồn", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
             DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Thao tác", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvTransactions.Columns.Add(actionCol);
 
@@ -523,13 +523,13 @@ namespace BookStoreManagement.UserControls
             dgvTransactions.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvTransactions.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
             dgvTransactions.ColumnHeadersDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10, FontStyle.Bold);
+            dgvTransactions.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
             dgvTransactions.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvTransactions.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvTransactions.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
             dgvTransactions.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.DefaultCellStyle.Font = new Font("Inter", 10, FontStyle.Regular);
+            dgvTransactions.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
 
             foreach (DataGridViewColumn col in dgvTransactions.Columns)
             {
