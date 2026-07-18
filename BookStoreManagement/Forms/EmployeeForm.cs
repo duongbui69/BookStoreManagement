@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,11 +29,9 @@ namespace BookStoreManagement.Forms
             
             EmployeeModel = userToEdit;
             InitializeComponent();
-            LoadDropdowns();
             
-            if (EmployeeModel != null) {
-                BindData();
-            }
+            this.Load += EmployeeForm_Load;
+            
             ApplyTheme();
         }
 
@@ -94,10 +92,15 @@ namespace BookStoreManagement.Forms
             return txt;
         }
 
-        private void LoadDropdowns()
+        private async void EmployeeForm_Load(object? sender, EventArgs e)
+        {
+            await LoadDataAsync();
+        }
+
+        private async System.Threading.Tasks.Task LoadDataAsync()
         {
             try {
-                var roles = _roleService.GetAll();
+                var roles = await _roleService.GetAllAsync();
                 cbRole.DataSource = roles;
                 cbRole.DisplayMember = "RoleName";
                 cbRole.ValueMember = "Id";
@@ -108,6 +111,10 @@ namespace BookStoreManagement.Forms
                 cbStore.DisplayMember = "StoreName";
                 cbStore.ValueMember = "Id";
             } catch {}
+
+            if (EmployeeModel != null) {
+                BindData();
+            }
         }
 
         private void BindData()
@@ -125,7 +132,7 @@ namespace BookStoreManagement.Forms
             cbStore.SelectedValue = EmployeeModel.StoreId ?? 0;
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private async void BtnSave_Click(object? sender, EventArgs e)
         {
             if (EmployeeModel == null) EmployeeModel = new User();
             

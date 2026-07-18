@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
@@ -16,7 +17,10 @@ namespace BookStoreManagement.UserControls
     public partial class DashboardControl : UserControl, ISearchableControl
     {
         private readonly DashboardService _dashboardService;
-        private readonly BookService _bookService;
+        private BookService _bookService;
+
+        private int _hoveredRowIndex = -1;
+        private int _hoveredAction = 0;
 
         private Guna2Panel pnlContent;
         
@@ -44,10 +48,10 @@ namespace BookStoreManagement.UserControls
         private int _currentPage = 1;
         private int _pageSize = 5;
 
-        public void PerformSearch(string keyword)
+        public async void PerformSearch(string keyword)
         {
             // Dashboard search not specifically scoped, maybe reload data
-            LoadData();
+            await LoadDataAsync();
         }
 
         public DashboardControl()
@@ -156,8 +160,10 @@ namespace BookStoreManagement.UserControls
             DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Actions", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvProducts.Columns.Add(actionCol);
 
-            dgvProducts.CellPainting += DgvProducts_CellPainting;
-            dgvProducts.CellMouseClick += DgvProducts_CellMouseClick;
+            dgvProducts.CellPainting += DgvTopProducts_CellPainting;
+            dgvProducts.CellMouseClick += DgvTopProducts_CellMouseClick;
+            dgvProducts.CellMouseMove += DgvTopProducts_CellMouseMove;
+            dgvProducts.CellMouseLeave += DgvTopProducts_CellMouseLeave;
             dgvProducts.CellFormatting += DgvProducts_CellFormatting;
             
             pnlTableContainer.Controls.Add(dgvProducts);
@@ -203,14 +209,29 @@ namespace BookStoreManagement.UserControls
             return pnl;
         }
 
-        private void DashboardControl_Load(object sender, EventArgs e)
+        private async void DashboardControl_Load(object sender, EventArgs e)
         {
-            LoadData();
+            await LoadDataAsync();
         }
 
         private void LoadData()
         {
             currentStats = _dashboardService.GetStats();
+            
+            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.TotalRevenue:N0}";
+            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.NetProfit:N0}";
+            foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
+            foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
+            
+            pnlLineChart.Invalidate();
+            
+            _currentPage = 1;
+            LoadTableData();
+        }
+
+        private async Task LoadDataAsync()
+        {
+            currentStats = await _dashboardService.GetStatsAsync();
             
             foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.TotalRevenue:N0}";
             foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.NetProfit:N0}";
@@ -233,9 +254,11 @@ namespace BookStoreManagement.UserControls
             paginationControl.UpdatePagination(currentStats.LowStockItems.Count, _currentPage, _pageSize);
         }
 
-        private void DgvProducts_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void DgvTopProducts_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
+            if (e.RowIndex < 0) return;
+
+            if (dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
@@ -243,21 +266,84 @@ namespace BookStoreManagement.UserControls
                 var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
                 var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
                 
-                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                if (e.RowIndex == _hoveredRowIndex)
+                {
+                    if (_hoveredAction == 1)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
+                    }
+                }
+
+                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
+                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
+
+                using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                
+                using (var pen = new Pen(Color.LightGray))
+                {
+                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 8, rect.X + rect.Width / 2, rect.Bottom - 8);
+                }
                 
                 e.Handled = true;
             }
         }
 
-        private void DgvProducts_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void DgvTopProducts_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                int action = (e.X < dgvProducts.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                
+                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = e.RowIndex;
+                    _hoveredAction = action;
+                    
+                    if (oldRow >= 0) dgvProducts.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvProducts.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
+                }
+                dgvProducts.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRowIndex >= 0)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = -1;
+                    _hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvProducts.InvalidateCell(dgvProducts.Columns["Actions"].Index, oldRow);
+                }
+                dgvProducts.Cursor = Cursors.Default;
+            }
+        }
+
+        private void DgvTopProducts_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_hoveredRowIndex >= 0)
+            {
+                int oldRow = _hoveredRowIndex;
+                _hoveredRowIndex = -1;
+                _hoveredAction = 0;
+                dgvProducts.InvalidateCell(dgvProducts.Columns["Actions"].Index, oldRow);
+            }
+            dgvProducts.Cursor = Cursors.Default;
+        }
+
+        private async void DgvTopProducts_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
             {
                 int bookId = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells[0].Value);
-                var cellRect = dgvProducts.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
                 
-                if (e.X < cellRect.Width / 2)
+                if (e.X < dgvProducts.Columns[e.ColumnIndex].Width / 2)
                 {
                     // Edit
                     var book = _bookService.GetById(bookId);
@@ -266,7 +352,7 @@ namespace BookStoreManagement.UserControls
                         var frm = new Forms.BookForm(book);
                         if (frm.ShowDialog() == DialogResult.OK)
                         {
-                            LoadData();
+                            await LoadDataAsync();
                         }
                     }
                     else
@@ -283,7 +369,7 @@ namespace BookStoreManagement.UserControls
                         {
                             _bookService.SetActive(bookId, false);
                             MessageBox.Show("Book deleted successfully!");
-                            LoadData();
+                            await LoadDataAsync();
                         }
                         catch (Exception ex)
                         {
@@ -432,5 +518,6 @@ namespace BookStoreManagement.UserControls
                 if (ctrl.Tag?.ToString() == "CardValue") ctrl.ForeColor = ThemeManager.TextPrimary;
             }
         }
-    }
 }
+}
+

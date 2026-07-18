@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using BookStoreManagement.Models;
 using BookStoreManagement.ViewModels;
@@ -276,6 +278,158 @@ namespace BookStoreManagement.Repositories
         public string GenerateOrderCode()
         {
             return "SO" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
+        }
+
+        public async Task<int> CreateOrderAsync(SalesOrder order, List<SalesOrderDetail> details)
+        {
+            int orderId = 0;
+            await ExecuteTransactionAsync(async (connection, transaction) =>
+            {
+                const string insertOrderSql = @"
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
+                    OUTPUT INSERTED.Id
+                    VALUES (@OrderCode, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
+                ";
+
+                orderId = await connection.ExecuteScalarAsync<int>(insertOrderSql, new
+                {
+                    OrderCode = order.OrderCode,
+                    UserId = order.UserId,
+                    CustomerId = order.CustomerId,
+                    PaymentMethod = order.PaymentMethod,
+                    OrderStatus = order.OrderStatus,
+                    Note = order.Note
+                }, transaction);
+
+                const string insertDetailSql = @"
+                    INSERT INTO SalesOrderDetails (SalesOrderId, BookId, Quantity, UnitPrice, DiscountAmount)
+                    VALUES (@SalesOrderId, @BookId, @Quantity, @UnitPrice, @DiscountAmount);
+                ";
+
+                foreach (var detail in details)
+                {
+                    await connection.ExecuteAsync(insertDetailSql, new
+                    {
+                        SalesOrderId = orderId,
+                        BookId = detail.BookId,
+                        Quantity = detail.Quantity,
+                        UnitPrice = detail.UnitPrice,
+                        DiscountAmount = detail.DiscountAmount
+                    }, transaction);
+                }
+            });
+            return orderId;
+        }
+
+        public async Task<List<SalesOrderListViewModel>> GetAllAsync()
+        {
+            const string sql = "SELECT * FROM vw_SalesOrderList ORDER BY OrderDate DESC;";
+            var items = await QueryAsync<SalesOrderListViewModel>(sql);
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<SalesOrder?> GetByIdAsync(int id)
+        {
+            const string sql = @"
+                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                FROM SalesOrders
+                WHERE Id = @Id;
+            ";
+            return await QueryFirstOrDefaultAsync<SalesOrder>(sql, new { Id = id });
+        }
+
+        public async Task<SalesOrder?> GetByOrderCodeAsync(string orderCode)
+        {
+            const string sql = @"
+                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                FROM SalesOrders
+                WHERE OrderCode = @OrderCode;
+            ";
+            return await QueryFirstOrDefaultAsync<SalesOrder>(sql, new { OrderCode = orderCode });
+        }
+
+        public async Task<List<SalesOrderListViewModel>> GetByStaffIdAsync(int staffId)
+        {
+            const string sql = @"
+                SELECT * FROM vw_SalesOrderList
+                WHERE StaffId = @StaffId
+                ORDER BY OrderDate DESC;
+            ";
+            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { StaffId = staffId });
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<List<SalesOrderListViewModel>> GetByStoreIdAsync(int storeId)
+        {
+            const string sql = @"
+                SELECT * FROM vw_SalesOrderList
+                WHERE StoreId = @StoreId
+                ORDER BY OrderDate DESC;
+            ";
+            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { StoreId = storeId });
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<List<SalesOrderListViewModel>> SearchAsync(string keyword, int? storeId = null)
+        {
+            string sql = @"
+                SELECT * FROM vw_SalesOrderList
+                WHERE (
+                    OrderCode LIKE N'%' + @Keyword + N'%'
+                    OR StoreName LIKE N'%' + @Keyword + N'%'
+                    OR StaffName LIKE N'%' + @Keyword + N'%'
+                    OR CustomerName LIKE N'%' + @Keyword + N'%'
+                    OR PaymentMethod LIKE N'%' + @Keyword + N'%'
+                    OR OrderStatus LIKE N'%' + @Keyword + N'%'
+                )
+            ";
+            sql += " ORDER BY OrderDate DESC;";
+            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { Keyword = keyword });
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<List<SalesOrderListViewModel>> GetByDateRangeAsync(DateTime fromDate, DateTime toDate)
+        {
+            string sql = @"
+                SELECT * FROM vw_SalesOrderList
+                WHERE OrderDate >= @FromDate
+                  AND OrderDate < DATEADD(DAY, 1, @ToDate)
+            ";
+            sql += " ORDER BY OrderDate DESC;";
+            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { FromDate = fromDate.Date, ToDate = toDate.Date });
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<List<SalesOrderDetailFullViewModel>> GetDetailsAsync(int salesOrderId)
+        {
+            const string sql = @"
+                SELECT * FROM vw_SalesOrderDetailFull
+                WHERE SalesOrderId = @SalesOrderId;
+            ";
+            var items = await QueryAsync<SalesOrderDetailFullViewModel>(sql, new { SalesOrderId = salesOrderId });
+            return System.Linq.Enumerable.ToList(items);
+        }
+
+        public async Task<bool> CancelOrderAsync(int salesOrderId)
+        {
+            const string sql = @"
+                UPDATE SalesOrders
+                SET OrderStatus = @OrderStatus
+                WHERE Id = @Id
+                  AND OrderStatus = @CompletedStatus;
+            ";
+            return await ExecuteAsync(sql, new { Id = salesOrderId, OrderStatus = AppConstants.OrderStatuses.Cancelled, CompletedStatus = AppConstants.OrderStatuses.Completed }) > 0;
+        }
+
+        public async Task<bool> IsOrderCodeExistsAsync(string orderCode)
+        {
+            const string sql = "SELECT COUNT(1) FROM SalesOrders WHERE OrderCode = @OrderCode;";
+            return await ExecuteScalarAsync<int>(sql, new { OrderCode = orderCode }) > 0;
+        }
+
+        public async Task<string> GenerateOrderCodeAsync()
+        {
+            return await Task.FromResult("SO" + DateTime.Now.ToString("yyyyMMddHHmmssfff"));
         }
     }
 }

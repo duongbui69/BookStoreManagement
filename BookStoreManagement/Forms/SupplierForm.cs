@@ -1,234 +1,212 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
-using BookStoreManagement.Services;
+using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 
 namespace BookStoreManagement.Forms
 {
-    public class SupplierForm : Form
+    public partial class SupplierForm : Form
     {
-        private SupplierService _service;
-        private DataGridView dgvList;
-        private TextBox txtSearch;
-        private Button btnAdd;
-        private Button btnEdit;
-        
-        // Input fields
-        private Panel pnlInput;
-        private TextBox txtId;
-        private TextBox txtSupplierName;
-        private TextBox txtPhone;
-        private TextBox txtEmail;
-        private TextBox txtAddress;
-        private CheckBox chkIsActive;        private Button btnSave;
-        private Button btnCancel;
-        private bool isEditMode = false;
+        private SupplierRepository _supplierRepository;
+        private Supplier? _currentSupplier;
+        public bool IsDataSaved { get; private set; }
 
-        public SupplierForm()
+        private Label lblTitle, lblId, lblName, lblPhone, lblEmail, lblAddress, lblStatus;
+        private TextBox txtId, txtName, txtPhone, txtEmail, txtAddress;
+        private CheckBox chkIsActive;
+        private Button btnSave, btnCancel;
+
+        public SupplierForm(int? supplierId = null)
         {
-            _service = new SupplierService();
-            InitializeComponent();
+            InitializeComponentLayout();
+            _supplierRepository = new SupplierRepository();
             ApplyTheme();
-            LoadData();
-        }
+            ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
 
-        private void InitializeComponent()
-        {
-            this.Text = "Manage Suppliers";
-            this.Size = new Size(1000, 600);
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-
-                        Panel pnlTop = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.White };
-            Label lblSearch = new Label { Text = "Search Supplier", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.DimGray, Location = new Point(20, 15), AutoSize = true };
-            txtSearch = new TextBox { Location = new Point(20, 40), Width = 350, Font = new Font("Segoe UI", 11F), PlaceholderText = "Search by name or code..." };
-            txtSearch.TextChanged += (s, e) => LoadData();
-            
-            btnAdd = new Button { Text = "+ Add New", Location = new Point(400, 38), Width = 120, Height = 30, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(240, 240, 240), ForeColor = Color.Black };
-            btnAdd.FlatAppearance.BorderSize = 0;
-            btnAdd.Click += (s, e) => ShowInputPanel(false);
-            
-            btnEdit = new Button { Text = "Edit Selected", Location = new Point(530, 38), Width = 120, Height = 30, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(240, 240, 240), ForeColor = Color.Black };
-            btnEdit.FlatAppearance.BorderSize = 0;
-            btnEdit.Click += (s, e) => {
-                if (dgvList.CurrentRow != null) {
-                    ShowInputPanel(true);
-                } else {
-                    MessageBox.Show("Please select a row to edit.");
-                }
-            };
-
-            pnlTop.Controls.AddRange(new Control[] { lblSearch, txtSearch, btnAdd, btnEdit });
-                        this.Controls.Add(pnlTop);
-            Panel pnlDivider = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(230, 230, 230) };
-            this.Controls.Add(pnlDivider);
-
-                        dgvList = new DataGridView {
-                Dock = DockStyle.Fill,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                AllowUserToAddRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                EnableHeadersVisualStyles = false,
-                RowHeadersVisible = false,
-                GridColor = Color.FromArgb(230, 230, 230)
-            };
-            dgvList.RowTemplate.Height = 60;
-            dgvList.DefaultCellStyle = new DataGridViewCellStyle
+            if (supplierId.HasValue)
             {
-                BackColor = Color.White,
-                ForeColor = Color.Black,
-                SelectionBackColor = Color.FromArgb(245, 245, 245),
-                SelectionForeColor = Color.Black,
-                Font = new Font("Segoe UI", 10F),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 15, 0)
-            };
-            dgvList.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.White,
-                ForeColor = Color.DimGray,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 15, 0)
-            };
-            dgvList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dgvList.ColumnHeadersHeight = 50;
-            dgvList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            
-            dgvList.DataBindingComplete += (s, e) => {
-                foreach (DataGridViewColumn col in dgvList.Columns) {
-                    col.HeaderText = col.HeaderText.ToUpper();
-                }
-            };
-            this.Controls.Add(dgvList);
-
-            // Input Panel
-            pnlInput = new Panel { Dock = DockStyle.Right, Width = 350, Visible = false, BackColor = Color.WhiteSmoke };
-            Label lblInputTitle = new Label { Text = "Supplier Details", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            pnlInput.Controls.Add(lblInputTitle);
-
-            txtId = new TextBox { Visible = false };
-            pnlInput.Controls.Add(txtId);
-
-            int y = 60;            Label lblSupplierName = new Label { Text = "SupplierName", Location = new Point(20, y), AutoSize = true };
-            txtSupplierName = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblSupplierName, txtSupplierName });
-            y += 60;            Label lblPhone = new Label { Text = "Phone", Location = new Point(20, y), AutoSize = true };
-            txtPhone = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblPhone, txtPhone });
-            y += 60;            Label lblEmail = new Label { Text = "Email", Location = new Point(20, y), AutoSize = true };
-            txtEmail = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblEmail, txtEmail });
-            y += 60;            Label lblAddress = new Label { Text = "Address", Location = new Point(20, y), AutoSize = true };
-            txtAddress = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblAddress, txtAddress });
-            y += 60;            chkIsActive = new CheckBox { Text = "Is Active", Location = new Point(20, y), AutoSize = true };
-            pnlInput.Controls.Add(chkIsActive);
-            y += 40;            btnSave = new Button { Text = "Save", Location = new Point(20, y), Width = 100, Height = 35, FlatStyle = FlatStyle.Flat };
-            btnSave.Click += BtnSave_Click;
-            
-            btnCancel = new Button { Text = "Cancel", Location = new Point(130, y), Width = 100, Height = 35, FlatStyle = FlatStyle.Flat };
-            btnCancel.Click += (s, e) => pnlInput.Visible = false;
-
-            pnlInput.Controls.AddRange(new Control[] { btnSave, btnCancel });
-            this.Controls.Add(pnlInput);
-            pnlInput.BringToFront(); dgvList.BringToFront();
-        }
-
-        private void LoadData()
-        {
-            var data = _service.Search(txtSearch.Text.Trim());
-            dgvList.DataSource = data;
-        }
-
-        private void ShowInputPanel(bool isEdit)
-        {
-            isEditMode = isEdit;
-            pnlInput.Visible = true;
-            if (!isEdit)
-            {
-                txtId.Text = "0";
-                txtSupplierName.Text = string.Empty;
-                txtPhone.Text = string.Empty;
-                txtEmail.Text = string.Empty;
-                txtAddress.Text = string.Empty;
-                chkIsActive.Checked = true;            }
+                lblTitle.Text = "Chỉnh sửa Nhà cung cấp";
+                LoadSupplierData(supplierId.Value);
+            }
             else
             {
-                var row = dgvList.CurrentRow;
-                txtId.Text = row.Cells["Id"].Value.ToString();
-                txtSupplierName.Text = row.Cells["SupplierName"].Value?.ToString();
-                txtPhone.Text = row.Cells["Phone"].Value?.ToString();
-                txtEmail.Text = row.Cells["Email"].Value?.ToString();
-                txtAddress.Text = row.Cells["Address"].Value?.ToString();
-                chkIsActive.Checked = (bool)row.Cells["IsActive"].Value;            }
+                lblTitle.Text = "Thêm Nhà cung cấp mới";
+                _currentSupplier = new Supplier();
+                chkIsActive.Checked = true;
+                txtId.Text = "Tạo tự động";
+            }
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private void InitializeComponentLayout()
         {
-            try
-            {
-                var model = new Supplier
-                {
-                    Id = int.Parse(txtId.Text),
-                    SupplierName = txtSupplierName.Text.Trim(),
-                    Phone = txtPhone.Text.Trim(),
-                    Email = txtEmail.Text.Trim(),
-                    Address = txtAddress.Text.Trim(),
-                    IsActive = chkIsActive.Checked,                };
+            this.Text = "Cập nhật Nhà cung cấp";
+            this.Size = new Size(500, 620);
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
 
-                if (isEditMode)
-                {
-                    if (_service.Update(model))
-                    {
-                        MessageBox.Show("Updated successfully!");
-                        pnlInput.Visible = false;
-                        LoadData();
-                    }
-                }
-                else
-                {
-                    if (_service.Add(model) > 0)
-                    {
-                        MessageBox.Show("Added successfully!");
-                        pnlInput.Visible = false;
-                        LoadData();
-                    }
-                }
-            }
-            catch (Exception ex)
+            lblTitle = new Label { Location = new Point(24, 24), AutoSize = true, Font = new Font("Inter", 16, FontStyle.Bold) };
+            this.Controls.Add(lblTitle);
+
+            int startY = 80;
+
+            lblId = new Label { Text = "Mã NCC", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            txtId = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10), ReadOnly = true, Enabled = false };
+            this.Controls.AddRange(new Control[] { lblId, txtId });
+            startY += 70;
+
+            lblName = new Label { Text = "Tên nhà cung cấp (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            txtName = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            this.Controls.AddRange(new Control[] { lblName, txtName });
+            startY += 70;
+
+            lblPhone = new Label { Text = "Số điện thoại", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            txtPhone = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            this.Controls.AddRange(new Control[] { lblPhone, txtPhone });
+            startY += 70;
+
+            lblEmail = new Label { Text = "Email", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            txtEmail = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            this.Controls.AddRange(new Control[] { lblEmail, txtEmail });
+            startY += 70;
+
+            lblAddress = new Label { Text = "Địa chỉ", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            txtAddress = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Inter", 10) };
+            this.Controls.AddRange(new Control[] { lblAddress, txtAddress });
+            startY += 70;
+
+            lblStatus = new Label { Text = "Trạng thái", Location = new Point(24, startY), AutoSize = true, Font = new Font("Inter", 10) };
+            chkIsActive = new CheckBox { Text = "Đang giao dịch", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Inter", 10) };
+            this.Controls.AddRange(new Control[] { lblStatus, chkIsActive });
+
+            btnCancel = new Button
             {
-                MessageBox.Show("Error: " + ex.Message);
-            }
+                Text = "Hủy",
+                Size = new Size(100, 36),
+                Location = new Point(this.Width - 250, this.Height - 80),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Inter", 10)
+            };
+            btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+
+            btnSave = new Button
+            {
+                Text = "Lưu thay đổi",
+                Size = new Size(120, 36),
+                Location = new Point(this.Width - 140, this.Height - 80),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Inter", 10)
+            };
+            btnSave.Click += BtnSave_Click;
+
+            this.Controls.AddRange(new Control[] { btnSave, btnCancel });
+        }
+
+        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
+        {
+            ApplyTheme();
         }
 
         private void ApplyTheme()
         {
-            this.BackColor = ThemeManager.Background;
-            // dgvList.BackgroundColor = ThemeManager.CardBackground;
-            // dgvList.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            // dgvList.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            pnlInput.BackColor = ThemeManager.Sidebar;
-            foreach (Control c in pnlInput.Controls) {
-                if (c is Label l) l.ForeColor = ThemeManager.TextPrimary;
-                if (c is CheckBox cb) cb.ForeColor = ThemeManager.TextPrimary;
+            this.BackColor = ThemeManager.CardBackground;
+            lblTitle.ForeColor = ThemeManager.TextPrimary;
+            
+            Label[] labels = { lblId, lblName, lblPhone, lblEmail, lblAddress, lblStatus };
+            foreach (var lbl in labels)
+            {
+                lbl.ForeColor = ThemeManager.TextSecondary;
             }
-            btnAdd.BackColor = ThemeManager.ButtonFill; btnAdd.ForeColor = ThemeManager.ButtonText; btnAdd.FlatAppearance.BorderSize=0;
-            btnEdit.BackColor = ThemeManager.HoverColor; btnEdit.ForeColor = ThemeManager.TextPrimary; btnEdit.FlatAppearance.BorderSize=0;
-            btnSave.BackColor = ThemeManager.ButtonFill; btnSave.ForeColor = ThemeManager.ButtonText; btnSave.FlatAppearance.BorderSize=0;
-            btnCancel.BackColor = ThemeManager.HoverColor; btnCancel.ForeColor = ThemeManager.TextPrimary; btnCancel.FlatAppearance.BorderSize=0;
+
+            TextBox[] textBoxes = { txtId, txtName, txtPhone, txtEmail, txtAddress };
+            foreach (var txt in textBoxes)
+            {
+                txt.BackColor = ThemeManager.TextBoxBackground;
+                txt.ForeColor = ThemeManager.TextPrimary;
+                txt.BorderStyle = BorderStyle.FixedSingle;
+            }
+
+            btnCancel.ForeColor = ThemeManager.TextPrimary;
+            btnCancel.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            btnCancel.BackColor = ThemeManager.CardBackground;
+
+            btnSave.BackColor = ThemeManager.ButtonFill;
+            btnSave.ForeColor = ThemeManager.ButtonText;
+            btnSave.FlatAppearance.BorderSize = 0;
+            
+            chkIsActive.ForeColor = ThemeManager.TextPrimary;
+        }
+
+        private async void LoadSupplierData(int id)
+        {
+            try
+            {
+                _currentSupplier = await _supplierRepository.GetByIdAsync(id);
+                if (_currentSupplier != null)
+                {
+                    txtId.Text = $"NCC{_currentSupplier.Id:D3}";
+                    txtName.Text = _currentSupplier.SupplierName;
+                    txtPhone.Text = _currentSupplier.Phone;
+                    txtEmail.Text = _currentSupplier.Email;
+                    txtAddress.Text = _currentSupplier.Address;
+                    chkIsActive.Checked = _currentSupplier.IsActive;
+                }
+                else
+                {
+                    MessageBox.Show("Không tìm thấy dữ liệu nhà cung cấp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void BtnSave_Click(object sender, EventArgs e)
+        {
+            string name = txtName.Text.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("Vui lòng nhập tên nhà cung cấp!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtName.Focus();
+                return;
+            }
+
+            if (await _supplierRepository.IsNameExistsAsync(name, _currentSupplier?.Id > 0 ? _currentSupplier.Id : null))
+            {
+                MessageBox.Show("Tên nhà cung cấp này đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtName.Focus();
+                return;
+            }
+
+            try
+            {
+                _currentSupplier.SupplierName = name;
+                _currentSupplier.Phone = txtPhone.Text.Trim();
+                _currentSupplier.Email = txtEmail.Text.Trim();
+                _currentSupplier.Address = txtAddress.Text.Trim();
+                _currentSupplier.IsActive = chkIsActive.Checked;
+
+                if (_currentSupplier.Id == 0)
+                {
+                    await _supplierRepository.AddAsync(_currentSupplier);
+                }
+                else
+                {
+                    await _supplierRepository.UpdateAsync(_currentSupplier);
+                }
+
+                IsDataSaved = true;
+                this.DialogResult = DialogResult.OK;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi lưu dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
-
-
-
-
-

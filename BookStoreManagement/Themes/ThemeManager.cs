@@ -30,7 +30,7 @@ namespace BookStoreManagement.Themes
         // --- Light Theme Colors ---
         public static Color LightBackground = Color.FromArgb(245, 246, 250);
         public static Color LightCardBackground = Color.White;
-        public static Color LightSidebar = Color.White;
+        public static Color LightSidebar = Color.FromArgb(220, 235, 250);
         public static Color LightTextPrimary = Color.FromArgb(30, 30, 30);
         public static Color LightTextSecondary = Color.Gray;
         public static Color LightTextBoxBackground = Color.FromArgb(250, 250, 253);

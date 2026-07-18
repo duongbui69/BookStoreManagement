@@ -11,5 +11,26 @@ namespace BookStoreManagement.Services
         public List<Role> GetAll() { PermissionService.RequireAdmin(); return _repository.GetAll(); }
         public Role? GetById(int id) { PermissionService.RequireAdmin(); Require(id > 0, "Id quyền không hợp lệ."); return _repository.GetById(id); }
         public Role? GetByName(string roleName) { PermissionService.RequireAdmin(); roleName = Trim(roleName); Require(!string.IsNullOrWhiteSpace(roleName), "Tên quyền không được để trống."); return _repository.GetByName(roleName); }
+
+        public async System.Threading.Tasks.Task<List<Role>> GetAllAsync() 
+        { 
+            PermissionService.RequireAdmin(); 
+            return await _repository.GetAllAsync(); 
+        }
+
+        public async System.Threading.Tasks.Task<Role?> GetByIdAsync(int id) 
+        { 
+            PermissionService.RequireAdmin(); 
+            Require(id > 0, "Id quyền không hợp lệ."); 
+            return await _repository.GetByIdAsync(id); 
+        }
+
+        public async System.Threading.Tasks.Task<Role?> GetByNameAsync(string roleName) 
+        { 
+            PermissionService.RequireAdmin(); 
+            roleName = Trim(roleName); 
+            Require(!string.IsNullOrWhiteSpace(roleName), "Tên quyền không được để trống."); 
+            return await _repository.GetByNameAsync(roleName); 
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace BookStoreManagement.Models
         public string StoreName { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string? Phone { get; set; }
+        public string? ManagerName { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

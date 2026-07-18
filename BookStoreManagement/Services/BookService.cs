@@ -12,11 +12,17 @@ namespace BookStoreManagement.Services
         public BookService() { _repository = new BookRepository(); }
 
         public List<BookListViewModel> GetAll() { PermissionService.RequireAdmin(); return _repository.GetAll(); }
+        public async System.Threading.Tasks.Task<List<BookListViewModel>> GetAllAsync() { PermissionService.RequireAdmin(); return await _repository.GetAllAsync(); }
         public List<BookListViewModel> GetActive() { PermissionService.RequireStaffOrAdmin(); return _repository.GetActive(); }
+        public async System.Threading.Tasks.Task<List<BookListViewModel>> GetActiveAsync() { PermissionService.RequireStaffOrAdmin(); return await _repository.GetActiveAsync(); }
         public Book? GetById(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id sách không hợp lệ."); return _repository.GetById(id); }
+        public async System.Threading.Tasks.Task<Book?> GetByIdAsync(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id sách không hợp lệ."); return await _repository.GetByIdAsync(id); }
         public List<BookListViewModel> Search(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? _repository.GetActive() : _repository.Search(keyword); }
+        public async System.Threading.Tasks.Task<List<BookListViewModel>> SearchAsync(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? await _repository.GetActiveAsync() : await _repository.SearchAsync(keyword); }
         public List<BookListViewModel> GetByCategoryId(int categoryId) { PermissionService.RequireStaffOrAdmin(); Require(categoryId > 0, "Id danh mục không hợp lệ."); return _repository.GetByCategoryId(categoryId); }
+        public async System.Threading.Tasks.Task<List<BookListViewModel>> GetByCategoryIdAsync(int categoryId) { PermissionService.RequireStaffOrAdmin(); Require(categoryId > 0, "Id danh mục không hợp lệ."); return await _repository.GetByCategoryIdAsync(categoryId); }
         public bool HasEnoughStock(int storeId, int bookId, int quantity) { PermissionService.RequireStaffOrAdmin(); storeId = ResolveStoreIdForWrite(storeId); return _repository.HasEnoughStock(storeId, bookId, quantity); }
+        public async System.Threading.Tasks.Task<bool> HasEnoughStockAsync(int storeId, int bookId, int quantity) { PermissionService.RequireStaffOrAdmin(); storeId = ResolveStoreIdForWrite(storeId); return await _repository.HasEnoughStockAsync(storeId, bookId, quantity); }
 
         public int Add(Book book)
         {
@@ -27,6 +33,17 @@ namespace BookStoreManagement.Services
             if (!string.IsNullOrWhiteSpace(book.ISBN) && _repository.IsISBNExists(book.ISBN)) throw new Exception("ISBN đã tồn tại.");
             book.IsActive = true;
             return _repository.Add(book);
+        }
+
+        public async System.Threading.Tasks.Task<int> AddAsync(Book book)
+        {
+            PermissionService.RequireAdmin();
+            Validate(book);
+            Normalize(book);
+            if (await _repository.IsBookCodeExistsAsync(book.BookCode)) throw new Exception("Mã sách đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(book.ISBN) && await _repository.IsISBNExistsAsync(book.ISBN)) throw new Exception("ISBN đã tồn tại.");
+            book.IsActive = true;
+            return await _repository.AddAsync(book);
         }
 
         public bool Update(Book book)
@@ -40,11 +57,29 @@ namespace BookStoreManagement.Services
             return _repository.Update(book);
         }
 
+        public async System.Threading.Tasks.Task<bool> UpdateAsync(Book book)
+        {
+            PermissionService.RequireAdmin();
+            Require(book.Id > 0, "Id sách không hợp lệ.");
+            Validate(book);
+            Normalize(book);
+            if (await _repository.IsBookCodeExistsAsync(book.BookCode, book.Id)) throw new Exception("Mã sách đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(book.ISBN) && await _repository.IsISBNExistsAsync(book.ISBN, book.Id)) throw new Exception("ISBN đã tồn tại.");
+            return await _repository.UpdateAsync(book);
+        }
+
         public bool SetActive(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
             Require(id > 0, "Id sách không hợp lệ.");
             return _repository.SetActive(id, isActive);
+        }
+
+        public async System.Threading.Tasks.Task<bool> SetActiveAsync(int id, bool isActive)
+        {
+            PermissionService.RequireAdmin();
+            Require(id > 0, "Id sách không hợp lệ.");
+            return await _repository.SetActiveAsync(id, isActive);
         }
 
         private void Validate(Book book)

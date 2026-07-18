@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -11,231 +10,164 @@ namespace BookStoreManagement.Forms
     public class CustomerForm : Form
     {
         private CustomerService _service;
-        private DataGridView dgvList;
-        private TextBox txtSearch;
-        private Button btnAdd;
-        private Button btnEdit;
         
-        // Input fields
-        private Panel pnlInput;
-        private TextBox txtId;
-        private TextBox txtCustomerCode;
-        private TextBox txtFullName;
-        private TextBox txtPhone;
-        private TextBox txtEmail;
-        private TextBox txtAddress;
-        private CheckBox chkIsActive;        private Button btnSave;
-        private Button btnCancel;
-        private bool isEditMode = false;
+        private TextBox txtCustomerCode, txtFullName, txtIdentityNumber, txtPhone, txtEmail, txtAddress;
+        private NumericUpDown numPoints;
+        private CheckBox chkIsActive;
+        private Button btnSave, btnCancel;
 
-        public CustomerForm()
+        public Customer? CustomerModel { get; private set; }
+
+        public CustomerForm(Customer? customerToEdit = null)
         {
             _service = new CustomerService();
+            CustomerModel = customerToEdit;
+            
             InitializeComponent();
             ApplyTheme();
-            LoadData();
+            
+            this.Load += CustomerForm_Load;
+            ThemeManager.ThemeChanged += (s, e) => ApplyTheme();
         }
 
         private void InitializeComponent()
         {
-            this.Text = "Manage Customers";
-            this.Size = new Size(1000, 600);
+            this.Text = CustomerModel == null ? "Thêm Mới Khách Hàng" : "Chỉnh Sửa Khách Hàng";
+            this.Size = new Size(500, 750);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
 
-                        Panel pnlTop = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.White };
-            Label lblSearch = new Label { Text = "Search Customer", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.DimGray, Location = new Point(20, 15), AutoSize = true };
-            txtSearch = new TextBox { Location = new Point(20, 40), Width = 350, Font = new Font("Segoe UI", 11F), PlaceholderText = "Search by name or code..." };
-            txtSearch.TextChanged += (s, e) => LoadData();
+            Label lblTitle = new Label { Text = this.Text, Font = new Font("Inter", 16F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
+            this.Controls.Add(lblTitle);
+
+            int y = 70;
+            txtCustomerCode = CreateInput("Mã khách hàng (Bỏ trống sẽ tự tạo)", ref y);
+            if (CustomerModel != null) txtCustomerCode.ReadOnly = true;
             
-            btnAdd = new Button { Text = "+ Add New", Location = new Point(400, 38), Width = 120, Height = 30, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(240, 240, 240), ForeColor = Color.Black };
-            btnAdd.FlatAppearance.BorderSize = 0;
-            btnAdd.Click += (s, e) => ShowInputPanel(false);
-            
-            btnEdit = new Button { Text = "Edit Selected", Location = new Point(530, 38), Width = 120, Height = 30, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(240, 240, 240), ForeColor = Color.Black };
-            btnEdit.FlatAppearance.BorderSize = 0;
-            btnEdit.Click += (s, e) => {
-                if (dgvList.CurrentRow != null) {
-                    ShowInputPanel(true);
-                } else {
-                    MessageBox.Show("Please select a row to edit.");
-                }
-            };
+            txtFullName = CreateInput("Họ và tên *", ref y);
+            txtIdentityNumber = CreateInput("CMND/CCCD", ref y);
+            txtPhone = CreateInput("Số điện thoại", ref y);
+            txtEmail = CreateInput("Email", ref y);
+            txtAddress = CreateInput("Địa chỉ", ref y);
 
-            pnlTop.Controls.AddRange(new Control[] { lblSearch, txtSearch, btnAdd, btnEdit });
-                        this.Controls.Add(pnlTop);
-            Panel pnlDivider = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(230, 230, 230) };
-            this.Controls.Add(pnlDivider);
+            Label lblPoints = new Label { Text = "Điểm tích lũy", Location = new Point(20, y), AutoSize = true, Font = new Font("Inter", 9.5F) };
+            numPoints = new NumericUpDown { Location = new Point(20, y + 20), Width = 440, Font = new Font("Inter", 10F), Maximum = 99999999, Minimum = 0 };
+            this.Controls.AddRange(new Control[] { lblPoints, numPoints });
+            y += 60;
 
-                        dgvList = new DataGridView {
-                Dock = DockStyle.Fill,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                AllowUserToAddRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                EnableHeadersVisualStyles = false,
-                RowHeadersVisible = false,
-                GridColor = Color.FromArgb(230, 230, 230)
-            };
-            dgvList.RowTemplate.Height = 60;
-            dgvList.DefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.White,
-                ForeColor = Color.Black,
-                SelectionBackColor = Color.FromArgb(245, 245, 245),
-                SelectionForeColor = Color.Black,
-                Font = new Font("Segoe UI", 10F),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 15, 0)
-            };
-            dgvList.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.White,
-                ForeColor = Color.DimGray,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 15, 0)
-            };
-            dgvList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dgvList.ColumnHeadersHeight = 50;
-            dgvList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            
-            dgvList.DataBindingComplete += (s, e) => {
-                foreach (DataGridViewColumn col in dgvList.Columns) {
-                    col.HeaderText = col.HeaderText.ToUpper();
-                }
-            };
-            this.Controls.Add(dgvList);
+            chkIsActive = new CheckBox { Text = "Hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Inter", 10F) };
+            this.Controls.Add(chkIsActive);
+            y += 40;
 
-            // Input Panel
-            pnlInput = new Panel { Dock = DockStyle.Right, Width = 350, Visible = false, BackColor = Color.WhiteSmoke };
-            Label lblInputTitle = new Label { Text = "Customer Details", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
-            pnlInput.Controls.Add(lblInputTitle);
-
-            txtId = new TextBox { Visible = false };
-            pnlInput.Controls.Add(txtId);
-
-            int y = 60;            Label lblCustomerCode = new Label { Text = "CustomerCode", Location = new Point(20, y), AutoSize = true };
-            txtCustomerCode = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblCustomerCode, txtCustomerCode });
-            y += 60;            Label lblFullName = new Label { Text = "FullName", Location = new Point(20, y), AutoSize = true };
-            txtFullName = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblFullName, txtFullName });
-            y += 60;            Label lblPhone = new Label { Text = "Phone", Location = new Point(20, y), AutoSize = true };
-            txtPhone = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblPhone, txtPhone });
-            y += 60;            Label lblEmail = new Label { Text = "Email", Location = new Point(20, y), AutoSize = true };
-            txtEmail = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblEmail, txtEmail });
-            y += 60;            Label lblAddress = new Label { Text = "Address", Location = new Point(20, y), AutoSize = true };
-            txtAddress = new TextBox { Location = new Point(20, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
-            pnlInput.Controls.AddRange(new Control[] { lblAddress, txtAddress });
-            y += 60;            chkIsActive = new CheckBox { Text = "Is Active", Location = new Point(20, y), AutoSize = true };
-            pnlInput.Controls.Add(chkIsActive);
-            y += 40;            btnSave = new Button { Text = "Save", Location = new Point(20, y), Width = 100, Height = 35, FlatStyle = FlatStyle.Flat };
+            btnSave = new Button { Text = "Lưu", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Inter", 10F, FontStyle.Bold) };
             btnSave.Click += BtnSave_Click;
-            
-            btnCancel = new Button { Text = "Cancel", Location = new Point(130, y), Width = 100, Height = 35, FlatStyle = FlatStyle.Flat };
-            btnCancel.Click += (s, e) => pnlInput.Visible = false;
+            btnCancel = new Button { Text = "Hủy", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Inter", 10F) };
+            btnCancel.Click += (s, e) => this.Close();
 
-            pnlInput.Controls.AddRange(new Control[] { btnSave, btnCancel });
-            this.Controls.Add(pnlInput);
-            pnlInput.BringToFront(); dgvList.BringToFront();
+            this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }
 
-        private void LoadData()
+        private TextBox CreateInput(string label, ref int y)
         {
-            var data = _service.Search(txtSearch.Text.Trim());
-            dgvList.DataSource = data;
+            Label lbl = new Label { Text = label, Location = new Point(20, y), AutoSize = true, Font = new Font("Inter", 9.5F) };
+            TextBox txt = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Inter", 10F) };
+            this.Controls.AddRange(new Control[] { lbl, txt });
+            y += 60;
+            return txt;
         }
 
-        private void ShowInputPanel(bool isEdit)
+        private void CustomerForm_Load(object? sender, EventArgs e)
         {
-            isEditMode = isEdit;
-            pnlInput.Visible = true;
-            if (!isEdit)
-            {
-                txtId.Text = "0";
-                txtCustomerCode.Text = string.Empty;
-                txtFullName.Text = string.Empty;
-                txtPhone.Text = string.Empty;
-                txtEmail.Text = string.Empty;
-                txtAddress.Text = string.Empty;
-                chkIsActive.Checked = true;            }
-            else
-            {
-                var row = dgvList.CurrentRow;
-                txtId.Text = row.Cells["Id"].Value.ToString();
-                txtCustomerCode.Text = row.Cells["CustomerCode"].Value?.ToString();
-                txtFullName.Text = row.Cells["FullName"].Value?.ToString();
-                txtPhone.Text = row.Cells["Phone"].Value?.ToString();
-                txtEmail.Text = row.Cells["Email"].Value?.ToString();
-                txtAddress.Text = row.Cells["Address"].Value?.ToString();
-                chkIsActive.Checked = (bool)row.Cells["IsActive"].Value;            }
-        }
-
-        private void BtnSave_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                var model = new Customer
-                {
-                    Id = int.Parse(txtId.Text),
-                    CustomerCode = txtCustomerCode.Text.Trim(),
-                    FullName = txtFullName.Text.Trim(),
-                    Phone = txtPhone.Text.Trim(),
-                    Email = txtEmail.Text.Trim(),
-                    Address = txtAddress.Text.Trim(),
-                    IsActive = chkIsActive.Checked,                };
-
-                if (isEditMode)
-                {
-                    if (_service.Update(model))
-                    {
-                        MessageBox.Show("Updated successfully!");
-                        pnlInput.Visible = false;
-                        LoadData();
-                    }
-                }
-                else
-                {
-                    if (_service.Add(model) > 0)
-                    {
-                        MessageBox.Show("Added successfully!");
-                        pnlInput.Visible = false;
-                        LoadData();
-                    }
-                }
+            if (CustomerModel != null) {
+                BindData();
             }
-            catch (Exception ex)
+        }
+
+        private void BindData()
+        {
+            if (CustomerModel == null) return;
+            txtCustomerCode.Text = CustomerModel.CustomerCode;
+            txtFullName.Text = CustomerModel.FullName;
+            txtIdentityNumber.Text = CustomerModel.IdentityNumber;
+            txtPhone.Text = CustomerModel.Phone;
+            txtEmail.Text = CustomerModel.Email;
+            txtAddress.Text = CustomerModel.Address;
+            numPoints.Value = CustomerModel.Points;
+            chkIsActive.Checked = CustomerModel.IsActive;
+        }
+
+        private async void BtnSave_Click(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Vui lòng nhập họ và tên khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (CustomerModel == null) CustomerModel = new Customer();
+            
+            CustomerModel.CustomerCode = txtCustomerCode.Text.Trim();
+            CustomerModel.FullName = txtFullName.Text.Trim();
+            CustomerModel.IdentityNumber = txtIdentityNumber.Text.Trim();
+            CustomerModel.Phone = txtPhone.Text.Trim();
+            CustomerModel.Email = txtEmail.Text.Trim();
+            CustomerModel.Address = txtAddress.Text.Trim();
+            CustomerModel.Points = (int)numPoints.Value;
+            CustomerModel.IsActive = chkIsActive.Checked;
+
+            try {
+                if (CustomerModel.Id == 0) {
+                    await _service.AddAsync(CustomerModel);
+                    MessageBox.Show("Thêm khách hàng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                } else {
+                    await _service.UpdateAsync(CustomerModel);
+                    MessageBox.Show("Cập nhật khách hàng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+            catch (Exception ex) {
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            // dgvList.BackgroundColor = ThemeManager.CardBackground;
-            // dgvList.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            // dgvList.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            pnlInput.BackColor = ThemeManager.Sidebar;
-            foreach (Control c in pnlInput.Controls) {
-                if (c is Label l) l.ForeColor = ThemeManager.TextPrimary;
-                if (c is CheckBox cb) cb.ForeColor = ThemeManager.TextPrimary;
+            this.ForeColor = ThemeManager.TextPrimary;
+
+            foreach (Control control in this.Controls)
+            {
+                if (control is Label lbl)
+                {
+                    lbl.ForeColor = ThemeManager.TextPrimary;
+                }
+                else if (control is TextBox txt)
+                {
+                    txt.BackColor = ThemeManager.CardBackground;
+                    txt.ForeColor = ThemeManager.TextPrimary;
+                    txt.BorderStyle = BorderStyle.FixedSingle;
+                }
+                else if (control is NumericUpDown num)
+                {
+                    num.BackColor = ThemeManager.CardBackground;
+                    num.ForeColor = ThemeManager.TextPrimary;
+                    num.BorderStyle = BorderStyle.FixedSingle;
+                }
+                else if (control is CheckBox chk)
+                {
+                    chk.ForeColor = ThemeManager.TextPrimary;
+                }
             }
-            btnAdd.BackColor = ThemeManager.ButtonFill; btnAdd.ForeColor = ThemeManager.ButtonText; btnAdd.FlatAppearance.BorderSize=0;
-            btnEdit.BackColor = ThemeManager.HoverColor; btnEdit.ForeColor = ThemeManager.TextPrimary; btnEdit.FlatAppearance.BorderSize=0;
-            btnSave.BackColor = ThemeManager.ButtonFill; btnSave.ForeColor = ThemeManager.ButtonText; btnSave.FlatAppearance.BorderSize=0;
-            btnCancel.BackColor = ThemeManager.HoverColor; btnCancel.ForeColor = ThemeManager.TextPrimary; btnCancel.FlatAppearance.BorderSize=0;
+
+            btnSave.BackColor = ThemeManager.ButtonFill;
+            btnSave.ForeColor = Color.White;
+            btnSave.FlatAppearance.BorderColor = ThemeManager.ButtonFill;
+
+            btnCancel.BackColor = ThemeManager.CardBackground;
+            btnCancel.ForeColor = ThemeManager.TextPrimary;
+            btnCancel.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
         }
     }
 }
-
-
-
-
-

@@ -1,84 +1,49 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 using BookStoreManagement.Models;
 
 namespace BookStoreManagement.Repositories
 {
     public class CustomerRepository : RepositoryBase
     {
-        private Customer MapCustomer(SqlDataReader reader)
+        public async Task<List<Customer>> GetAllAsync()
         {
-            return new Customer
-            {
-                Id = GetInt(reader, "Id"),
-                CustomerCode = GetString(reader, "CustomerCode"),
-                IdentityNumber = GetNullableString(reader, "IdentityNumber"),
-                FullName = GetString(reader, "FullName"),
-                Phone = GetNullableString(reader, "Phone"),
-                Email = GetNullableString(reader, "Email"),
-                Address = GetNullableString(reader, "Address"),
-                IsActive = GetBool(reader, "IsActive"),
-                CreatedAt = GetDateTime(reader, "CreatedAt"),
-                UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
-            };
-        }
-
-        public List<Customer> GetAll()
-        {
-            var customers = new List<Customer>();
             const string sql = @"
-                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, Points, IsActive, CreatedAt, UpdatedAt
                 FROM Customers
                 ORDER BY Id DESC;
             ";
-
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                while (reader.Read()) customers.Add(MapCustomer(reader));
-                return customers;
-            }, sql);
+            var result = await QueryAsync<Customer>(sql);
+            return System.Linq.Enumerable.ToList(result);
         }
 
-        public List<Customer> GetActive()
+        public async Task<List<Customer>> GetActiveAsync()
         {
-            var customers = new List<Customer>();
             const string sql = @"
-                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, Points, IsActive, CreatedAt, UpdatedAt
                 FROM Customers
                 WHERE IsActive = 1
                 ORDER BY FullName;
             ";
-
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                while (reader.Read()) customers.Add(MapCustomer(reader));
-                return customers;
-            }, sql);
+            var result = await QueryAsync<Customer>(sql);
+            return System.Linq.Enumerable.ToList(result);
         }
 
-        public Customer? GetById(int id)
+        public async Task<Customer?> GetByIdAsync(int id)
         {
             const string sql = @"
-                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, Points, IsActive, CreatedAt, UpdatedAt
                 FROM Customers
                 WHERE Id = @Id;
             ";
-
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                return reader.Read() ? MapCustomer(reader) : null;
-            }, sql, parameters => AddParameter(parameters, "@Id", id));
+            return await QueryFirstOrDefaultAsync<Customer>(sql, new { Id = id });
         }
 
-        public List<Customer> Search(string keyword)
+        public async Task<List<Customer>> SearchAsync(string keyword)
         {
-            var customers = new List<Customer>();
             const string sql = @"
-                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, CustomerCode, IdentityNumber, FullName, Phone, Email, Address, Points, IsActive, CreatedAt, UpdatedAt
                 FROM Customers
                 WHERE CustomerCode LIKE N'%' + @Keyword + N'%'
                    OR IdentityNumber LIKE N'%' + @Keyword + N'%'
@@ -88,16 +53,16 @@ namespace BookStoreManagement.Repositories
                    OR Address LIKE N'%' + @Keyword + N'%'
                 ORDER BY Id DESC;
             ";
-
-            return ExecuteQuery(command =>
-            {
-                using var reader = command.ExecuteReader();
-                while (reader.Read()) customers.Add(MapCustomer(reader));
-                return customers;
-            }, sql, parameters => AddParameter(parameters, "@Keyword", keyword));
+            var result = await QueryAsync<Customer>(sql, new { Keyword = keyword });
+            return System.Linq.Enumerable.ToList(result);
         }
 
-        public int Add(Customer customer)
+        public string GenerateCustomerCode()
+        {
+            return "CUS" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
+        }
+
+        public async Task<int> AddAsync(Customer customer)
         {
             if (string.IsNullOrWhiteSpace(customer.CustomerCode))
             {
@@ -105,24 +70,14 @@ namespace BookStoreManagement.Repositories
             }
 
             const string sql = @"
-                INSERT INTO Customers (CustomerCode, IdentityNumber, FullName, Phone, Email, Address, IsActive)
+                INSERT INTO Customers (CustomerCode, IdentityNumber, FullName, Phone, Email, Address, Points, IsActive)
                 OUTPUT INSERTED.Id
-                VALUES (@CustomerCode, @IdentityNumber, @FullName, @Phone, @Email, @Address, @IsActive);
+                VALUES (@CustomerCode, @IdentityNumber, @FullName, @Phone, @Email, @Address, @Points, @IsActive);
             ";
-
-            return ExecuteScalarInt(sql, parameters =>
-            {
-                AddParameter(parameters, "@CustomerCode", customer.CustomerCode);
-                AddParameter(parameters, "@IdentityNumber", customer.IdentityNumber);
-                AddParameter(parameters, "@FullName", customer.FullName);
-                AddParameter(parameters, "@Phone", customer.Phone);
-                AddParameter(parameters, "@Email", customer.Email);
-                AddParameter(parameters, "@Address", customer.Address);
-                AddParameter(parameters, "@IsActive", customer.IsActive);
-            });
+            return await ExecuteScalarAsync<int>(sql, customer);
         }
 
-        public bool Update(Customer customer)
+        public async Task<bool> UpdateAsync(Customer customer)
         {
             const string sql = @"
                 UPDATE Customers
@@ -132,25 +87,15 @@ namespace BookStoreManagement.Repositories
                     Phone = @Phone,
                     Email = @Email,
                     Address = @Address,
+                    Points = @Points,
                     IsActive = @IsActive,
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
             ";
-
-            return ExecuteNonQuery(sql, parameters =>
-            {
-                AddParameter(parameters, "@Id", customer.Id);
-                AddParameter(parameters, "@CustomerCode", customer.CustomerCode);
-                AddParameter(parameters, "@IdentityNumber", customer.IdentityNumber);
-                AddParameter(parameters, "@FullName", customer.FullName);
-                AddParameter(parameters, "@Phone", customer.Phone);
-                AddParameter(parameters, "@Email", customer.Email);
-                AddParameter(parameters, "@Address", customer.Address);
-                AddParameter(parameters, "@IsActive", customer.IsActive);
-            }) > 0;
+            return await ExecuteAsync(sql, customer) > 0;
         }
 
-        public bool SetActive(int id, bool isActive)
+        public async Task<bool> SetActiveAsync(int id, bool isActive)
         {
             const string sql = @"
                 UPDATE Customers
@@ -158,15 +103,26 @@ namespace BookStoreManagement.Repositories
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
             ";
-
-            return ExecuteNonQuery(sql, parameters =>
-            {
-                AddParameter(parameters, "@Id", id);
-                AddParameter(parameters, "@IsActive", isActive);
-            }) > 0;
+            return await ExecuteAsync(sql, new { Id = id, IsActive = isActive }) > 0;
         }
 
-        public bool IsCustomerCodeExists(string customerCode, int? excludeId = null)
+        public async Task<bool> DeleteAsync(int id)
+        {
+            const string sql = @"
+                UPDATE Customers SET IsActive = 0, UpdatedAt = SYSDATETIME() WHERE Id = @Id;
+            ";
+            return await ExecuteAsync(sql, new { Id = id }) > 0;
+        }
+
+        public async Task<bool> DeleteMultipleAsync(IEnumerable<int> ids)
+        {
+            const string sql = @"
+                UPDATE Customers SET IsActive = 0, UpdatedAt = SYSDATETIME() WHERE Id IN @Ids;
+            ";
+            return await ExecuteAsync(sql, new { Ids = ids }) > 0;
+        }
+
+        public async Task<bool> IsCustomerCodeExistsAsync(string customerCode, int? excludeId = null)
         {
             string sql = @"
                 SELECT COUNT(1)
@@ -175,14 +131,10 @@ namespace BookStoreManagement.Repositories
             ";
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
 
-            return ExecuteScalarInt(sql, parameters =>
-            {
-                AddParameter(parameters, "@CustomerCode", customerCode);
-                if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
-            }) > 0;
+            return await ExecuteScalarAsync<int>(sql, new { CustomerCode = customerCode, ExcludeId = excludeId }) > 0;
         }
 
-        public bool IsIdentityNumberExists(string identityNumber, int? excludeId = null)
+        public async Task<bool> IsIdentityNumberExistsAsync(string identityNumber, int? excludeId = null)
         {
             string sql = @"
                 SELECT COUNT(1)
@@ -191,16 +143,7 @@ namespace BookStoreManagement.Repositories
             ";
             if (excludeId.HasValue) sql += " AND Id <> @ExcludeId";
 
-            return ExecuteScalarInt(sql, parameters =>
-            {
-                AddParameter(parameters, "@IdentityNumber", identityNumber);
-                if (excludeId.HasValue) AddParameter(parameters, "@ExcludeId", excludeId.Value);
-            }) > 0;
-        }
-
-        public string GenerateCustomerCode()
-        {
-            return "CUS" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
+            return await ExecuteScalarAsync<int>(sql, new { IdentityNumber = identityNumber, ExcludeId = excludeId }) > 0;
         }
     }
 }

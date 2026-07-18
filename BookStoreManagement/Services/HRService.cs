@@ -21,6 +21,12 @@ namespace BookStoreManagement.Services
             _userRepo.Add(user);
         }
 
+        public Models.User? GetById(int id)
+        {
+            PermissionService.RequireAdmin();
+            return _userRepo.GetById(id);
+        }
+
         public void UpdateUser(Models.User user)
         {
             PermissionService.RequireAdmin();
@@ -48,6 +54,16 @@ namespace BookStoreManagement.Services
         public (List<HREmployeeItem> Items, int TotalCount) GetPagedEmployees(int page, int pageSize, string departmentFilter, string statusFilter, string searchTerm)
         {
             return _repo.GetPagedEmployees(page, pageSize, departmentFilter, statusFilter, searchTerm);
+        }
+
+        public async System.Threading.Tasks.Task<HRStats> GetStatsAsync()
+        {
+            return await _repo.GetStatsAsync();
+        }
+
+        public async System.Threading.Tasks.Task<(List<HREmployeeItem> Items, int TotalCount)> GetPagedEmployeesAsync(int page, int pageSize, string departmentFilter, string statusFilter, string searchTerm)
+        {
+            return await _repo.GetPagedEmployeesAsync(page, pageSize, departmentFilter, statusFilter, searchTerm);
         }
     }
 }

@@ -15,5 +15,10 @@ namespace BookStoreManagement.Services
         {
             return _repo.GetFinancialReports();
         }
+
+        public async System.Threading.Tasks.Task<ReportStats> GetFinancialReportsAsync()
+        {
+            return await _repo.GetFinancialReportsAsync();
+        }
     }
 }

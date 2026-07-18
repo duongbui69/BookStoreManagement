@@ -22,36 +22,13 @@ namespace BookStoreManagement.Forms
             InitializeTopBar();
             InitializeSidebarFooter();
 
-            // Adjust UI based on Role
-            // 1: Admin, 2: Staff
-            if (_currentUser.RoleId == 2)
-            {
-                lblRole.Text = "Staff";
-                btnHR.Visible = false;
-                btnReports.Visible = false;
-                btnSettings.Visible = false;
-            }
-            else
-            {
-                lblRole.Text = "Admin";
-            }
+            
+            // Initialize Dynamic Accordion Sidebar
+            InitializeAccordionSidebar();
 
-            // Set Avatar Initials
-            if (!string.IsNullOrEmpty(_currentUser.FullName))
-            {
-                var names = _currentUser.FullName.Split(' ');
-                btnAvatar.Text = names.Length > 1 ? $"{names[0][0]}{names[names.Length - 1][0]}".ToUpper() : names[0].Substring(0, 2).ToUpper();
-            }
-
-            // Hook up events
-            btnDashboard.Click += BtnDashboard_Click;
-            btnCatalog.Click += BtnCatalog_Click;
-            btnInventory.Click += BtnInventory_Click;
-            btnOrders.Click += BtnOrders_Click;
-            btnHR.Click += BtnHR_Click;
-            btnReports.Click += BtnReports_Click;
             btnSettings.Click += BtnSettings_Click;
             btnThemeToggle.Click += BtnThemeToggle_Click;
+
 
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             ApplyTheme();
@@ -60,70 +37,102 @@ namespace BookStoreManagement.Forms
             LoadDashboard();
         }
 
+        private void LoadControl(Control newControl, string placeholder)
+        {
+            foreach (Control c in panelMain.Controls)
+            {
+                c.Dispose();
+            }
+            panelMain.Controls.Clear();
+
+            newControl.Dock = DockStyle.Fill;
+            _currentSearchableControl = newControl as ISearchableControl;
+            UpdateGlobalSearch(placeholder);
+            panelMain.Controls.Add(newControl);
+        }
+
         private void BtnInventory_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnInventory);
-            panelMain.Controls.Clear();
-            var invControl = new UserControls.InventoryControl();
-            invControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = invControl;
-            UpdateGlobalSearch("Search by ISBN, title or SKU...");
-            panelMain.Controls.Add(invControl);
+            LoadControl(new UserControls.InventoryControl(), "Search by ISBN, title or SKU...");
+        }
+
+        private void BtnStockCard_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.StockCardControl(), "Tìm kiếm thẻ kho...");
+        }
+
+        private void BtnPurchaseReceipts_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.PurchaseReceiptControl(), "Tìm kiếm phiếu nhập...");
+        }
+
+        private void BtnExportReceipts_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.ExportReceiptControl(), "Tìm kiếm phiếu xuất...");
+        }
+
+        private void BtnVoucherTypes_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.VoucherTypeControl(), "Tìm kiếm loại phiếu...");
         }
 
         private void BtnCatalog_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnCatalog);
-            panelMain.Controls.Clear();
-            var catalogControl = new UserControls.CatalogControl();
-            catalogControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = catalogControl;
-            UpdateGlobalSearch("Search by book title, ISBN or author...");
-            panelMain.Controls.Add(catalogControl);
+            LoadControl(new UserControls.CatalogControl(), "Search by book title, ISBN or author...");
         }
 
         private void BtnOrders_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnOrders);
-            panelMain.Controls.Clear();
-            var ordersControl = new UserControls.OrdersControl();
-            ordersControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = ordersControl;
-            UpdateGlobalSearch("Search orders, customers...");
-            panelMain.Controls.Add(ordersControl);
+            LoadControl(new UserControls.OrdersControl(), "Search orders, customers...");
+        }
+
+        private void BtnInvoices_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnOrders); // or another button if preferred, but it's under Customer group
+            LoadControl(new UserControls.InvoiceControl(), "Search invoices...");
+        }
+
+        private void BtnRefunds_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnOrders); // reuse group tab
+            LoadControl(new UserControls.RefundControl(), "Search return receipts...");
+        }
+
+        private void BtnCustomer_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.CustomerControl(), "Search customers...");
         }
 
         private void BtnHR_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnHR);
-            panelMain.Controls.Clear();
-            var hrControl = new UserControls.HRControl();
-            hrControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = hrControl;
-            UpdateGlobalSearch("Search employees, roles, or departments...");
-            panelMain.Controls.Add(hrControl);
+            LoadControl(new UserControls.HRControl(), "Search employees, roles, or departments...");
+        }
+
+        private void BtnAccount_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnHR); // Highlight the parent group
+            LoadControl(new UserControls.AccountControl(), "Search accounts by username, name, email...");
         }
 
         private void BtnReports_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnReports);
-            panelMain.Controls.Clear();
-            var reportsControl = new UserControls.ReportsControl();
-            reportsControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = reportsControl;
-            UpdateGlobalSearch("Search reports...");
-            panelMain.Controls.Add(reportsControl);
+            LoadControl(new UserControls.ReportsControl(), "Search reports...");
+        }
+
+        private void BtnStores_Click(object sender, EventArgs e)
+        {
+            SetActiveTab(btnHR); // Part of HR group or create its own highlighting
+            LoadControl(new UserControls.StoresControl(), "Search stores...");
         }
 
         private void BtnSettings_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnSettings);
-            panelMain.Controls.Clear();
-            var settingsControl = new UserControls.SettingsControl();
-            settingsControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = settingsControl;
-            UpdateGlobalSearch("Search system logs or settings...");
-            panelMain.Controls.Add(settingsControl);
+            LoadControl(new UserControls.SettingsControl(), "Search system logs or settings...");
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)
@@ -134,12 +143,27 @@ namespace BookStoreManagement.Forms
 
         private void LoadDashboard()
         {
-            panelMain.Controls.Clear();
-            var dashboardControl = new UserControls.DashboardControl();
-            dashboardControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = dashboardControl;
-            UpdateGlobalSearch("Search dashboard...");
-            panelMain.Controls.Add(dashboardControl);
+            LoadControl(new UserControls.DashboardControl(), "Search dashboard...");
+        }
+
+        private void BtnCategory_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.CategoryControl(), "Tìm kiếm danh mục...");
+        }
+
+        private void BtnAuthor_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.AuthorControl(), "Tìm theo tên, mã...");
+        }
+
+        private void BtnPublisher_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.PublisherControl(), "Tìm kiếm nhà xuất bản...");
+        }
+
+        private void BtnSupplier_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.SupplierControl(), "Tìm theo tên, mã, email, sđt...");
         }
 
         private void UpdateGlobalSearch(string placeholder)
@@ -171,23 +195,20 @@ namespace BookStoreManagement.Forms
 
         private void SetActiveTab(Guna.UI2.WinForms.Guna2Button activeButton)
         {
-            foreach (Control c in panelSidebar.Controls)
+            foreach (var btn in allMenuButtons)
             {
-                if (c is Guna.UI2.WinForms.Guna2Button btn && btn != btnLogout)
+                if (btn == activeButton)
                 {
-                    if (btn == activeButton)
-                    {
-                        btn.CustomBorderThickness = new Padding(3, 0, 0, 0);
-                        btn.CustomBorderColor = Themes.ThemeManager.ButtonFill;
-                        btn.FillColor = Themes.ThemeManager.HoverColor;
-                        btn.ForeColor = Themes.ThemeManager.ButtonFill;
-                    }
-                    else
-                    {
-                        btn.CustomBorderThickness = new Padding(0);
-                        btn.FillColor = Color.Transparent;
-                        btn.ForeColor = Themes.ThemeManager.TextSecondary;
-                    }
+                    btn.CustomBorderThickness = new Padding(3, 0, 0, 0);
+                    btn.CustomBorderColor = Themes.ThemeManager.ButtonFill;
+                    btn.FillColor = Themes.ThemeManager.HoverColor;
+                    btn.ForeColor = Themes.ThemeManager.ButtonFill;
+                }
+                else
+                {
+                    btn.CustomBorderThickness = new Padding(0);
+                    btn.FillColor = Color.Transparent;
+                    btn.ForeColor = Themes.ThemeManager.TextSecondary;
                 }
             }
         }
@@ -200,6 +221,235 @@ namespace BookStoreManagement.Forms
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
             ApplyTheme();
+        }
+
+        
+        private FlowLayoutPanel navPanel;
+        private List<Guna.UI2.WinForms.Guna2Button> allMenuButtons = new List<Guna.UI2.WinForms.Guna2Button>();
+
+        private void InitializeAccordionSidebar()
+        {
+            panelSidebar.Controls.Remove(btnDashboard);
+            panelSidebar.Controls.Remove(btnCatalog);
+            panelSidebar.Controls.Remove(btnInventory);
+            panelSidebar.Controls.Remove(btnOrders);
+            panelSidebar.Controls.Remove(btnHR);
+            panelSidebar.Controls.Remove(btnReports);
+
+            Guna.UI2.WinForms.Guna2Panel pnlBrand = new Guna.UI2.WinForms.Guna2Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 100,
+                BackColor = Color.Transparent
+            };
+            panelSidebar.Controls.Add(pnlBrand);
+            lblBrand.Parent = pnlBrand;
+            lblSubBrand.Parent = pnlBrand;
+            lblBrand.Location = new Point(20, 25);
+            lblSubBrand.Location = new Point(23, 55);
+
+            navPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = true,
+                BackColor = Color.Transparent,
+                Padding = new Padding(0, 5, 0, 0)
+            };
+            panelSidebar.Controls.Add(navPanel);
+            navPanel.BringToFront(); // Dock between pnlBrand and panelUserProfile
+
+            AddMenu("Tổng quan", "dashboard", BtnDashboard_Click);
+
+            var catalogSub = new Dictionary<string, EventHandler>
+            {
+                { "Sách", BtnCatalog_Click },
+                { "Danh mục sách", BtnCategory_Click }
+            };
+            AddAccordionMenu("Quản lý sách", "menu_book", catalogSub);
+
+            var inventorySub = new Dictionary<string, EventHandler>
+            {
+                { "Thẻ kho", BtnStockCard_Click }
+            };
+            if (_currentUser.RoleId == 1) // Admin only
+            {
+                inventorySub.Add("Nhập kho", BtnPurchaseReceipts_Click);
+                inventorySub.Add("Xuất kho", BtnExportReceipts_Click);
+                inventorySub.Add("Loại phiếu", BtnVoucherTypes_Click);
+            }
+            inventorySub.Add("Thống kê hàng tồn kho", BtnInventory_Click);
+
+            AddAccordionMenu("Quản lý kho", "inventory_2", inventorySub);
+
+            if (_currentUser.RoleId == 1) // Admin only
+            {
+                var hrSub = new Dictionary<string, EventHandler>
+                {
+                    { "Quản lý nhân viên", BtnHR_Click },
+                    { "Quản lý tài khoản", BtnAccount_Click },
+                    { "Quản lý các cửa hàng", BtnStores_Click }
+                };
+                AddAccordionMenu("Quản lý nhân sự", "group", hrSub);
+            }
+
+            var customerSub = new Dictionary<string, EventHandler>
+            {
+                { "Quản lý khách hàng", BtnCustomer_Click },
+                { "Quản lý đơn hàng", BtnOrders_Click },
+                { "Quản lý hoá đơn", BtnInvoices_Click },
+                { "Quản lý hoàn tiền", BtnRefunds_Click }
+            };
+            AddAccordionMenu("Quản lý khách hàng", "groups", customerSub);
+
+            if (_currentUser.RoleId == 1) // Admin only
+            {
+                var masterSub = new Dictionary<string, EventHandler>
+                {
+                    { "Quản lý tác giả", BtnAuthor_Click },
+                    { "Quản lý nhà xuất bản", BtnPublisher_Click },
+                    { "Quản lý nhà cung cấp", BtnSupplier_Click }
+                };
+                AddAccordionMenu("Quản lý danh mục", "category", masterSub);
+                
+                AddMenu("Báo cáo thống kê", "assessment", BtnReports_Click);
+            }
+        }
+
+        private Guna.UI2.WinForms.Guna2Button CreateMenuButton(string text, string iconText, bool isSubMenu = false)
+        {
+            var btn = new Guna.UI2.WinForms.Guna2Button
+            {
+                Text = $"{(iconText != "" ? iconText + "   " : "")}{text}",
+                Size = new Size(240, 45), // Width reduced slightly to fit scrollbar nicely
+                FillColor = Color.Transparent,
+                Font = isSubMenu ? new Font("Segoe UI", 9.5F) : new Font("Segoe UI", 11F),
+                ForeColor = Themes.ThemeManager.TextSecondary,
+                TextAlign = HorizontalAlignment.Left,
+                TextOffset = isSubMenu ? new Point(45, 0) : new Point(15, 0),
+                CustomBorderThickness = new Padding(0),
+                Margin = new Padding(0)
+            };
+            btn.HoverState.FillColor = Themes.ThemeManager.HoverColor;
+            allMenuButtons.Add(btn);
+            return btn;
+        }
+
+        private void AddMenu(string title, string icon, EventHandler onClick)
+        {
+            var btn = CreateMenuButton(title, GetEmojiForMaterialIcon(icon));
+            if (onClick != null)
+                btn.Click += onClick;
+            navPanel.Controls.Add(btn);
+        }
+
+        private void AddAccordionMenu(string title, string icon, Dictionary<string, EventHandler> subItems)
+        {
+            var btnMain = CreateMenuButton($"{title} ▾", GetEmojiForMaterialIcon(icon));
+            
+            var pnlSub = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.Transparent,
+                AutoSize = false,
+                Height = 0,
+                Margin = new Padding(0),
+                Visible = false
+            };
+
+            foreach (var item in subItems)
+            {
+                var btnSub = CreateMenuButton(item.Key, "", true);
+                if (item.Value != null)
+                    btnSub.Click += item.Value;
+                pnlSub.Controls.Add(btnSub);
+            }
+
+            int targetHeight = subItems.Count * 45;
+            System.Windows.Forms.Timer animTimer = new System.Windows.Forms.Timer { Interval = 15 };
+            bool isExpanding = false;
+
+            animTimer.Tick += (s, ev) =>
+            {
+                if (isExpanding)
+                {
+                    pnlSub.Height += 25;
+                    if (pnlSub.Height >= targetHeight)
+                    {
+                        pnlSub.Height = targetHeight;
+                        animTimer.Stop();
+                    }
+                }
+                else
+                {
+                    pnlSub.Height -= 25;
+                    if (pnlSub.Height <= 0)
+                    {
+                        pnlSub.Height = 0;
+                        pnlSub.Visible = false;
+                        animTimer.Stop();
+                    }
+                }
+            };
+
+            pnlSub.Tag = new Action<bool>((expand) => {
+                isExpanding = expand;
+                if (expand) pnlSub.Visible = true;
+                animTimer.Start();
+            });
+
+            btnMain.Click += (s, e) => {
+                bool wasVisible = pnlSub.Visible && pnlSub.Height > 0;
+                
+                // Close all other open sub-panels
+                foreach (Control c in navPanel.Controls)
+                {
+                    if (c is FlowLayoutPanel subPanel && c != pnlSub && subPanel.Visible)
+                    {
+                        if (subPanel.Tag is Action<bool> toggleAction)
+                        {
+                            toggleAction(false);
+                        }
+                        
+                        int index = navPanel.Controls.GetChildIndex(subPanel);
+                        if (index > 0 && navPanel.Controls[index - 1] is Guna.UI2.WinForms.Guna2Button mainBtn)
+                        {
+                            mainBtn.Text = mainBtn.Text.Replace("▴", "▾");
+                        }
+                    }
+                }
+
+                if (!wasVisible)
+                {
+                    if (pnlSub.Tag is Action<bool> toggleAction) toggleAction(true);
+                    btnMain.Text = btnMain.Text.Replace("▾", "▴");
+                }
+                else
+                {
+                    if (pnlSub.Tag is Action<bool> toggleAction) toggleAction(false);
+                    btnMain.Text = btnMain.Text.Replace("▴", "▾");
+                }
+            };
+
+            navPanel.Controls.Add(btnMain);
+            navPanel.Controls.Add(pnlSub);
+        }
+
+        private string GetEmojiForMaterialIcon(string icon)
+        {
+            switch (icon)
+            {
+                case "dashboard": return "📊";
+                case "menu_book": return "📖";
+                case "inventory_2": return "📦";
+                case "group": return "👥";
+                case "groups": return "🤝";
+                case "category": return "📑";
+                case "assessment": return "📈";
+                default: return "🔹";
+            }
         }
 
         private void ApplyTheme()
@@ -221,12 +471,12 @@ namespace BookStoreManagement.Forms
             btnThemeToggle.ForeColor = Themes.ThemeManager.TextPrimary;
 
             // Re-apply active tab styling
-            foreach (Control c in panelSidebar.Controls)
+            if (allMenuButtons != null)
             {
-                if (c is Guna.UI2.WinForms.Guna2Button btn && btn != btnLogout)
+                foreach (var btn in allMenuButtons)
                 {
                     btn.HoverState.FillColor = Themes.ThemeManager.HoverColor;
-                    if (btn.CustomBorderThickness.Left > 0) // Active button check
+                    if (btn.CustomBorderThickness.Left > 0)
                     {
                         btn.CustomBorderColor = Themes.ThemeManager.ButtonFill;
                         btn.FillColor = Themes.ThemeManager.HoverColor;

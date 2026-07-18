@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading.Tasks;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using BookStoreManagement.Database;
 
@@ -6,45 +10,76 @@ namespace BookStoreManagement.Repositories
 {
     public abstract class RepositoryBase
     {
-        protected T ExecuteQuery<T>(
-            Func<SqlCommand, T> action,
-            string sql,
-            Action<SqlParameterCollection>? addParameters = null)
+        // --- NEW DAPPER ASYNC METHODS ---
+        protected async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            using var connection = DbConnectionFactory.CreateConnection();
+            return await connection.QueryAsync<T>(sql, param);
+        }
+
+        protected async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            using var connection = DbConnectionFactory.CreateConnection();
+            return await connection.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
+
+        protected async Task<int> ExecuteAsync(string sql, object? param = null)
+        {
+            using var connection = DbConnectionFactory.CreateConnection();
+            return await connection.ExecuteAsync(sql, param);
+        }
+
+        protected async Task<T?> ExecuteScalarAsync<T>(string sql, object? param = null)
+        {
+            using var connection = DbConnectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<T>(sql, param);
+        }
+
+        protected async Task ExecuteTransactionAsync(Func<SqlConnection, SqlTransaction, Task> action)
+        {
+            using var connection = DbConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                await action(connection, transaction);
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        // --- OLD ADO.NET METHODS (To keep compilation working while refactoring) ---
+        protected T ExecuteQuery<T>(Func<SqlCommand, T> action, string sql, Action<SqlParameterCollection>? addParameters = null)
         {
             using var connection = DbConnectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
-
             addParameters?.Invoke(command.Parameters);
-
             connection.Open();
             return action(command);
         }
 
-        protected int ExecuteNonQuery(
-            string sql,
-            Action<SqlParameterCollection>? addParameters = null)
+        protected int ExecuteNonQuery(string sql, Action<SqlParameterCollection>? addParameters = null)
         {
             return ExecuteQuery(command => command.ExecuteNonQuery(), sql, addParameters);
         }
 
-        protected object? ExecuteScalar(
-            string sql,
-            Action<SqlParameterCollection>? addParameters = null)
+        protected object? ExecuteScalar(string sql, Action<SqlParameterCollection>? addParameters = null)
         {
             return ExecuteQuery(command => command.ExecuteScalar(), sql, addParameters);
         }
 
-        protected int ExecuteScalarInt(
-            string sql,
-            Action<SqlParameterCollection>? addParameters = null)
+        protected int ExecuteScalarInt(string sql, Action<SqlParameterCollection>? addParameters = null)
         {
             object? result = ExecuteScalar(sql, addParameters);
             return result == null || result == DBNull.Value ? 0 : Convert.ToInt32(result);
         }
 
-        protected decimal ExecuteScalarDecimal(
-            string sql,
-            Action<SqlParameterCollection>? addParameters = null)
+        protected decimal ExecuteScalarDecimal(string sql, Action<SqlParameterCollection>? addParameters = null)
         {
             object? result = ExecuteScalar(sql, addParameters);
             return result == null || result == DBNull.Value ? 0 : Convert.ToDecimal(result);
@@ -54,9 +89,7 @@ namespace BookStoreManagement.Repositories
         {
             using var connection = DbConnectionFactory.CreateConnection();
             connection.Open();
-
             using var transaction = connection.BeginTransaction();
-
             try
             {
                 T result = action(connection, transaction);
@@ -72,11 +105,7 @@ namespace BookStoreManagement.Repositories
 
         protected void ExecuteTransaction(Action<SqlConnection, SqlTransaction> action)
         {
-            ExecuteTransaction((connection, transaction) =>
-            {
-                action(connection, transaction);
-                return true;
-            });
+            ExecuteTransaction((connection, transaction) => { action(connection, transaction); return true; });
         }
 
         protected void AddParameter(SqlParameterCollection parameters, string name, object? value)

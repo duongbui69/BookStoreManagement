@@ -18,24 +18,17 @@ namespace BookStoreManagement.UserControls
         // Content Container
         private Guna2Panel pnlContent;
 
-        // Page Header
-        private Guna2Panel pnlPageHeader;
+        // Header & Toolbar
+        private TableLayoutPanel tlpHeader;
         private Label lblTitle;
         private Label lblSubTitle;
-
-        // Bento Metric Cards
-        private Guna2Panel pnlMetrics;
-        private Guna2Panel cardEmployees;
-        private Guna2Panel cardBranches;
-        private Guna2Panel cardPerformance;
-        private Guna2Panel cardLeaveRequests;
+        private Guna2Button btnAdd;
 
         // Filters Bar
         private Guna2Panel pnlFilters;
         private Guna2ComboBox cbBranch;
         private Guna2ComboBox cbRole;
         private Guna2Button btnPayroll;
-        private Guna2Button btnAdd;
 
         // Grid
         private Guna2Panel pnlGridContainer;
@@ -46,15 +39,18 @@ namespace BookStoreManagement.UserControls
 
         private int _currentPage = 1;
         private int _pageSize = 5;
+
+        private int _hoveredRowIndex = -1;
+        private int _hoveredAction = 0;
         private string _currentBranch = "All Departments";
         private string _currentRole = "Status: All";
         private string _currentSearchTerm = "";
 
-        public void PerformSearch(string keyword)
+        public async void PerformSearch(string keyword)
         {
             _currentSearchTerm = keyword;
             _currentPage = 1;
-            LoadData();
+            await LoadDataAsync();
         }
 
         public HRControl()
@@ -74,33 +70,38 @@ namespace BookStoreManagement.UserControls
 
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
-            // 1. Page Header
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
-            lblTitle = new Label { Text = "Employee Directory", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "View and manage all staff members across the organization.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
-            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
-
-            // 2. Metric Cards
-            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter) };
-            cardEmployees = CreateMetricCard("Total Employees", "badge", "+0 this month");
-            cardBranches = CreateMetricCard("Active Branches", "storefront", "");
-            cardPerformance = CreateMetricCard("Avg Performance", "trending_up", "94%");
-            cardLeaveRequests = CreateMetricCard("Pending Leaves", "event_busy", "0");
-            
-            pnlMetrics.Controls.AddRange(new Control[] { cardEmployees, cardBranches, cardPerformance, cardLeaveRequests });
-            pnlMetrics.Resize += (s, e) => 
+            // 1. Header & Toolbar
+            tlpHeader = new TableLayoutPanel
             {
-                int cardWidth = (pnlMetrics.Width - (gutter * 3)) / 4;
-                if (cardWidth > 0)
+                Dock = DockStyle.Top,
+                ColumnCount = 2,
+                RowCount = 2,
+                Height = 80,
+                Margin = new Padding(0, 0, 0, gutter)
+            };
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+
+            lblTitle = new Label { Text = "Employee Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Manage staff records, roles, and branch assignments.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            
+            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd.Click += async (s, e) => {
+                var frm = new Forms.EmployeeForm(null);
+                if (frm.ShowDialog() == DialogResult.OK)
                 {
-                    cardEmployees.Width = cardWidth; cardEmployees.Left = 0;
-                    cardBranches.Width = cardWidth; cardBranches.Left = cardWidth + gutter;
-                    cardPerformance.Width = cardWidth; cardPerformance.Left = (cardWidth + gutter) * 2;
-                    cardLeaveRequests.Width = cardWidth; cardLeaveRequests.Left = (cardWidth + gutter) * 3;
+                    await LoadDataAsync();
                 }
             };
 
-            // 3. Filters Bar
+            tlpHeader.Controls.Add(lblTitle, 0, 0);
+            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
+            tlpHeader.Controls.Add(btnAdd, 1, 0);
+            tlpHeader.SetRowSpan(btnAdd, 2);
+
+            // 2. Filters Bar
             pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1, 1, 1, 0), Margin = new Padding(0), BorderRadius = 6 };
             pnlFilters.CustomizableEdges.BottomLeft = false;
             pnlFilters.CustomizableEdges.BottomRight = false;
@@ -108,27 +109,23 @@ namespace BookStoreManagement.UserControls
             cbBranch = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(20, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
             cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Sales" });
             cbBranch.SelectedIndex = 0;
-            cbBranch.SelectedIndexChanged += (s, e) => { _currentBranch = cbBranch.SelectedItem.ToString(); _currentPage = 1; LoadData(); };
+            cbBranch.SelectedIndexChanged += async (s, e) => { _currentBranch = cbBranch.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
 
             cbRole = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(220, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
             cbRole.Items.AddRange(new object[] { "Status: All", "ACTIVE", "INACTIVE" });
             cbRole.SelectedIndex = 0;
-            cbRole.SelectedIndexChanged += (s, e) => { _currentRole = cbRole.SelectedItem.ToString(); _currentPage = 1; LoadData(); };
+            cbRole.SelectedIndexChanged += async (s, e) => { _currentRole = cbRole.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
 
             btnPayroll = new Guna2Button { Text = "Payroll", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             btnPayroll.Click += (s, e) => MessageBox.Show("Payroll feature is under development.", "Info");
 
-            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(150, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnAdd.Click += (s, e) => MessageBox.Show("Add Employee form is under development.", "Info");
-
-            pnlFilters.Controls.AddRange(new Control[] { cbBranch, cbRole, btnPayroll, btnAdd });
+            pnlFilters.Controls.AddRange(new Control[] { cbBranch, cbRole, btnPayroll });
             pnlFilters.Resize += (s, e) =>
             {
-                btnPayroll.Location = new Point(pnlFilters.Width - 300, 17);
-                btnAdd.Location = new Point(pnlFilters.Width - 170, 17);
+                btnPayroll.Location = new Point(pnlFilters.Width - 140, 17);
             };
 
-            // 4. Grid Container
+            // 3. Grid Container
             pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1, 0, 1, 1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 6 };
             pnlGridContainer.CustomizableEdges.TopLeft = false;
             pnlGridContainer.CustomizableEdges.TopRight = false;
@@ -144,85 +141,129 @@ namespace BookStoreManagement.UserControls
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false,
                 RowTemplate = { Height = 60 },
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle(), // Keep same as default to avoid zebra striping
                 Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
             };
             
             // Define Columns
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", Name = "Name", HeaderText = "EMPLOYEE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RoleName", HeaderText = "ROLE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Department", HeaderText = "BRANCH/DEPT", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { Name = "Avatar", HeaderText = "AVATAR", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "EmployeeId", Name = "EmployeeId", HeaderText = "EMPLOYEE ID", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", Name = "Name", HeaderText = "FULL NAME", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RoleName", HeaderText = "POSITION", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Department", HeaderText = "BRANCH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Status", HeaderText = "STATUS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 100 });
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Email", Name = "Email", Visible = false });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "EmployeeId", Name = "EmployeeId", Visible = false });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "JoinDate", HeaderText = "SCORE (JOIN DATE)", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "MMM dd, yyyy" }, Width = 120 });
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTIONS", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTION", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvEmployees.Columns.Add(actionCol);
 
             dgvEmployees.CellPainting += DgvEmployees_CellPainting;
             dgvEmployees.CellMouseClick += DgvEmployees_CellMouseClick;
+            dgvEmployees.CellMouseMove += DgvEmployees_CellMouseMove;
+            dgvEmployees.CellMouseLeave += DgvEmployees_CellMouseLeave;
             
             pnlGridContainer.Controls.Add(dgvEmployees);
 
             // Pagination
             paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
-            paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
+            paginationControl.PageChanged += async (s, e) => { _currentPage = e.NewPage; await LoadDataAsync(); };
             pnlGridContainer.Controls.Add(paginationControl);
 
             pnlContent.Controls.Add(pnlGridContainer);
             pnlContent.Controls.Add(pnlFilters);
-            pnlContent.Controls.Add(pnlMetrics);
-            pnlContent.Controls.Add(pnlPageHeader);
+            pnlContent.Controls.Add(tlpHeader);
 
             this.Controls.Add(pnlContent);
 
             ApplyTheme();
         }
 
-        private Guna2Panel CreateMetricCard(string title, string iconText, string value)
+
+
+        private async void HRControl_Load(object sender, EventArgs e)
         {
-            var card = new Guna2Panel { Height = 100, BorderRadius = 6, BorderThickness = 1 };
-            
-            var lblVal = new Label { Name = "ValueLabel", Text = value, Font = new Font("Segoe UI", 20F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 45) };
-            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(18, 15) };
-            
-            var lblIcon = new Label { Name = "IconLabel", Text = iconText, Font = new Font("Segoe UI", 12F), AutoSize = true, Location = new Point(card.Width - 40, 15), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-            
-            card.Controls.AddRange(new Control[] { lblVal, lblTitle, lblIcon });
-            return card;
+            await LoadDataAsync();
         }
 
-        private void HRControl_Load(object sender, EventArgs e)
+        private async System.Threading.Tasks.Task LoadDataAsync()
         {
-            LoadData();
+            var (items, totalCount) = await _service.GetPagedEmployeesAsync(_currentPage, _pageSize, _currentBranch, _currentRole, _currentSearchTerm);
+            dgvEmployees.DataSource = items;
+            paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);
         }
 
         private void LoadData()
         {
-            var stats = _service.GetStats();
-            
-            cardEmployees.Controls["ValueLabel"].Text = stats.TotalEmployees.ToString();
-            cardBranches.Controls["ValueLabel"].Text = stats.ActiveDepartments.ToString();
-            cardPerformance.Controls["ValueLabel"].Text = "94%";
-            cardLeaveRequests.Controls["ValueLabel"].Text = stats.NewThisMonth.ToString();
-
             var (items, totalCount) = _service.GetPagedEmployees(_currentPage, _pageSize, _currentBranch, _currentRole, _currentSearchTerm);
             dgvEmployees.DataSource = items;
             paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);
         }
 
-        private void DgvEmployees_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void DgvEmployees_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvEmployees.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                int action = (e.X < dgvEmployees.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                
+                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = e.RowIndex;
+                    _hoveredAction = action;
+                    
+                    if (oldRow >= 0) dgvEmployees.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvEmployees.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
+                }
+                dgvEmployees.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRowIndex >= 0)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = -1;
+                    _hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvEmployees.InvalidateCell(dgvEmployees.Columns["Actions"].Index, oldRow);
+                }
+                dgvEmployees.Cursor = Cursors.Default;
+            }
+        }
+
+        private void DgvEmployees_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_hoveredRowIndex >= 0)
+            {
+                int oldRow = _hoveredRowIndex;
+                _hoveredRowIndex = -1;
+                _hoveredAction = 0;
+                dgvEmployees.InvalidateCell(dgvEmployees.Columns["Actions"].Index, oldRow);
+            }
+            dgvEmployees.Cursor = Cursors.Default;
+        }
+
+        private async void DgvEmployees_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && dgvEmployees.Columns[e.ColumnIndex].Name == "Actions")
             {
                 int empId = Convert.ToInt32(dgvEmployees.Rows[e.RowIndex].Cells["Id"].Value);
-                var cellRect = dgvEmployees.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
                 
-                if (e.X < cellRect.Width / 2)
+                if (e.X < dgvEmployees.Columns[e.ColumnIndex].Width / 2)
                 {
                     // Edit
-                    MessageBox.Show("Edit Employee form is under development.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var employee = _service.GetById(empId);
+                    if (employee != null)
+                    {
+                        var frm = new Forms.EmployeeForm(employee);
+                        if (frm.ShowDialog() == DialogResult.OK)
+                        {
+                            await LoadDataAsync();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Không tìm thấy nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 else
                 {
@@ -233,7 +274,7 @@ namespace BookStoreManagement.UserControls
                         {
                             _service.DeleteUser(empId);
                             MessageBox.Show("Employee deleted successfully!");
-                            LoadData();
+                            await LoadDataAsync();
                         }
                         catch (Exception ex)
                         {
@@ -257,9 +298,79 @@ namespace BookStoreManagement.UserControls
                 var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
                 var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
                 
-                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                if (e.RowIndex == _hoveredRowIndex)
+                {
+                    if (_hoveredAction == 1)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
+                    }
+                }
+
+                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
+                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
+
+                using (var editFont = new Font("Segoe UI Emoji", editFontSize))
+                {
+                    TextRenderer.DrawText(e.Graphics, "✏️", editFont, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
                 
+                using (var delFont = new Font("Segoe UI Emoji", delFontSize))
+                {
+                    TextRenderer.DrawText(e.Graphics, "🗑️", delFont, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
+                
+                using (var pen = new Pen(Color.LightGray))
+                {
+                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 8, rect.X + rect.Width / 2, rect.Bottom - 8);
+                }
+                
+                e.Handled = true;
+            }
+            // Custom Paint for Avatar
+            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Avatar")
+            {
+                e.PaintBackground(e.CellBounds, true);
+                
+                string name = dgvEmployees.Rows[e.RowIndex].Cells["Name"].Value?.ToString() ?? "";
+                string initials = "U";
+                if (!string.IsNullOrEmpty(name))
+                {
+                    var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 1) initials = $"{parts[0][0]}{parts[parts.Length-1][0]}".ToUpper();
+                    else initials = name.Substring(0, 1).ToUpper();
+                }
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                int size = 32;
+                Rectangle badgeRect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - size) / 2, e.CellBounds.Y + (e.CellBounds.Height - size) / 2, size, size);
+
+                using (var brush = new SolidBrush(Color.FromArgb(237, 220, 255))) // secondary-fixed
+                {
+                    g.FillEllipse(brush, badgeRect);
+                }
+
+                using (var brush = new SolidBrush(Color.FromArgb(40, 0, 86))) // on-secondary-fixed
+                {
+                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    using (var font = new Font("Segoe UI", 9F, FontStyle.Bold))
+                    {
+                        g.DrawString(initials, font, brush, badgeRect, format);
+                    }
+                }
+
+                using (var pen = new Pen(ThemeManager.TextBoxBorder))
+                {
+                    g.DrawEllipse(pen, badgeRect);
+                }
+
                 e.Handled = true;
             }
             // Custom Paint for Employee Name
@@ -273,16 +384,14 @@ namespace BookStoreManagement.UserControls
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Near };
+                var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
                 
                 using (var brush = new SolidBrush(ThemeManager.TextPrimary))
                 {
-                    g.DrawString(name, new Font("Segoe UI", 9.5F, FontStyle.Bold), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 12, e.CellBounds.Width, e.CellBounds.Height), format);
-                }
-
-                using (var brush = new SolidBrush(ThemeManager.TextSecondary))
-                {
-                    g.DrawString(email, new Font("Segoe UI", 8.5F), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 32, e.CellBounds.Width, e.CellBounds.Height), format);
+                    using (var font = new Font("Segoe UI", 9.5F, FontStyle.Bold))
+                    {
+                        g.DrawString(name, font, brush, e.CellBounds, format);
+                    }
                 }
 
                 e.Handled = true;
@@ -302,18 +411,21 @@ namespace BookStoreManagement.UserControls
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                SizeF textSize = g.MeasureString(status, new Font("Segoe UI", 8F, FontStyle.Bold));
-                RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
-
-                using (var brush = new SolidBrush(bgColor))
+                using (var statusFont = new Font("Segoe UI", 8F, FontStyle.Bold))
                 {
-                    g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
-                }
+                    SizeF textSize = g.MeasureString(status, statusFont);
+                    RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
 
-                using (var brush = new SolidBrush(textColor))
-                {
-                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    g.DrawString(status, new Font("Segoe UI", 8F, FontStyle.Bold), brush, badgeRect, format);
+                    using (var brush = new SolidBrush(bgColor))
+                    {
+                        g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
+                    }
+
+                    using (var brush = new SolidBrush(textColor))
+                    {
+                        var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                        g.DrawString(status, statusFont, brush, badgeRect, format);
+                    }
                 }
 
                 e.Handled = true;
@@ -329,6 +441,7 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
+            tlpHeader.BackColor = ThemeManager.Background;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
@@ -339,16 +452,6 @@ namespace BookStoreManagement.UserControls
             btnPayroll.FillColor = ThemeManager.CardBackground;
             btnPayroll.ForeColor = ThemeManager.TextPrimary;
             btnPayroll.BorderColor = ThemeManager.TextBoxBorder;
-
-            // Metrics Cards
-            var cards = new[] { cardEmployees, cardBranches, cardPerformance, cardLeaveRequests };
-            foreach (var card in cards)
-            {
-                card.FillColor = ThemeManager.CardBackground;
-                card.CustomBorderColor = ThemeManager.TextBoxBorder;
-                if (card.Controls["TitleLabel"] is Label lTitle) lTitle.ForeColor = ThemeManager.TextSecondary;
-                if (card.Controls["ValueLabel"] is Label lVal) lVal.ForeColor = ThemeManager.TextPrimary;
-            }
 
             // Filters
             pnlFilters.BackColor = ThemeManager.Background;
@@ -382,5 +485,14 @@ namespace BookStoreManagement.UserControls
             dgvEmployees.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
             dgvEmployees.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         }
-    }
+    
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                BookStoreManagement.Themes.ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+            }
+            base.Dispose(disposing);
+        }
+}
 }

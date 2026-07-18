@@ -21,5 +21,15 @@ namespace BookStoreManagement.Services
         {
             return _repo.GetPagedOrders(page, pageSize, statusFilter, searchTerm);
         }
+
+        public async System.Threading.Tasks.Task<OrderStats> GetStatsAsync()
+        {
+            return await _repo.GetStatsAsync();
+        }
+
+        public async System.Threading.Tasks.Task<(List<OrderItem> Items, int TotalCount)> GetPagedOrdersAsync(int page, int pageSize, string statusFilter, string searchTerm)
+        {
+            return await _repo.GetPagedOrdersAsync(page, pageSize, statusFilter, searchTerm);
+        }
     }
 }

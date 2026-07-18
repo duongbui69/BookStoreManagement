@@ -3,58 +3,54 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
-using BookStoreManagement.Repositories;
+using BookStoreManagement.Models;
 using BookStoreManagement.Themes;
-using Guna.UI2.WinForms;
-using System.Collections.Generic;
 using BookStoreManagement.Interfaces;
+using BookStoreManagement.Forms;
+using System.Collections.Generic;
+using System.Linq;
+using BookStoreManagement.ViewModels;
 
 namespace BookStoreManagement.UserControls
 {
     public partial class OrdersControl : UserControl, ISearchableControl
     {
-        private readonly OrderService _service;
-        private readonly SalesOrderRepository _salesRepo; // for cancel
+        private readonly SalesOrderService _service;
 
-        // Content Container
-        private Guna2Panel pnlContent;
-
-        // Page Header
-        private Guna2Panel pnlPageHeader;
+        private Panel pnlContent;
+        private TableLayoutPanel tlpHeader;
         private Label lblTitle;
         private Label lblSubTitle;
+        private Button btnAdd;
+        private Button btnDeleteMultiple;
 
-        // Filters Bar
-        private Guna2Panel pnlFilters;
-        private Guna2ComboBox cbStatus;
-        private Guna2ComboBox cbDate;
-        private Label lblTotalOrders;
-        private Guna2Button btnExport;
-        private Guna2Button btnAdd;
+        private Panel pnlFilters;
+        private ComboBox cbStatus;
+        private DateTimePicker dtpFrom;
+        private DateTimePicker dtpTo;
 
-        // Grid
-        private Guna2Panel pnlGridContainer;
-        private Guna2DataGridView dgvOrders;
+        private Panel pnlGridContainer;
+        private DataGridView dgvOrders;
 
-        // Pagination
-        private PaginationControl paginationControl;
+        private PaginationControl pagination;
 
         private int _currentPage = 1;
         private int _pageSize = 5;
-        private string _currentTab = "Pending Orders";
         private string _currentSearchTerm = "";
+        
+        private int _hoveredRowIndex = -1;
+        private int _hoveredAction = 0; // 1: Edit, 2: Delete
 
-        public void PerformSearch(string keyword)
+        public async void PerformSearch(string keyword)
         {
             _currentSearchTerm = keyword;
             _currentPage = 1;
-            LoadData();
+            await LoadDataAsync();
         }
 
         public OrdersControl()
         {
-            _service = new OrderService();
-            _salesRepo = new SalesOrderRepository();
+            _service = new SalesOrderService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += OrdersControl_Load;
@@ -63,259 +59,145 @@ namespace BookStoreManagement.UserControls
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            int gutter = 20;
             this.Padding = new Padding(0);
-            this.AutoScroll = true; // Make the page scrollable
+            this.AutoScroll = false;
 
-            // Container for scrollable content
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+            pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(20), AutoScroll = false };
 
-            // 1. Page Header
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
-            lblTitle = new Label { Text = "Orders Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "View and manage customer orders across all channels.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
-            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
-
-            // 2. Filters Bar
-            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1, 1, 1, 0), Margin = new Padding(0), BorderRadius = 6 };
-            pnlFilters.CustomizableEdges.BottomLeft = false;
-            pnlFilters.CustomizableEdges.BottomRight = false;
-
-            Label lblStatus = new Label { Text = "STATUS", AutoSize = true, Location = new Point(20, 27), Font = new Font("Segoe UI", 8F, FontStyle.Bold) };
-            cbStatus = new Guna2ComboBox { Size = new Size(140, 36), Location = new Point(70, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
-            cbStatus.Items.AddRange(new object[] { "All Statuses", "Pending Orders", "Completed", "Refunded" });
-            cbStatus.SelectedIndex = 0;
-            cbStatus.SelectedIndexChanged += (s, e) =>
+            // 1. Header
+            tlpHeader = new TableLayoutPanel
             {
-                _currentTab = cbStatus.SelectedItem.ToString();
-                if (_currentTab == "All Statuses") _currentTab = "Pending Orders";
-                _currentPage = 1;
-                LoadData();
+                Dock = DockStyle.Top,
+                ColumnCount = 3,
+                RowCount = 2,
+                Height = 80,
+                Margin = new Padding(0, 0, 0, 20)
             };
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            Panel pnlSep = new Panel { Width = 1, Height = 24, Location = new Point(230, 23), BackColor = Color.LightGray };
-
-            Label lblDate = new Label { Text = "DATE", AutoSize = true, Location = new Point(250, 27), Font = new Font("Segoe UI", 8F, FontStyle.Bold) };
-            cbDate = new Guna2ComboBox { Size = new Size(140, 36), Location = new Point(290, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
-            cbDate.Items.AddRange(new object[] { "Last 7 Days", "Last 30 Days", "This Month" });
-            cbDate.SelectedIndex = 0;
-
-            lblTotalOrders = new Label { Text = "Total Orders: 0", AutoSize = true, Font = new Font("Segoe UI", 9F), Padding = new Padding(10, 5, 10, 5) };
-            lblTotalOrders.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using var p = new Pen(ThemeManager.TextBoxBorder, 1);
-                e.Graphics.DrawRoundedRectangle(p, 0, 0, lblTotalOrders.Width - 1, lblTotalOrders.Height - 1, 12);
-            };
-
-            btnExport = new Guna2Button { Text = "Export CSV", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnExport.Click += BtnExport_Click;
+            lblTitle = new Label { Text = "Quản lý Đơn hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Danh sách tất cả các đơn hàng từ khách hàng.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnAdd = new Guna2Button { Text = "+ New Order", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
+
+            btnAdd = new Button { Text = "+ TẠO ĐƠN HÀNG MỚI", Size = new Size(200, 40), Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
-            pnlFilters.Controls.AddRange(new Control[] { lblStatus, cbStatus, pnlSep, lblDate, cbDate, lblTotalOrders, btnExport, btnAdd });
+            tlpHeader.Controls.Add(lblTitle, 0, 0);
+            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
+            
+            tlpHeader.Controls.Add(btnDeleteMultiple, 1, 0);
+            tlpHeader.SetRowSpan(btnDeleteMultiple, 2);
+            tlpHeader.Controls.Add(btnAdd, 2, 0);
+            tlpHeader.SetRowSpan(btnAdd, 2);
+
+            // 2. Filters Bar
+            pnlFilters = new Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(15, 10, 15, 10) };
+            
+            Label lblStatus = new Label { Text = "Trạng thái:", AutoSize = true, Location = new Point(15, 20), Font = new Font("Inter", 9F, FontStyle.Bold) };
+            cbStatus = new ComboBox { Location = new Point(95, 15), Width = 140, Font = new Font("Inter", 9F), DropDownStyle = ComboBoxStyle.DropDownList };
+            cbStatus.Items.AddRange(new object[] { "Tất cả", "Pending", "Completed", "Cancelled" });
+            cbStatus.SelectedIndex = 0;
+            cbStatus.SelectedIndexChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
+
+            Label lblTime = new Label { Text = "Thời gian:", AutoSize = true, Location = new Point(255, 20), Font = new Font("Inter", 9F, FontStyle.Bold) };
+            dtpFrom = new DateTimePicker { Location = new Point(330, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Inter", 9F) };
+            dtpFrom.Value = DateTime.Now.AddDays(-30);
+            dtpFrom.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
+            
+            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(455, 18), Font = new Font("Inter", 10F) };
+            dtpTo = new DateTimePicker { Location = new Point(475, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Inter", 9F) };
+            dtpTo.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
+
+            pnlFilters.Controls.AddRange(new Control[] { lblStatus, cbStatus, lblTime, dtpFrom, lblDash, dtpTo });
 
             // 3. Grid Container
-            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1, 0, 1, 1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 6 };
-            pnlGridContainer.CustomizableEdges.TopLeft = false;
-            pnlGridContainer.CustomizableEdges.TopRight = false;
+            pnlGridContainer = new Panel { Dock = DockStyle.Fill, Padding = new Padding(1) };
             
-            dgvOrders = new Guna2DataGridView
+            dgvOrders = new DataGridView
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                AutoGenerateColumns = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                ReadOnly = false,
                 RowHeadersVisible = false,
-                RowTemplate = { Height = 60 },
-                Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
+                AllowUserToResizeRows = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                EnableHeadersVisualStyles = false,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                ScrollBars = ScrollBars.Both
             };
-            
-            // Define Columns
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "OrderId", HeaderText = "Order ID", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 100 });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CustomerName", Name = "CustomerName", HeaderText = "Customer", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CustomerEmail", Name = "CustomerEmail", Visible = false });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Date", HeaderText = "Date", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "MMM dd, yyyy \n HH:mm" }, Width = 120 });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "ItemsCount", HeaderText = "Items", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 80 });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Total", HeaderText = "Total Amount", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Format = "C2" }, Width = 120 });
-            dgvOrders.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Status", HeaderText = "Status", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
-            
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Actions", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
-            dgvOrders.Columns.Add(actionCol);
+            dgvOrders.RowTemplate.Height = 50;
+            dgvOrders.ColumnHeadersHeight = 45;
+
+            // Set up columns
+            DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn();
+            chkCol.Name = "chkSelect";
+            chkCol.HeaderText = "";
+            chkCol.Width = 40;
+            chkCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvOrders.Columns.Add(chkCol);
+
+            dgvOrders.Columns.Add("Id", "Id");
+            dgvOrders.Columns["Id"].Visible = false;
+            dgvOrders.Columns["Id"].ReadOnly = true;
+
+            dgvOrders.Columns.Add("OrderCode", "Mã Đơn");
+            dgvOrders.Columns.Add("OrderDate", "Ngày Tạo");
+            dgvOrders.Columns.Add("CustomerName", "Khách Hàng");
+            dgvOrders.Columns.Add("TotalAmount", "Tổng Tiền (VNĐ)");
+            dgvOrders.Columns.Add("PaymentMethod", "Thanh Toán");
+            dgvOrders.Columns.Add("OrderStatus", "Trạng Thái");
+            dgvOrders.Columns.Add("Actions", "Thao Tác");
+
+            foreach (DataGridViewColumn col in dgvOrders.Columns)
+            {
+                if (col.Name != "chkSelect")
+                {
+                    col.ReadOnly = true;
+                }
+                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+            dgvOrders.Columns["Actions"].Width = 100;
+            dgvOrders.Columns["Actions"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 
             dgvOrders.CellPainting += DgvOrders_CellPainting;
-            dgvOrders.CellMouseClick += DgvOrders_CellMouseClick;
+            dgvOrders.CellMouseEnter += DgvOrders_CellMouseEnter;
+            dgvOrders.CellMouseLeave += DgvOrders_CellMouseLeave;
+            dgvOrders.CellClick += DgvOrders_CellClick;
+            dgvOrders.CurrentCellDirtyStateChanged += DgvOrders_CurrentCellDirtyStateChanged;
+            dgvOrders.CellValueChanged += DgvOrders_CellValueChanged;
             
+            // 4. Pagination
+            pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
+            pagination.PageChanged += async (s, args) => { _currentPage = args.NewPage; await LoadDataAsync(); };
+
             pnlGridContainer.Controls.Add(dgvOrders);
-
-            // Pagination
-            paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
-            paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
-            pnlGridContainer.Controls.Add(paginationControl);
-
+            
             pnlContent.Controls.Add(pnlGridContainer);
             pnlContent.Controls.Add(pnlFilters);
-            pnlContent.Controls.Add(pnlPageHeader);
+            pnlContent.Controls.Add(tlpHeader);
+            pnlContent.Controls.Add(pagination);
 
             this.Controls.Add(pnlContent);
-
-            this.Resize += (s, e) =>
-            {
-                btnExport.Location = new Point(pnlFilters.Width - 280, 17);
-                btnAdd.Location = new Point(pnlFilters.Width - 150, 17);
-                lblTotalOrders.Location = new Point(pnlFilters.Width - 430, 22);
-            };
-
             ApplyTheme();
         }
 
-        private void OrdersControl_Load(object sender, EventArgs e)
+        private async void OrdersControl_Load(object? sender, EventArgs e)
         {
-            LoadData();
-        }
-        
-        private void BtnAdd_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("New Order feature is under development.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        
-        private void BtnExport_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Export CSV feature is under development.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await LoadDataAsync();
         }
 
-        private void LoadData()
-        {
-            var (items, totalCount) = _service.GetPagedOrders(_currentPage, _pageSize, _currentTab, _currentSearchTerm);
-            dgvOrders.DataSource = items;
-
-            lblTotalOrders.Text = $"Total Orders: {totalCount:N0}";
-
-            paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);
-        }
-
-        private void DgvOrders_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex >= 0 && dgvOrders.Columns[e.ColumnIndex].Name == "Actions")
-            {
-                int orderId = Convert.ToInt32(dgvOrders.Rows[e.RowIndex].Cells["Id"].Value);
-                var cellRect = dgvOrders.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-                
-                if (e.X < cellRect.Width / 2)
-                {
-                    // Edit
-                    MessageBox.Show("Edit Order form is under development.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    // Delete / Cancel Order
-                    if (MessageBox.Show("Are you sure you want to cancel this order?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                    {
-                        try
-                        {
-                            bool success = _salesRepo.CancelOrder(orderId);
-                            if (success)
-                            {
-                                MessageBox.Show("Order cancelled successfully!");
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to cancel order. It might already be cancelled or not allowed.");
-                            }
-                            LoadData();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void DgvOrders_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
-
-            // Custom Paint for Actions
-            if (dgvOrders.Columns[e.ColumnIndex].Name == "Actions")
-            {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                
-                var rect = e.CellBounds;
-                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
-                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
-                
-                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                
-                e.Handled = true;
-            }
-            // Custom Paint for Customer Name
-            else if (dgvOrders.Columns[e.ColumnIndex].Name == "CustomerName")
-            {
-                e.PaintBackground(e.CellBounds, true);
-
-                string name = e.Value?.ToString() ?? "Unknown";
-                string email = dgvOrders.Rows[e.RowIndex].Cells["CustomerEmail"].Value?.ToString() ?? "";
-
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Near };
-                
-                using (var brush = new SolidBrush(ThemeManager.TextPrimary))
-                {
-                    g.DrawString(name, new Font("Segoe UI", 9.5F, FontStyle.Bold), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 12, e.CellBounds.Width, e.CellBounds.Height), format);
-                }
-
-                using (var brush = new SolidBrush(ThemeManager.TextSecondary))
-                {
-                    g.DrawString(email, new Font("Segoe UI", 8.5F), brush, new RectangleF(e.CellBounds.X, e.CellBounds.Y + 32, e.CellBounds.Width, e.CellBounds.Height), format);
-                }
-
-                e.Handled = true;
-            }
-            else if (dgvOrders.Columns[e.ColumnIndex].Name == "Status")
-            {
-                e.PaintBackground(e.CellBounds, true);
-                string status = e.Value?.ToString() ?? "";
-
-                Color bgColor = ThemeManager.TextBoxBorder;
-                Color textColor = ThemeManager.TextPrimary;
-
-                if (status.ToUpper() == "PENDING" || status.ToUpper() == "PENDING ORDERS" || status.ToUpper() == "PROCESSING" || status.ToUpper() == "AWAITING") { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
-                else if (status.ToUpper() == "SHIPPED") { bgColor = Color.FromArgb(40, 243, 156, 18); textColor = Color.FromArgb(243, 156, 18); }
-                else if (status.ToUpper() == "DELIVERED" || status.ToUpper() == "COMPLETED") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
-                else if (status.ToUpper() == "CANCELLED" || status.ToUpper() == "REFUNDED" || status.ToUpper() == "FLAGGED") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
-
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                SizeF textSize = g.MeasureString(status, new Font("Segoe UI", 8F, FontStyle.Bold));
-                RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
-
-                using (var brush = new SolidBrush(bgColor))
-                {
-                    g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
-                }
-
-                using (var brush = new SolidBrush(textColor))
-                {
-                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    g.DrawString(status, new Font("Segoe UI", 8F, FontStyle.Bold), brush, badgeRect, format);
-                }
-
-                e.Handled = true;
-            }
-        }
-
-        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
+        private void ThemeManager_ThemeChanged(object? sender, EventArgs e)
         {
             ApplyTheme();
         }
@@ -324,57 +206,396 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
-
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+            
+            btnAdd.BackColor = ThemeManager.ButtonFill;
+            btnAdd.ForeColor = Color.White;
+            btnAdd.FlatAppearance.BorderSize = 0;
 
-            btnAdd.FillColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = ThemeManager.ButtonText;
+            btnDeleteMultiple.BackColor = Color.FromArgb(239, 68, 68);
+            btnDeleteMultiple.ForeColor = Color.White;
+            btnDeleteMultiple.FlatAppearance.BorderSize = 0;
 
-            btnExport.FillColor = ThemeManager.CardBackground;
-            btnExport.ForeColor = ThemeManager.TextPrimary;
-            btnExport.BorderColor = ThemeManager.TextBoxBorder;
+            pnlFilters.BackColor = ThemeManager.CardBackground;
 
-            // Filters
-            pnlFilters.BackColor = ThemeManager.Background;
-            pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
-            pnlFilters.FillColor = ThemeManager.CardBackground;
+            pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
-            cbStatus.FillColor = ThemeManager.TextBoxBackground;
-            cbStatus.ForeColor = ThemeManager.TextPrimary;
-            cbStatus.BorderColor = ThemeManager.TextBoxBorder;
-
-            cbDate.FillColor = ThemeManager.TextBoxBackground;
-            cbDate.ForeColor = ThemeManager.TextPrimary;
-            cbDate.BorderColor = ThemeManager.TextBoxBorder;
-
-            foreach (Control c in pnlFilters.Controls)
-            {
-                if (c is Label l && l.Text != "Total Orders: 0") l.ForeColor = ThemeManager.TextSecondary;
-            }
-
-            lblTotalOrders.BackColor = ThemeManager.TextBoxBackground;
-            lblTotalOrders.ForeColor = ThemeManager.TextSecondary;
-            lblTotalOrders.Invalidate();
-
-            // Grid
-            pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
             dgvOrders.BackgroundColor = ThemeManager.CardBackground;
             dgvOrders.GridColor = ThemeManager.TextBoxBorder;
+            
+            dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 9F, FontStyle.Bold);
+            dgvOrders.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
+
             dgvOrders.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvOrders.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvOrders.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvOrders.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
             dgvOrders.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            dgvOrders.DefaultCellStyle.Font = new Font("Inter", 10F);
             
             dgvOrders.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvOrders.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvOrders.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvOrders.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+        }
 
-            dgvOrders.EnableHeadersVisualStyles = false;
-            dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        private async System.Threading.Tasks.Task LoadDataAsync()
+        {
+            try
+            {
+                var orders = await _service.GetByDateRangeAsync(dtpFrom.Value.Date, dtpTo.Value.Date.AddDays(1).AddTicks(-1), null);
+                
+                string statusFilter = cbStatus.SelectedItem?.ToString() ?? "Tất cả";
+                if (statusFilter != "Tất cả")
+                {
+                    orders = orders.Where(o => o.OrderStatus == statusFilter).ToList();
+                }
+
+                if (!string.IsNullOrWhiteSpace(_currentSearchTerm))
+                {
+                    string term = _currentSearchTerm.ToLower();
+                    orders = orders.Where(o => o.OrderCode.ToLower().Contains(term) || (o.CustomerName != null && o.CustomerName.ToLower().Contains(term))).ToList();
+                }
+
+                int totalRecords = orders.Count;
+                int totalPages = (int)Math.Ceiling(totalRecords / (double)_pageSize);
+                
+                if (totalPages > 0 && _currentPage > totalPages) _currentPage = totalPages;
+                if (_currentPage < 1) _currentPage = 1;
+
+                var pagedData = orders.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+
+                dgvOrders.Rows.Clear();
+                foreach (var ord in pagedData)
+                {
+                    dgvOrders.Rows.Add(
+                        false,
+                        ord.Id,
+                        ord.OrderCode,
+                        ord.OrderDate.ToString("dd/MM/yyyy HH:mm"),
+                        string.IsNullOrEmpty(ord.CustomerName) ? "Khách vãng lai" : ord.CustomerName,
+                        ord.TotalAmount.ToString("N0"),
+                        ord.PaymentMethod,
+                        ord.OrderStatus,
+                        ""
+                    );
+                }
+
+                pagination.UpdatePagination(totalRecords, _currentPage, _pageSize);
+                UpdateDeleteMultipleButtonVisibility();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+            }
+        }
+
+        private async void BtnAdd_Click(object? sender, EventArgs e)
+        {
+            using (var form = new OrderForm(null))
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    await LoadDataAsync();
+                }
+            }
+        }
+
+        private void DgvOrders_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dgvOrders.IsCurrentCellDirty && dgvOrders.CurrentCell.OwningColumn.Name == "chkSelect")
+            {
+                dgvOrders.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void DgvOrders_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvOrders.Columns[e.ColumnIndex].Name == "chkSelect")
+            {
+                UpdateDeleteMultipleButtonVisibility();
+            }
+        }
+
+        private void UpdateDeleteMultipleButtonVisibility()
+        {
+            bool hasChecked = false;
+            foreach (DataGridViewRow row in dgvOrders.Rows)
+            {
+                if (Convert.ToBoolean(row.Cells["chkSelect"].Value) == true)
+                {
+                    hasChecked = true;
+                    break;
+                }
+            }
+            btnDeleteMultiple.Visible = hasChecked;
+        }
+
+        private async void BtnDeleteMultiple_Click(object sender, EventArgs e)
+        {
+            var selectedIds = new List<int>();
+            foreach (DataGridViewRow row in dgvOrders.Rows)
+            {
+                if (Convert.ToBoolean(row.Cells["chkSelect"].Value) == true)
+                {
+                    selectedIds.Add(Convert.ToInt32(row.Cells["Id"].Value));
+                }
+            }
+
+            if (selectedIds.Count > 0)
+            {
+                var result = MessageBox.Show($"Bạn có chắc chắn muốn hủy {selectedIds.Count} đơn hàng đã chọn không?", "Xác nhận hủy", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        foreach (var id in selectedIds)
+                        {
+                            await _service.CancelOrderAsync(id);
+                        }
+                        MessageBox.Show("Hủy đơn hàng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        await LoadDataAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi hủy đơn hàng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void DgvOrders_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["CustomerName"].Index && e.Value != null)
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                
+                string name = e.Value.ToString() ?? "Khách vãng lai";
+                string initial = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
+                
+                if (name.Contains(" "))
+                {
+                    var parts = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2)
+                    {
+                        initial = parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1);
+                    }
+                }
+                
+                initial = initial.ToUpper();
+
+                Color circleColor = GetColorFromInitial(initial);
+                
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    int circleSize = 24;
+                    int x = e.CellBounds.Left + 15;
+                    int y = e.CellBounds.Top + (e.CellBounds.Height - circleSize) / 2;
+                    
+                    path.AddEllipse(x, y, circleSize, circleSize);
+                    
+                    using (SolidBrush brush = new SolidBrush(circleColor))
+                    {
+                        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        e.Graphics.FillPath(brush, path);
+                    }
+                    
+                    TextRenderer.DrawText(e.Graphics, initial, new Font("Inter", 8F, FontStyle.Bold), new Rectangle(x, y, circleSize, circleSize), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+
+                Rectangle textRect = new Rectangle(e.CellBounds.Left + 45, e.CellBounds.Top, e.CellBounds.Width - 45, e.CellBounds.Height);
+                TextRenderer.DrawText(e.Graphics, name, e.CellStyle.Font, textRect, e.CellStyle.ForeColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                
+                e.Handled = true;
+            }
+
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["PaymentMethod"].Index && e.Value != null)
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                string payment = e.Value.ToString() ?? "";
+                
+                string icon = "\uE8A5"; // default document
+                if (payment.ToLower().Contains("tiền mặt") || payment.ToLower().Contains("cash")) icon = "\uE8CB"; // payments
+                else if (payment.ToLower().Contains("chuyển khoản") || payment.ToLower().Contains("bank")) icon = "\uE8C7"; // account_balance
+                else if (payment.ToLower().Contains("thẻ") || payment.ToLower().Contains("card") || payment.ToLower().Contains("momo")) icon = "\uE8C9"; // credit_card
+
+                int iconSize = 20;
+                int iconX = e.CellBounds.Left + 10;
+                int iconY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
+
+                DrawIcon(e.Graphics, new Rectangle(iconX, iconY, iconSize, iconSize), icon, ThemeManager.TextSecondary);
+
+                Rectangle textRect = new Rectangle(iconX + iconSize + 5, e.CellBounds.Top, e.CellBounds.Width - iconSize - 15, e.CellBounds.Height);
+                TextRenderer.DrawText(e.Graphics, payment, e.CellStyle.Font, textRect, e.CellStyle.ForeColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+
+                e.Handled = true;
+            }
+
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["Actions"].Index)
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                
+                int iconSize = 20;
+                int margin = 8;
+                int totalWidth = (iconSize * 2) + margin;
+                int startX = e.CellBounds.Left + (e.CellBounds.Width - totalWidth) / 2;
+                int startY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
+
+                Rectangle rectEdit = new Rectangle(startX, startY, iconSize, iconSize);
+                Rectangle rectDelete = new Rectangle(startX + iconSize + margin, startY, iconSize, iconSize);
+
+                bool isHoveringEdit = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1);
+                bool isHoveringDelete = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2);
+
+                DrawIcon(e.Graphics, rectEdit, "\uE70F", isHoveringEdit ? ThemeManager.ButtonFill : ThemeManager.TextSecondary); // Edit icon (pencil)
+                DrawIcon(e.Graphics, rectDelete, "\uE74D", isHoveringDelete ? Color.FromArgb(239, 68, 68) : ThemeManager.TextSecondary); // Delete icon (trash)
+
+                e.Handled = true;
+            }
+            
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["OrderStatus"].Index && e.Value != null)
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                string status = e.Value.ToString() ?? "";
+                
+                Color bgColor = Color.FromArgb(20, 100, 100, 100);
+                Color textColor = Color.Gray;
+
+                if (status.ToLower().Contains("hoàn thành") || status.ToLower() == "completed")
+                {
+                    bgColor = Color.FromArgb(20, 34, 197, 94);
+                    textColor = Color.FromArgb(34, 197, 94);
+                }
+                else if (status.ToLower().Contains("đang giao") || status.ToLower() == "shipping")
+                {
+                    bgColor = Color.FromArgb(20, 59, 130, 246); // Blue
+                    textColor = Color.FromArgb(59, 130, 246);
+                }
+                else if (status.ToLower().Contains("chờ xử lý") || status.ToLower() == "pending")
+                {
+                    bgColor = Color.FromArgb(20, 245, 158, 11); // Orange
+                    textColor = Color.FromArgb(245, 158, 11);
+                }
+                else if (status.ToLower().Contains("hủy") || status.ToLower() == "cancelled")
+                {
+                    bgColor = Color.FromArgb(20, 239, 68, 68); // Red
+                    textColor = Color.FromArgb(239, 68, 68);
+                }
+                
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    int width = 90;
+                    int height = 24;
+                    int x = e.CellBounds.Left + (e.CellBounds.Width - width) / 2;
+                    int y = e.CellBounds.Top + (e.CellBounds.Height - height) / 2;
+                    int radius = 12;
+                    
+                    path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
+                    path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90);
+                    path.AddArc(x + width - radius * 2, y + height - radius * 2, radius * 2, radius * 2, 0, 90);
+                    path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90);
+                    path.CloseFigure();
+                    
+                    using (SolidBrush brush = new SolidBrush(bgColor))
+                    {
+                        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        e.Graphics.FillPath(brush, path);
+                    }
+                    
+                    TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+                e.Handled = true;
+            }
+        }
+
+        private Color GetColorFromInitial(string initial)
+        {
+            if (string.IsNullOrEmpty(initial)) return Color.Gray;
+            char c = initial[0];
+            if (c >= 'A' && c <= 'G') return Color.FromArgb(184, 137, 255); // secondary-container (purple)
+            if (c >= 'H' && c <= 'N') return Color.FromArgb(27, 58, 87);    // primary-container (dark blue)
+            if (c >= 'O' && c <= 'U') return Color.FromArgb(0, 66, 31);     // tertiary-container (green)
+            return Color.FromArgb(160, 160, 165);
+        }
+
+        private void DrawIcon(Graphics g, Rectangle rect, string iconCode, Color color)
+        {
+            using (Font iconFont = new Font("Segoe MDL2 Assets", 12F, FontStyle.Regular))
+            {
+                TextRenderer.DrawText(g, iconCode, iconFont, rect, color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }
+        }
+
+        private void DgvOrders_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["Actions"].Index)
+            {
+                dgvOrders.Cursor = Cursors.Hand;
+            }
+        }
+
+        private void DgvOrders_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["Actions"].Index)
+            {
+                dgvOrders.Cursor = Cursors.Default;
+                _hoveredRowIndex = -1;
+                _hoveredAction = 0;
+                dgvOrders.InvalidateCell(e.ColumnIndex, e.RowIndex);
+            }
+        }
+
+        private async void DgvOrders_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvOrders.Columns["Actions"].Index)
+            {
+                Rectangle cellBounds = dgvOrders.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+                Point mousePos = dgvOrders.PointToClient(Cursor.Position);
+                
+                int iconSize = 20;
+                int margin = 8;
+                int totalWidth = (iconSize * 2) + margin;
+                int startX = cellBounds.Left + (cellBounds.Width - totalWidth) / 2;
+                int startY = cellBounds.Top + (cellBounds.Height - iconSize) / 2;
+
+                Rectangle rectEdit = new Rectangle(startX, startY, iconSize, iconSize);
+                Rectangle rectDelete = new Rectangle(startX + iconSize + margin, startY, iconSize, iconSize);
+
+                if (rectEdit.Contains(mousePos))
+                {
+                    int id = Convert.ToInt32(dgvOrders.Rows[e.RowIndex].Cells["Id"].Value);
+                    var order = await _service.GetByIdAsync(id);
+                    if (order != null)
+                    {
+                        using (var form = new OrderForm(order))
+                        {
+                            if (form.ShowDialog() == DialogResult.OK)
+                            {
+                                await LoadDataAsync();
+                            }
+                        }
+                    }
+                }
+                else if (rectDelete.Contains(mousePos))
+                {
+                    int id = Convert.ToInt32(dgvOrders.Rows[e.RowIndex].Cells["Id"].Value);
+                    string code = dgvOrders.Rows[e.RowIndex].Cells["OrderCode"].Value.ToString();
+                    var result = MessageBox.Show($"Bạn có chắc chắn muốn hủy đơn hàng '{code}'?", "Xác nhận hủy", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    
+                    if (result == DialogResult.Yes)
+                    {
+                        try
+                        {
+                            await _service.CancelOrderAsync(id);
+                            await LoadDataAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Lỗi hủy: " + ex.Message);
+                        }
+                    }
+                }
+            }
         }
     }
 }

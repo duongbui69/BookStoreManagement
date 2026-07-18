@@ -63,5 +63,39 @@ namespace BookStoreManagement.Repositories
                 return reader.Read() ? MapRole(reader) : null;
             }, sql, parameters => AddParameter(parameters, "@RoleName", roleName));
         }
+
+        public async System.Threading.Tasks.Task<List<Role>> GetAllAsync()
+        {
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                ORDER BY Id;
+            ";
+
+            var result = await QueryAsync<Role>(sql);
+            return System.Linq.Enumerable.ToList(result);
+        }
+
+        public async System.Threading.Tasks.Task<Role?> GetByIdAsync(int id)
+        {
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                WHERE Id = @Id;
+            ";
+
+            return await QueryFirstOrDefaultAsync<Role>(sql, new { Id = id });
+        }
+
+        public async System.Threading.Tasks.Task<Role?> GetByNameAsync(string roleName)
+        {
+            const string sql = @"
+                SELECT Id, RoleName, Description
+                FROM Roles
+                WHERE RoleName = @RoleName;
+            ";
+
+            return await QueryFirstOrDefaultAsync<Role>(sql, new { RoleName = roleName });
+        }
     }
 }

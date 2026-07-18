@@ -98,5 +98,76 @@ namespace BookStoreManagement.Services
                 detail.ReturnReason = TrimNullable(detail.ReturnReason);
             }
         }
+
+        public async System.Threading.Tasks.Task<int> CreateReturnAsync(int? salesOrderId, int storeId, int? customerId, string? note, List<ReturnReceiptDetail> details)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+            ValidateDetails(details);
+
+            string code = _repository.GenerateReturnCode();
+            while (await _repository.IsReturnCodeExistsAsync(code)) code = _repository.GenerateReturnCode();
+
+            var receipt = new ReturnReceipt
+            {
+                ReturnCode = code,
+                SalesOrderId = salesOrderId,
+                StoreId = resolvedStoreId,
+                CustomerId = customerId,
+                UserId = CurrentSession.UserId,
+                Note = TrimNullable(note)
+            };
+
+            return await _repository.CreateReturnAsync(receipt, details);
+        }
+
+        public async System.Threading.Tasks.Task<List<ReturnReceiptListViewModel>> GetAllAsync()
+        {
+            PermissionService.RequireAdmin();
+            return await _repository.GetAllAsync();
+        }
+
+        public async System.Threading.Tasks.Task<List<ReturnReceiptListViewModel>> GetVisibleReturnsAsync()
+        {
+            PermissionService.RequireStaffOrAdmin();
+            if (CurrentSession.IsAdmin) return await _repository.GetAllAsync();
+            return await _repository.GetByStoreIdAsync(CurrentSession.StoreId!.Value);
+        }
+
+        public async System.Threading.Tasks.Task<ReturnReceipt?> GetByIdAsync(int id)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            Require(id > 0, "Id phiếu trả không hợp lệ.");
+            ReturnReceipt? receipt = await _repository.GetByIdAsync(id);
+            if (receipt != null) PermissionService.RequireSameStoreOrAdmin(receipt.StoreId);
+            return receipt;
+        }
+
+        public async System.Threading.Tasks.Task<List<ReturnReceiptDetailFullViewModel>> GetDetailsAsync(int returnReceiptId)
+        {
+            ReturnReceipt? receipt = await GetByIdAsync(returnReceiptId);
+            Require(receipt != null, "Không tìm thấy phiếu trả.");
+            return await _repository.GetDetailsAsync(returnReceiptId);
+        }
+
+        public async System.Threading.Tasks.Task<List<ReturnReceiptListViewModel>> SearchAsync(string keyword, int? storeId = null)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            int? resolvedStoreId = ResolveStoreIdForRead(storeId);
+            keyword = Trim(keyword);
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return resolvedStoreId.HasValue ? await _repository.GetByStoreIdAsync(resolvedStoreId.Value) : await _repository.GetAllAsync();
+            }
+            return await _repository.SearchAsync(keyword, resolvedStoreId);
+        }
+
+        public async System.Threading.Tasks.Task<List<ReturnReceiptListViewModel>> GetByDateRangeAsync(DateTime fromDate, DateTime toDate, int? storeId = null)
+        {
+            PermissionService.RequireStaffOrAdmin();
+            Require(fromDate <= toDate, "Khoảng ngày không hợp lệ.");
+            int? resolvedStoreId = ResolveStoreIdForRead(storeId);
+            return await _repository.GetByDateRangeAsync(fromDate, toDate, resolvedStoreId);
+        }
     }
 }

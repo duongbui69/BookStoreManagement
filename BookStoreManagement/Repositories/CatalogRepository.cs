@@ -31,23 +31,48 @@ namespace BookStoreManagement.Repositories
             return new CatalogStats
             {
                 TotalTitles = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE IsActive = 1"),
-                ActiveCategories = ExecuteScalarInt("SELECT COUNT(*) FROM Categories WHERE IsActive = 1"),
-                InStockValue = ExecuteScalarDecimal("SELECT ISNULL(SUM(Quantity * SellingPrice), 0) FROM Books WHERE IsActive = 1"),
-                LowStockAlerts = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock AND IsActive = 1")
+                ActiveCategories = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock AND IsActive = 1"),
+                InStockValue = 0,
+                LowStockAlerts = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE CreatedAt >= DATEADD(day, -30, GETDATE()) AND IsActive = 1")
             };
         }
 
-        public (List<CatalogBookItem> Items, int TotalCount) GetPagedCatalogBooks(int page, int pageSize, string searchTerm = "")
+        public async System.Threading.Tasks.Task<CatalogStats> GetStatsAsync()
         {
-            string whereClause = "WHERE b.IsActive = 1 AND (b.Title LIKE @Search OR b.BookCode LIKE @Search)";
+            return new CatalogStats
+            {
+                TotalTitles = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Books WHERE IsActive = 1"),
+                ActiveCategories = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock AND IsActive = 1"),
+                InStockValue = 0,
+                LowStockAlerts = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Books WHERE CreatedAt >= DATEADD(day, -30, GETDATE()) AND IsActive = 1")
+            };
+        }
+
+        public (List<CatalogBookItem> Items, int TotalCount) GetPagedCatalogBooks(int page, int pageSize, string searchTerm = "", int? categoryId = null, string stockStatus = "")
+        {
+            string whereClause = "WHERE (b.Title LIKE @Search OR b.BookCode LIKE @Search OR b.ISBN LIKE @Search)";
+
+            if (stockStatus == "locked") whereClause += " AND b.IsActive = 0";
+            else whereClause += " AND b.IsActive = 1";
+
+            if (categoryId.HasValue)
+            {
+                whereClause += " AND b.CategoryId = @CategoryId";
+            }
+
+            if (stockStatus == "instock") whereClause += " AND b.Quantity > 0";
+            else if (stockStatus == "outstock") whereClause += " AND b.Quantity <= 0";
 
             int totalCount = ExecuteScalarInt($"SELECT COUNT(*) FROM Books b {whereClause}",
-                p => AddParameter(p, "@Search", "%" + searchTerm + "%"));
+                p => {
+                    AddParameter(p, "@Search", "%" + searchTerm + "%");
+                    if (categoryId.HasValue) AddParameter(p, "@CategoryId", categoryId.Value);
+                });
 
             string query = $@"
                 SELECT 
                     b.Id, b.BookCode, b.Title, ISNULL(a.AuthorName, 'Unknown'), ISNULL(c.CategoryName, 'Unknown'), 
-                    b.SellingPrice, b.Quantity, b.MinStock
+                    b.SellingPrice, b.Quantity, b.MinStock, b.IsActive
                 FROM Books b
                 LEFT JOIN Authors a ON b.AuthorId = a.Id
                 LEFT JOIN Categories c ON b.CategoryId = c.Id
@@ -63,7 +88,12 @@ namespace BookStoreManagement.Repositories
                 {
                     int qty = reader.GetInt32(6);
                     int minStock = reader.GetInt32(7);
-                    string status = qty == 0 ? "OUT OF STOCK" : (qty <= minStock ? "LOW STOCK" : "IN STOCK");
+                    bool isActive = reader.GetBoolean(8);
+                    
+                    string status = "IN STOCK";
+                    if (!isActive) status = "LOCKED";
+                    else if (qty == 0) status = "OUT OF STOCK";
+                    else if (qty <= minStock) status = "LOW STOCK";
 
                     results.Add(new CatalogBookItem
                     {
@@ -80,11 +110,64 @@ namespace BookStoreManagement.Repositories
             }, query, p =>
             {
                 AddParameter(p, "@Search", "%" + searchTerm + "%");
+                if (categoryId.HasValue) AddParameter(p, "@CategoryId", categoryId.Value);
                 AddParameter(p, "@Offset", (page - 1) * pageSize);
                 AddParameter(p, "@PageSize", pageSize);
             });
 
             return (list, totalCount);
+        }
+
+        public async System.Threading.Tasks.Task<(List<CatalogBookItem> Items, int TotalCount)> GetPagedCatalogBooksAsync(int page, int pageSize, string searchTerm = "", int? categoryId = null, string stockStatus = "")
+        {
+            string whereClause = "WHERE (b.Title LIKE @Search OR b.BookCode LIKE @Search OR b.ISBN LIKE @Search)";
+
+            if (stockStatus == "locked") whereClause += " AND b.IsActive = 0";
+            else whereClause += " AND b.IsActive = 1";
+
+            if (categoryId.HasValue)
+            {
+                whereClause += " AND b.CategoryId = @CategoryId";
+            }
+
+            if (stockStatus == "instock") whereClause += " AND b.Quantity > 0";
+            else if (stockStatus == "outstock") whereClause += " AND b.Quantity <= 0";
+
+            string countQuery = $"SELECT COUNT(*) FROM Books b {whereClause}";
+            int totalCount = await ExecuteScalarAsync<int>(countQuery, new { 
+                Search = "%" + searchTerm + "%",
+                CategoryId = categoryId
+            });
+
+            string query = $@"
+                SELECT 
+                    b.Id, 
+                    b.BookCode AS Isbn13, 
+                    b.Title, 
+                    ISNULL(a.AuthorName, 'Unknown') AS Author, 
+                    ISNULL(c.CategoryName, 'Unknown') AS Category, 
+                    b.SellingPrice AS Price,
+                    CASE 
+                        WHEN b.IsActive = 0 THEN 'LOCKED'
+                        WHEN b.Quantity = 0 THEN 'OUT OF STOCK'
+                        WHEN b.Quantity <= b.MinStock THEN 'LOW STOCK'
+                        ELSE 'IN STOCK'
+                    END AS Status
+                FROM Books b
+                LEFT JOIN Authors a ON b.AuthorId = a.Id
+                LEFT JOIN Categories c ON b.CategoryId = c.Id
+                {whereClause}
+                ORDER BY b.Id DESC
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+            var items = await QueryAsync<CatalogBookItem>(query, new {
+                Search = "%" + searchTerm + "%",
+                CategoryId = categoryId,
+                Offset = (page - 1) * pageSize,
+                PageSize = pageSize
+            });
+
+            return (System.Linq.Enumerable.ToList(items), totalCount);
         }
     }
 }

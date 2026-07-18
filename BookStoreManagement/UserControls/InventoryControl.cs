@@ -1,180 +1,280 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
-using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
-using BookStoreManagement.Models;
 using BookStoreManagement.Interfaces;
 using Guna.UI2.WinForms;
-using System.Collections.Generic;
 
 namespace BookStoreManagement.UserControls
 {
     public partial class InventoryControl : UserControl, ISearchableControl
     {
-        private readonly InventoryService _service;
-        private readonly BookService _bookService;
+        private readonly InventoryService _inventoryService;
+        private readonly CategoryService _categoryService;
 
         private Guna2Panel pnlContent;
         
+        // Page Header
         private Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
+        private Label lblLastUpdated;
         
-        private Guna2Panel pnlFilterBar;
-        private Guna2ComboBox cbWarehouseFilter;
-        private Guna2ComboBox cbCategoryFilter;
-        private Label lblTotalItems;
+        // KPI Cards
+        private Guna2Panel pnlKpiContainer;
+        private Guna2Panel cardTotalStock;
+        private Label lblTotalStockTitle;
+        private Label lblTotalStockValue;
+        
+        private Guna2Panel cardCriticalStock;
+        private Label lblCriticalStockTitle;
+        private Label lblCriticalStockValue;
+        
+        private Guna2Panel cardStockValue;
+        private Label lblStockValueTitle;
+        private Label lblStockValue;
+        
+        // Toolbar
+        private Guna2Panel pnlToolbar;
+        private Guna2TextBox txtSearch;
+        private Guna2ComboBox cbWarehouse;
+        private Guna2ComboBox cbCategory;
+        private Guna2Button btnFilterWarning;
         private Guna2Button btnExport;
         private Guna2Button btnAddNew;
         
+        // Grid
         private Guna2Panel pnlGridContainer;
-        private DataGridView dgvWarehouses;
+        private DataGridView dgvInventory;
         private PaginationControl paginationControl;
         
         private int _currentPage = 1;
         private int _pageSize = 5;
         private string _currentSearchTerm = "";
         
+        private int _hoveredRowIndex = -1;
+        private int _hoveredAction = 0; // 1 = View/Edit, 2 = Delete
+
         public void PerformSearch(string keyword)
         {
             _currentSearchTerm = keyword;
+            txtSearch.Text = keyword;
             _currentPage = 1;
             LoadData();
         }
 
         public InventoryControl()
         {
-            _service = new InventoryService();
-            _bookService = new BookService();
+            _inventoryService = new InventoryService();
+            _categoryService = new CategoryService();
+            
             InitializeUI();
+            LoadFilters();
+            ApplyTheme();
+            
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Load += InventoryControl_Load;
+            this.Load += (s, e) => { LoadData(); };
+        }
+        
+        private void LoadFilters()
+        {
+            var categories = _categoryService.GetAll();
+            categories.Insert(0, new Models.Category { Id = 0, CategoryName = "Thể loại: Tất cả" });
+            cbCategory.DataSource = categories;
+            cbCategory.DisplayMember = "CategoryName";
+            cbCategory.ValueMember = "CategoryName";
+            
+            cbWarehouse.Items.AddRange(new string[] { "Kho hàng: Tất cả", "Kho Tổng (Hà Nội)", "Kho Chi Nhánh (HCM)", "Kho Miền Trung" });
+            cbWarehouse.SelectedIndex = 0;
+            
+            cbWarehouse.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            cbCategory.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            txtSearch.TextChanged += (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; LoadData(); };
         }
 
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            int gutter = 20;
-            this.Padding = new Padding(0);
-
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+            this.BackColor = ThemeManager.Background;
             
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0,0,0,gutter) };
-            lblTitle = new Label { Text = "Inventory Management", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
-            lblSubTitle = new Label { Text = "View and manage stock across all warehouses.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0,30) };
-            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
-
-            pnlFilterBar = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1,1,1,0), Margin = new Padding(0) };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(30) };
             
-            Label lblWh = new Label { Text = "WAREHOUSE:", AutoSize = true, Location = new Point(20, 25), Font = new Font("Segoe UI", 8F, FontStyle.Bold) };
-            cbWarehouseFilter = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(100, 17), BorderRadius = 4 };
-            cbWarehouseFilter.Items.AddRange(new[] { "All Warehouses", "Downtown Main", "Westside Plaza", "University Ave" });
-            cbWarehouseFilter.SelectedIndex = 0;
-
-            Label lblCat = new Label { Text = "CATEGORY:", AutoSize = true, Location = new Point(280, 25), Font = new Font("Segoe UI", 8F, FontStyle.Bold) };
-            cbCategoryFilter = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(350, 17), BorderRadius = 4 };
-            cbCategoryFilter.Items.AddRange(new[] { "All Categories", "Fiction", "Non-Fiction", "Science" });
-            cbCategoryFilter.SelectedIndex = 0;
+            // 1. Header
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
+            lblTitle = new Label { Text = "Thống kê hàng tồn kho", Font = new Font("Inter", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu tồn kho hiện tại.", Font = new Font("Inter", 14), AutoSize = true, Location = new Point(0, 40) };
+            lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Inter", 13), AutoSize = true, Location = new Point(700, 20) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, lblLastUpdated });
             
-            lblTotalItems = new Label { Text = "Total Items: 0", AutoSize = true, Location = new Point(550, 25), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            // 2. KPI Cards
+            pnlKpiContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(0, 20, 0, 20) };
             
-            btnExport = new Guna2Button { Text = "Export CSV", Size = new Size(110, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), BorderThickness = 1, FillColor = Color.Transparent };
-            btnAddNew = new Guna2Button { Text = "+ New Item", Size = new Size(110, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnAddNew.Click += BtnAddNew_Click;
+            cardTotalStock = CreateKpiCard("Tổng tồn kho", "0", 0);
+            cardCriticalStock = CreateKpiCard("Sách sắp hết (Critical)", "0", 1);
+            cardStockValue = CreateKpiCard("Giá trị tồn kho", "0 ₫", 2);
             
-            pnlFilterBar.Controls.AddRange(new Control[] { lblWh, cbWarehouseFilter, lblCat, cbCategoryFilter, lblTotalItems, btnExport, btnAddNew });
-            pnlFilterBar.Resize += (s, e) => {
-                btnAddNew.Location = new Point(pnlFilterBar.Width - 130, 17);
-                btnExport.Location = new Point(pnlFilterBar.Width - 250, 17);
-                lblTotalItems.Location = new Point(pnlFilterBar.Width - 380, 25);
+            pnlKpiContainer.Controls.AddRange(new Control[] { cardTotalStock, cardCriticalStock, cardStockValue });
+            pnlKpiContainer.Resize += (s, e) => 
+            {
+                int cardWidth = (pnlKpiContainer.Width - 40) / 3;
+                cardTotalStock.Width = cardWidth; cardTotalStock.Left = 0;
+                cardCriticalStock.Width = cardWidth; cardCriticalStock.Left = cardWidth + 20;
+                cardStockValue.Width = cardWidth; cardStockValue.Left = (cardWidth + 20) * 2;
+            };
+            
+            // 3. Toolbar (Filters)
+            pnlToolbar = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Padding = new Padding(0, 15, 0, 15) };
+            
+            txtSearch = new Guna2TextBox { PlaceholderText = "Tìm sản phẩm (SKU, Tên)...", Size = new Size(250, 40), Location = new Point(0, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
+            cbWarehouse = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(270, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
+            cbCategory = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(490, 15), BorderRadius = 4, Font = new Font("Inter", 10) };
+            
+            btnAddNew = new Guna2Button { Text = "+ Thêm mới", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAddNew.Click += (s, e) => {
+                var frm = new Forms.InventoryEditForm();
+                if (frm.ShowDialog() == DialogResult.OK) LoadData();
+            };
+            
+            btnExport = new Guna2Button { Text = "📥 Xuất Excel", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            
+            btnFilterWarning = new Guna2Button { Text = "Cảnh báo tồn", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Inter", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
+            
+            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnFilterWarning, btnExport, btnAddNew });
+            pnlToolbar.Resize += (s, e) => {
+                btnAddNew.Left = pnlToolbar.Width - btnAddNew.Width;
+                btnExport.Left = btnAddNew.Left - btnExport.Width - 10;
+                btnFilterWarning.Left = btnExport.Left - btnFilterWarning.Width - 10;
             };
 
-            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 400, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,0,gutter) };
+            // 4. Grid Container
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, BorderRadius = 8, BorderThickness = 1 };
             
-            dgvWarehouses = new DataGridView
+            dgvInventory = new DataGridView
             {
                 Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                RowHeadersVisible = false,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
+                AllowUserToResizeRows = false,
                 ReadOnly = true,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowHeadersVisible = false,
-                RowTemplate = { Height = 50 },
-                AutoGenerateColumns = false,
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None, // Allows horizontal scrolling
+                RowTemplate = { Height = 55 },
+                EnableHeadersVisualStyles = false,
+                ScrollBars = ScrollBars.Both // Both scrollbars enabled
             };
             
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Sku", HeaderText = "SKU", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 100 });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Title", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 200 });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "UnitPrice", HeaderText = "Unit Price", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NorthHub", HeaderText = "North Hub", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "WestHub", HeaderText = "West Hub", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CentralHub", HeaderText = "Central Hub", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TotalStock", HeaderText = "Total Stock", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvWarehouses.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Status", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            SetupGridColumns();
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Actions", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
-            dgvWarehouses.Columns.Add(actionCol);
-
-            dgvWarehouses.CellPainting += DgvWarehouses_CellPainting;
-            dgvWarehouses.CellMouseClick += DgvWarehouses_CellMouseClick;
-            dgvWarehouses.CellFormatting += DgvWarehouses_CellFormatting;
+            dgvInventory.CellPainting += DgvInventory_CellPainting;
+            dgvInventory.CellMouseMove += DgvInventory_CellMouseMove;
+            dgvInventory.CellMouseLeave += DgvInventory_CellMouseLeave;
+            dgvInventory.CellMouseClick += DgvInventory_CellMouseClick;
             
-            pnlGridContainer.Controls.Add(dgvWarehouses);
-
+            pnlGridContainer.Controls.Add(dgvInventory);
+            
+            // Pagination
             paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
             paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
             pnlGridContainer.Controls.Add(paginationControl);
-
+            
+            // Assemble layout
             pnlContent.Controls.Add(pnlGridContainer);
-            pnlContent.Controls.Add(pnlFilterBar);
+            pnlContent.Controls.Add(pnlToolbar);
+            pnlContent.Controls.Add(pnlKpiContainer);
             pnlContent.Controls.Add(pnlPageHeader);
             
-            pnlPageHeader.BringToFront();
-            pnlFilterBar.BringToFront();
-            pnlGridContainer.BringToFront();
-
             this.Controls.Add(pnlContent);
-
-            ApplyTheme();
+        }
+        
+        private Guna2Panel CreateKpiCard(string title, string value, int type)
+        {
+            var card = new Guna2Panel { BorderRadius = 8, BorderThickness = 1 };
+            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Inter", 11, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            var lblV = new Label { Text = value, Font = new Font("Inter", 24, FontStyle.Bold), AutoSize = true, Location = new Point(20, 45) };
+            card.Controls.AddRange(new Control[] { lblT, lblV });
+            
+            // Add a reference to the value label so we can update it
+            if (type == 0) { lblTotalStockTitle = lblT; lblTotalStockValue = lblV; }
+            else if (type == 1) { lblCriticalStockTitle = lblT; lblCriticalStockValue = lblV; }
+            else { lblStockValueTitle = lblT; lblStockValue = lblV; }
+            
+            return card;
         }
 
-        private void InventoryControl_Load(object sender, EventArgs e)
+        private void SetupGridColumns()
         {
-            LoadData();
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "BookId", Visible = false });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Index", HeaderText = "#", Width = 50, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sku", HeaderText = "SKU", Width = 120 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Title", HeaderText = "Tên sách", Width = 280 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Warehouse", HeaderText = "Kho", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Inter", 11, FontStyle.Bold) } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "MinStock", HeaderText = "Tồn tối thiểu", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
+            
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Category", HeaderText = "Danh mục", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Author", HeaderText = "Tác giả", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Publisher", HeaderText = "Nhà XB", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Price", HeaderText = "Giá bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
+            
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Trạng thái", Width = 140, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Thao tác", Width = 100, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            
+            foreach (DataGridViewColumn col in dgvInventory.Columns)
+            {
+                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
         }
 
         private void LoadData()
         {
-            var stats = _service.GetStats();
-            lblTotalItems.Text = $"Total Items: {stats.TotalItems:N0}";
-
-            var (items, totalCount) = _service.GetPagedInventoryItems(_currentPage, _pageSize, _currentSearchTerm);
-            dgvWarehouses.DataSource = items;
+            // Load KPIs
+            var stats = _inventoryService.GetStats();
+            lblTotalStockValue.Text = stats.TotalItems.ToString("N0");
+            lblCriticalStockValue.Text = stats.OutOfStock.ToString("N0");
+            lblStockValue.Text = stats.StockValue.ToString("N0") + " ₫";
             
-            paginationControl.UpdatePagination(totalCount, _currentPage, _pageSize);
+            // Load Grid Data
+            string wFilter = cbWarehouse.SelectedIndex > 0 ? cbWarehouse.SelectedItem.ToString() : "";
+            string cFilter = cbCategory.SelectedIndex > 0 ? cbCategory.SelectedValue.ToString() : "";
             
-            if (dgvWarehouses.Columns["UnitPrice"] != null) 
-                dgvWarehouses.Columns["UnitPrice"].DefaultCellStyle.Format = "C2";
-        }
-        
-        private void BtnAddNew_Click(object sender, EventArgs e)
-        {
-            var frm = new Forms.BookForm(null);
-            if (frm.ShowDialog() == DialogResult.OK)
+            var result = _inventoryService.GetPagedInventoryItems(_currentPage, _pageSize, _currentSearchTerm, wFilter, cFilter);
+            
+            dgvInventory.Rows.Clear();
+            int index = (_currentPage - 1) * _pageSize + 1;
+            foreach (var item in result.Items)
             {
-                LoadData();
+                dgvInventory.Rows.Add(
+                    item.BookId,
+                    index++,
+                    item.Sku,
+                    item.Title,
+                    item.Warehouse,
+                    item.CurrentStock,
+                    item.MinStock,
+                    item.CategoryName,
+                    item.AuthorName,
+                    item.PublisherName,
+                    item.SellingPrice.ToString("N0") + " ₫",
+                    item.Status,
+                    ""
+                );
             }
+            
+            paginationControl.UpdatePagination(result.TotalCount, _currentPage, _pageSize);
+            lblLastUpdated.Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}";
         }
 
-        private void DgvWarehouses_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void DgvInventory_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && dgvWarehouses.Columns[e.ColumnIndex].Name == "Actions")
+            if (e.RowIndex < 0) return;
+
+            if (dgvInventory.Columns[e.ColumnIndex].Name == "Actions")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
@@ -182,131 +282,211 @@ namespace BookStoreManagement.UserControls
                 var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
                 var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
                 
-                TextRenderer.DrawText(e.Graphics, "✏️", e.CellStyle.Font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", e.CellStyle.Font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                if (e.RowIndex == _hoveredRowIndex)
+                {
+                    if (_hoveredAction == 1)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
+                    }
+                }
+
+                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 16 : 14;
+                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 16 : 14;
+
+                TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", editFontSize), editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", delFontSize), delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 
+                e.Handled = true;
+            }
+            else if (dgvInventory.Columns[e.ColumnIndex].Name == "Status")
+            {
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                string status = e.FormattedValue?.ToString() ?? "";
+                
+                Color bgColor, textColor;
+                if (status == "Đủ hàng") { bgColor = Color.FromArgb(210, 248, 226); textColor = Color.FromArgb(0, 100, 40); }
+                else if (status == "Hết hàng") { bgColor = Color.FromArgb(250, 200, 200); textColor = Color.FromArgb(180, 0, 0); }
+                else { bgColor = Color.FromArgb(255, 230, 200); textColor = Color.FromArgb(180, 100, 0); }
+                
+                var size = TextRenderer.MeasureText(status, new Font("Inter", 10, FontStyle.Bold));
+                var rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - size.Width - 16) / 2, e.CellBounds.Y + (e.CellBounds.Height - size.Height - 8) / 2, size.Width + 16, size.Height + 8);
+                
+                using (var path = new GraphicsPath())
+                {
+                    int r = rect.Height;
+                    path.AddArc(rect.X, rect.Y, r, r, 180, 90);
+                    path.AddArc(rect.Right - r, rect.Y, r, r, 270, 90);
+                    path.AddArc(rect.Right - r, rect.Bottom - r, r, r, 0, 90);
+                    path.AddArc(rect.X, rect.Bottom - r, r, r, 90, 90);
+                    path.CloseFigure();
+                    
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    using (var brush = new SolidBrush(bgColor)) e.Graphics.FillPath(brush, path);
+                    using (var pen = new Pen(textColor, 1)) e.Graphics.DrawPath(pen, path);
+                }
+                
+                TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 10, FontStyle.Bold), rect, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 e.Handled = true;
             }
         }
 
-        private void DgvWarehouses_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void DgvInventory_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && dgvWarehouses.Columns[e.ColumnIndex].Name == "Actions")
+            if (e.RowIndex >= 0 && dgvInventory.Columns[e.ColumnIndex].Name == "Actions")
             {
-                int bookId = Convert.ToInt32(dgvWarehouses.Rows[e.RowIndex].Cells[0].Value);
-                var cellRect = dgvWarehouses.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+                int action = (e.X < dgvInventory.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = e.RowIndex;
+                    _hoveredAction = action;
+                    if (oldRow >= 0) dgvInventory.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvInventory.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
+                }
+                dgvInventory.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRowIndex >= 0)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = -1;
+                    _hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvInventory.InvalidateCell(dgvInventory.Columns["Actions"].Index, oldRow);
+                }
+                dgvInventory.Cursor = Cursors.Default;
+            }
+        }
+
+        private void DgvInventory_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_hoveredRowIndex >= 0)
+            {
+                int oldRow = _hoveredRowIndex;
+                _hoveredRowIndex = -1;
+                _hoveredAction = 0;
+                dgvInventory.InvalidateCell(dgvInventory.Columns["Actions"].Index, oldRow);
+            }
+            dgvInventory.Cursor = Cursors.Default;
+        }
+
+        private void DgvInventory_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvInventory.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                int bookId = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells[0].Value);
+                string warehouse = dgvInventory.Rows[e.RowIndex].Cells["Warehouse"].Value.ToString();
                 
-                if (e.X < cellRect.Width / 2)
+                if (e.X < dgvInventory.Columns[e.ColumnIndex].Width / 2)
                 {
                     // Edit
-                    var book = _bookService.GetById(bookId);
-                    if (book != null)
-                    {
-                        var frm = new Forms.BookForm(book);
-                        if (frm.ShowDialog() == DialogResult.OK)
-                        {
-                            LoadData();
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Book not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    int qty = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells["CurrentStock"].Value);
+                    int minStock = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells["MinStock"].Value);
+                    
+                    var frm = new Forms.InventoryEditForm(bookId, warehouse, qty, minStock);
+                    if (frm.ShowDialog() == DialogResult.OK) LoadData();
                 }
                 else
                 {
                     // Delete
-                    if (MessageBox.Show("Are you sure you want to delete this book?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa tồn kho của sản phẩm này?", "Xác nhận Xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         try
                         {
-                            _bookService.SetActive(bookId, false);
-                            MessageBox.Show("Book deleted successfully!");
+                            _inventoryService.DeleteStock(bookId, warehouse);
                             LoadData();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
             }
         }
 
-        private void DgvWarehouses_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (dgvWarehouses.Columns[e.ColumnIndex].Name == "Status" && e.Value != null)
-            {
-                string status = e.Value.ToString();
-                e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-                
-                if (status == "IN STOCK") 
-                    e.CellStyle.ForeColor = Color.FromArgb(46, 204, 113);
-                else if (status == "OUT OF STOCK") 
-                    e.CellStyle.ForeColor = Color.FromArgb(231, 76, 60);
-                else 
-                    e.CellStyle.ForeColor = Color.FromArgb(243, 156, 18);
-            }
-        }
-
-        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
-        {
-            ApplyTheme();
-        }
+        private void ThemeManager_ThemeChanged(object? sender, EventArgs e) => ApplyTheme();
 
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            pnlContent.BackColor = ThemeManager.Background;
+            pnlContent.FillColor = ThemeManager.Background;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+            lblLastUpdated.ForeColor = ThemeManager.TextSecondary;
+            
+            // Cards
+            cardTotalStock.FillColor = ThemeManager.CardBackground;
+            cardTotalStock.BorderColor = ThemeManager.TextBoxBorder;
+            lblTotalStockTitle.ForeColor = ThemeManager.TextSecondary;
+            lblTotalStockValue.ForeColor = ThemeManager.TextPrimary;
+            
+            cardCriticalStock.FillColor = ThemeManager.CardBackground;
+            cardCriticalStock.BorderColor = Color.FromArgb(231, 76, 60);
+            lblCriticalStockTitle.ForeColor = Color.FromArgb(231, 76, 60);
+            lblCriticalStockValue.ForeColor = Color.FromArgb(231, 76, 60);
+            
+            cardStockValue.FillColor = ThemeManager.CardBackground;
+            cardStockValue.BorderColor = ThemeManager.TextBoxBorder;
+            lblStockValueTitle.ForeColor = ThemeManager.TextSecondary;
+            lblStockValue.ForeColor = ThemeManager.TextPrimary;
+            
+            // Toolbar
+            pnlToolbar.FillColor = ThemeManager.Background;
+            
+            txtSearch.FillColor = ThemeManager.TextBoxBackground;
+            txtSearch.ForeColor = ThemeManager.TextPrimary;
+            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            
+            cbWarehouse.FillColor = ThemeManager.TextBoxBackground;
+            cbWarehouse.ForeColor = ThemeManager.TextPrimary;
+            cbWarehouse.BorderColor = ThemeManager.TextBoxBorder;
+
+            cbCategory.FillColor = ThemeManager.TextBoxBackground;
+            cbCategory.ForeColor = ThemeManager.TextPrimary;
+            cbCategory.BorderColor = ThemeManager.TextBoxBorder;
+            
+            btnAddNew.FillColor = ThemeManager.ButtonFill;
+            btnAddNew.ForeColor = Color.White;
             
             btnExport.FillColor = ThemeManager.CardBackground;
             btnExport.ForeColor = ThemeManager.TextPrimary;
             btnExport.BorderColor = ThemeManager.TextBoxBorder;
-
-            btnAddNew.FillColor = ThemeManager.ButtonFill;
-            btnAddNew.ForeColor = ThemeManager.ButtonText;
             
-            pnlFilterBar.FillColor = ThemeManager.CardBackground;
-            pnlFilterBar.CustomBorderColor = ThemeManager.TextBoxBorder;
-            
-            cbWarehouseFilter.FillColor = ThemeManager.TextBoxBackground;
-            cbWarehouseFilter.ForeColor = ThemeManager.TextPrimary;
-            cbWarehouseFilter.BorderColor = ThemeManager.TextBoxBorder;
-
-            cbCategoryFilter.FillColor = ThemeManager.TextBoxBackground;
-            cbCategoryFilter.ForeColor = ThemeManager.TextPrimary;
-            cbCategoryFilter.BorderColor = ThemeManager.TextBoxBorder;
-            
-            foreach (Control c in pnlFilterBar.Controls)
-            {
-                if (c is Label lbl && lbl != lblTotalItems)
-                    lbl.ForeColor = ThemeManager.TextSecondary;
-            }
-            lblTotalItems.ForeColor = ThemeManager.TextPrimary;
+            btnFilterWarning.FillColor = ThemeManager.CardBackground;
+            btnFilterWarning.ForeColor = ThemeManager.TextPrimary;
+            btnFilterWarning.BorderColor = ThemeManager.TextBoxBorder;
 
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
-            dgvWarehouses.BackgroundColor = ThemeManager.CardBackground;
-            dgvWarehouses.GridColor = ThemeManager.TextBoxBorder;
+            pnlGridContainer.FillColor = ThemeManager.CardBackground;
             
-            dgvWarehouses.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvWarehouses.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvWarehouses.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvWarehouses.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            dgvInventory.BackgroundColor = ThemeManager.CardBackground;
+            dgvInventory.GridColor = ThemeManager.TextBoxBorder;
+            
+            // Disable alternating rows per requirement
+            dgvInventory.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvInventory.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvInventory.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvInventory.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
 
-            dgvWarehouses.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvWarehouses.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvWarehouses.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvWarehouses.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            dgvInventory.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
+            dgvInventory.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            dgvInventory.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
+            dgvInventory.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
             
-            dgvWarehouses.EnableHeadersVisualStyles = false;
-            dgvWarehouses.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvWarehouses.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvWarehouses.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dgvWarehouses.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
-            dgvWarehouses.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dgvInventory.EnableHeadersVisualStyles = false;
+            dgvInventory.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
+            dgvInventory.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+            dgvInventory.ColumnHeadersDefaultCellStyle.Font = new Font("Inter", 10F, FontStyle.Bold);
+            dgvInventory.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
+            dgvInventory.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
         }
     }
 }

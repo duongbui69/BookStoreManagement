@@ -5,12 +5,19 @@ using BookStoreManagement.Database;
 
 namespace BookStoreManagement.Repositories
 {
-    public class DepartmentPerformance
+    public class TopSellingBook
     {
-        public string Category { get; set; } = string.Empty;
-        public decimal GrossSales { get; set; }
-        public decimal COGS { get; set; }
-        public decimal Margin { get; set; }
+        public int Rank { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public int QuantitySold { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
+    public class InventoryWarning
+    {
+        public string Sku { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public int CurrentStock { get; set; }
         public string Status { get; set; } = string.Empty;
     }
 
@@ -19,24 +26,25 @@ namespace BookStoreManagement.Repositories
         public decimal TotalRevenue { get; set; }
         public decimal RevenueGrowth { get; set; }
         
-        public decimal OperatingExpenses { get; set; }
-        public decimal ExpensesGrowth { get; set; }
+        public int TotalOrders { get; set; }
+        public decimal OrdersGrowth { get; set; }
         
-        public decimal NetProfit { get; set; }
-        public decimal ProfitGrowth { get; set; }
+        public int LowStockCount { get; set; }
         
-        public decimal AverageMargin { get; set; }
-        public decimal MarginGrowth { get; set; } // e.g. 0 for stable
-
         public Dictionary<int, decimal> MonthlyRevenue { get; set; } = new Dictionary<int, decimal>();
-        public Dictionary<int, decimal> MonthlyExpenses { get; set; } = new Dictionary<int, decimal>();
 
-        public List<DepartmentPerformance> DepartmentPerformances { get; set; } = new List<DepartmentPerformance>();
+        public List<TopSellingBook> TopSellingBooks { get; set; } = new List<TopSellingBook>();
+        public List<InventoryWarning> InventoryWarnings { get; set; } = new List<InventoryWarning>();
     }
 
     public class ReportRepository : RepositoryBase
     {
         public ReportStats GetFinancialReports()
+        {
+            return GetFinancialReportsAsync().GetAwaiter().GetResult();
+        }
+
+        public async System.Threading.Tasks.Task<ReportStats> GetFinancialReportsAsync()
         {
             var stats = new ReportStats();
 
@@ -44,86 +52,90 @@ namespace BookStoreManagement.Repositories
             DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
             DateTime lastMonthStart = currentMonthStart.AddMonths(-1);
             
-            // Helper to get revenue sum
-            decimal GetTotalRevenue(DateTime start, DateTime end)
+            // 1. Revenue
+            async System.Threading.Tasks.Task<decimal> GetTotalRevenueAsync(DateTime start, DateTime end)
             {
-                return ExecuteScalarDecimal("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
-                    p => {
-                        AddParameter(p, "@Start", start);
-                        AddParameter(p, "@End", end);
-                    });
+                return await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                    new { Start = start, End = end });
             }
 
-            decimal currentRevenue = GetTotalRevenue(currentMonthStart, now);
-            decimal lastRevenue = GetTotalRevenue(lastMonthStart, currentMonthStart);
+            decimal currentRevenue = await GetTotalRevenueAsync(currentMonthStart, now);
+            decimal lastRevenue = await GetTotalRevenueAsync(lastMonthStart, currentMonthStart);
 
-            // Dashboard uses NetProfit = 30% of revenue. 
-            // So Expenses = 70% of revenue.
             stats.TotalRevenue = currentRevenue;
-            stats.OperatingExpenses = currentRevenue * 0.7m;
-            stats.NetProfit = currentRevenue * 0.3m;
-            stats.AverageMargin = currentRevenue > 0 ? (stats.NetProfit / currentRevenue) * 100 : 0;
-
-            decimal lastExpenses = lastRevenue * 0.7m;
-            decimal lastProfit = lastRevenue * 0.3m;
-            decimal lastMargin = lastRevenue > 0 ? (lastProfit / lastRevenue) * 100 : 0;
-
             stats.RevenueGrowth = lastRevenue == 0 ? 0 : ((currentRevenue - lastRevenue) / lastRevenue) * 100;
-            stats.ExpensesGrowth = lastExpenses == 0 ? 0 : ((stats.OperatingExpenses - lastExpenses) / lastExpenses) * 100;
-            stats.ProfitGrowth = lastProfit == 0 ? 0 : ((stats.NetProfit - lastProfit) / lastProfit) * 100;
-            stats.MarginGrowth = stats.AverageMargin - lastMargin;
 
-            // Monthly Revenue & Expenses for Line Chart (Past 12 months)
+            // 2. Orders
+            async System.Threading.Tasks.Task<int> GetTotalOrdersAsync(DateTime start, DateTime end)
+            {
+                return await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                    new { Start = start, End = end });
+            }
+
+            int currentOrders = await GetTotalOrdersAsync(currentMonthStart, now);
+            int lastOrders = await GetTotalOrdersAsync(lastMonthStart, currentMonthStart);
+            stats.TotalOrders = currentOrders;
+            stats.OrdersGrowth = lastOrders == 0 ? 0 : ((decimal)(currentOrders - lastOrders) / lastOrders) * 100;
+
+            // 3. Low Stock Count
+            stats.LowStockCount = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Books WHERE Quantity <= MinStock");
+
+            // 4. Monthly Revenue (Past 12 months)
             for (int i = 11; i >= 0; i--)
             {
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
-                decimal mRev = GetTotalRevenue(mStart, mEnd);
+                decimal mRev = await GetTotalRevenueAsync(mStart, mEnd);
                 stats.MonthlyRevenue.Add(mStart.Month, mRev);
-                stats.MonthlyExpenses.Add(mStart.Month, mRev * 0.7m);
             }
 
-            // Departmental Performance
-            ExecuteQuery(cmd => {
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    string category = reader.GetString(0);
-                    decimal grossSales = reader.GetDecimal(1);
-                    decimal cogs = grossSales * 0.4m; // Mock COGS as 40%
-                    decimal margin = grossSales > 0 ? ((grossSales - cogs) / grossSales) * 100 : 0;
-                    
-                    string status = "OPTIMAL";
-                    if (margin < 40) status = "NEEDS REVIEW";
-                    else if (margin < 55) status = "AVERAGE";
-
-                    stats.DepartmentPerformances.Add(new DepartmentPerformance
-                    {
-                        Category = category,
-                        GrossSales = grossSales,
-                        COGS = cogs,
-                        Margin = margin,
-                        Status = status
-                    });
-                }
-                return true;
-            }, @"
-                SELECT 
-                    c.CategoryName, 
-                    ISNULL(SUM(sd.Quantity * sd.UnitPrice), 0) as GrossSales
+            // 5. Top 5 Books
+            string topBooksSql = @"
+                SELECT TOP 5 
+                    b.Title, 
+                    ISNULL(SUM(sd.Quantity), 0) as QuantitySold,
+                    ISNULL(SUM(sd.Quantity * sd.UnitPrice), 0) as Revenue
                 FROM SalesOrderDetails sd
                 JOIN Books b ON sd.BookId = b.Id
-                JOIN Categories c ON b.CategoryId = c.Id
                 JOIN SalesOrders so ON sd.SalesOrderId = so.Id
-                WHERE so.OrderDate >= @Start
-                GROUP BY c.CategoryName", 
-            p => AddParameter(p, "@Start", currentMonthStart));
+                GROUP BY b.Id, b.Title
+                ORDER BY QuantitySold DESC";
+            var topBooksData = await QueryAsync<dynamic>(topBooksSql);
 
-            // If empty (no data), add mock data to show UI
-            if (stats.DepartmentPerformances.Count == 0)
+            int rank = 1;
+            foreach (var row in topBooksData)
             {
-                stats.DepartmentPerformances.Add(new DepartmentPerformance { Category = "Fiction Hardcovers", GrossSales = 142500, COGS = 58200, Margin = 59.2m, Status = "OPTIMAL" });
-                stats.DepartmentPerformances.Add(new DepartmentPerformance { Category = "Academic Textbooks", GrossSales = 88400, COGS = 62100, Margin = 29.7m, Status = "AVERAGE" });
+                stats.TopSellingBooks.Add(new TopSellingBook
+                {
+                    Rank = rank++,
+                    Title = row.Title,
+                    QuantitySold = row.QuantitySold,
+                    Revenue = row.Revenue
+                });
+            }
+
+            // 6. Inventory Warnings
+            string warningsSql = @"
+                SELECT TOP 10 
+                    BookCode as Sku, Title, Quantity as CurrentStock, MinStock 
+                FROM Books 
+                WHERE Quantity <= MinStock
+                ORDER BY Quantity ASC";
+            var warningsData = await QueryAsync<dynamic>(warningsSql);
+
+            foreach (var row in warningsData)
+            {
+                int current = row.CurrentStock;
+                int min = row.MinStock;
+                string status = current == 0 ? "OUT OF STOCK" : (current <= min / 2 ? "URGENT" : "WARNING");
+
+                stats.InventoryWarnings.Add(new InventoryWarning
+                {
+                    Sku = row.Sku,
+                    Title = row.Title,
+                    CurrentStock = current,
+                    Status = status
+                });
             }
 
             return stats;

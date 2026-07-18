@@ -7,6 +7,7 @@ namespace BookStoreManagement.Models
         public int Id { get; set; }
         public string AuthorName { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? Nationality { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

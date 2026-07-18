@@ -15,5 +15,10 @@ namespace BookStoreManagement.Services
         {
             return _repo.GetStats();
         }
+
+        public async System.Threading.Tasks.Task<DashboardStats> GetStatsAsync()
+        {
+            return await _repo.GetStatsAsync();
+        }
     }
 }

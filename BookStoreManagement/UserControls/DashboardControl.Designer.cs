@@ -6,6 +6,10 @@ namespace BookStoreManagement.UserControls
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+            {
+                BookStoreManagement.Themes.ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+            }
             if (disposing && (components != null))
             {
                 components.Dispose();

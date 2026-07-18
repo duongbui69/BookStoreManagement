@@ -17,5 +17,6 @@ namespace BookStoreManagement.ViewModels
         public DateTime ReturnDate { get; set; }
         public decimal TotalRefundAmount { get; set; }
         public string? Note { get; set; }
+        public string ReturnStatus { get; set; } = string.Empty;
     }
 }

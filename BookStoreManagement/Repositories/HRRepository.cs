@@ -116,5 +116,68 @@ namespace BookStoreManagement.Repositories
 
             return (list, totalCount);
         }
+
+        public async System.Threading.Tasks.Task<HRStats> GetStatsAsync()
+        {
+            var stats = new HRStats();
+
+            stats.TotalEmployees = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users");
+            stats.NewThisMonth = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE JoinDate >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)");
+            stats.ActiveDepartments = await ExecuteScalarAsync<int>("SELECT COUNT(DISTINCT Department) FROM Users WHERE Department IS NOT NULL");
+
+            stats.LogisticsLoad = Math.Min(100, await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE Department = 'Logistics'") * 15);
+            stats.SalesLoad = Math.Min(100, await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE Department LIKE '%Sales%'") * 20);
+            stats.ITLoad = Math.Min(100, await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE Department LIKE '%IT%'") * 25);
+
+            return stats;
+        }
+
+        public async System.Threading.Tasks.Task<(List<HREmployeeItem> Items, int TotalCount)> GetPagedEmployeesAsync(int page, int pageSize, string departmentFilter, string statusFilter, string searchTerm)
+        {
+            string whereClause = "WHERE 1=1 ";
+            if (!string.IsNullOrEmpty(departmentFilter) && departmentFilter != "All Departments")
+            {
+                whereClause += "AND u.Department = @Dept ";
+            }
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "Status: All")
+            {
+                whereClause += "AND u.Status = @Status ";
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                whereClause += "AND (u.FullName LIKE @Search OR u.Email LIKE @Search OR u.EmployeeId LIKE @Search) ";
+            }
+
+            var parameters = new
+            {
+                Dept = departmentFilter,
+                Status = statusFilter,
+                Search = "%" + searchTerm + "%",
+                Offset = (page - 1) * pageSize,
+                PageSize = pageSize
+            };
+
+            string countQuery = $@"
+                SELECT COUNT(*) 
+                FROM Users u 
+                LEFT JOIN Roles r ON u.RoleId = r.Id
+                {whereClause}";
+                
+            int totalCount = await ExecuteScalarAsync<int>(countQuery, parameters);
+
+            string dataQuery = $@"
+                SELECT 
+                    u.Id, u.FullName AS Name, ISNULL(u.Email, '') AS Email, ISNULL(r.RoleName, 'Employee') AS RoleName, ISNULL(u.EmployeeId, '#EMP-0000') AS EmployeeId, 
+                    ISNULL(u.Department, 'Unassigned') AS Department, ISNULL(u.Status, 'ACTIVE') AS Status, ISNULL(u.JoinDate, GETDATE()) AS JoinDate
+                FROM Users u
+                LEFT JOIN Roles r ON u.RoleId = r.Id
+                {whereClause}
+                ORDER BY u.Id ASC
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+            var items = await QueryAsync<HREmployeeItem>(dataQuery, parameters);
+
+            return (System.Linq.Enumerable.ToList(items), totalCount);
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 
@@ -10,12 +11,24 @@ namespace BookStoreManagement.Services
         private readonly CustomerRepository _repository;
         public CustomerService() { _repository = new CustomerRepository(); }
 
-        public List<Customer> GetAll() { PermissionService.RequireStaffOrAdmin(); return _repository.GetAll(); }
-        public List<Customer> GetActive() { PermissionService.RequireStaffOrAdmin(); return _repository.GetActive(); }
-        public Customer? GetById(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id khách hàng không hợp lệ."); return _repository.GetById(id); }
-        public List<Customer> Search(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? _repository.GetAll() : _repository.Search(keyword); }
+        public async Task<List<Customer>> GetAllAsync() { PermissionService.RequireStaffOrAdmin(); return await _repository.GetAllAsync(); }
+        public async Task<List<Customer>> GetActiveAsync() { PermissionService.RequireStaffOrAdmin(); return await _repository.GetActiveAsync(); }
+        
+        public async Task<Customer?> GetByIdAsync(int id) 
+        { 
+            PermissionService.RequireStaffOrAdmin(); 
+            Require(id > 0, "Id khách hàng không hợp lệ."); 
+            return await _repository.GetByIdAsync(id); 
+        }
 
-        public int Add(Customer customer)
+        public async Task<List<Customer>> SearchAsync(string keyword) 
+        { 
+            PermissionService.RequireStaffOrAdmin(); 
+            keyword = Trim(keyword); 
+            return string.IsNullOrWhiteSpace(keyword) ? await _repository.GetAllAsync() : await _repository.SearchAsync(keyword); 
+        }
+
+        public async Task<int> AddAsync(Customer customer)
         {
             PermissionService.RequireStaffOrAdmin();
             Validate(customer);
@@ -29,13 +42,13 @@ namespace BookStoreManagement.Services
             customer.Address = TrimNullable(customer.Address);
             customer.IsActive = true;
 
-            if (_repository.IsCustomerCodeExists(customer.CustomerCode)) throw new Exception("Mã khách hàng đã tồn tại.");
-            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && _repository.IsIdentityNumberExists(customer.IdentityNumber)) throw new Exception("Số CMND/CCCD đã tồn tại.");
+            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode)) throw new Exception("Mã khách hàng đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber)) throw new Exception("Số CMND/CCCD đã tồn tại.");
 
-            return _repository.Add(customer);
+            return await _repository.AddAsync(customer);
         }
 
-        public bool Update(Customer customer)
+        public async Task<bool> UpdateAsync(Customer customer)
         {
             PermissionService.RequireStaffOrAdmin();
             Require(customer.Id > 0, "Id khách hàng không hợp lệ.");
@@ -48,17 +61,31 @@ namespace BookStoreManagement.Services
             customer.Email = TrimNullable(customer.Email);
             customer.Address = TrimNullable(customer.Address);
 
-            if (_repository.IsCustomerCodeExists(customer.CustomerCode, customer.Id)) throw new Exception("Mã khách hàng đã tồn tại.");
-            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && _repository.IsIdentityNumberExists(customer.IdentityNumber, customer.Id)) throw new Exception("Số CMND/CCCD đã tồn tại.");
+            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode, customer.Id)) throw new Exception("Mã khách hàng đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber, customer.Id)) throw new Exception("Số CMND/CCCD đã tồn tại.");
 
-            return _repository.Update(customer);
+            return await _repository.UpdateAsync(customer);
         }
 
-        public bool SetActive(int id, bool isActive)
+        public async Task<bool> SetActiveAsync(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
             Require(id > 0, "Id khách hàng không hợp lệ.");
-            return _repository.SetActive(id, isActive);
+            return await _repository.SetActiveAsync(id, isActive);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            PermissionService.RequireAdmin();
+            Require(id > 0, "Id khách hàng không hợp lệ.");
+            return await _repository.DeleteAsync(id);
+        }
+
+        public async Task<bool> DeleteMultipleAsync(IEnumerable<int> ids)
+        {
+            PermissionService.RequireAdmin();
+            Require(ids != null, "Danh sách Id không hợp lệ.");
+            return await _repository.DeleteMultipleAsync(ids);
         }
 
         private void Validate(Customer customer)
@@ -66,6 +93,7 @@ namespace BookStoreManagement.Services
             Require(customer != null, "Dữ liệu khách hàng không hợp lệ.");
             Require(!string.IsNullOrWhiteSpace(customer.FullName), "Tên khách hàng không được để trống.");
             Require(customer.FullName.Length <= 150, "Tên khách hàng không được vượt quá 150 ký tự.");
+            Require(customer.Points >= 0, "Điểm tích lũy không được nhỏ hơn 0.");
         }
     }
 }

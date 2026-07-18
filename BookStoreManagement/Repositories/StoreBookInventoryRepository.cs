@@ -62,6 +62,13 @@ namespace BookStoreManagement.Repositories
             }, sql);
         }
 
+        public async System.Threading.Tasks.Task<List<StoreBookInventoryViewModel>> GetAllAsync()
+        {
+            const string sql = "SELECT * FROM vw_StoreBookInventory ORDER BY StoreId, Title;";
+            var result = await QueryAsync<StoreBookInventoryViewModel>(sql);
+            return System.Linq.Enumerable.ToList(result);
+        }
+
         public List<StoreBookInventoryViewModel> GetByStoreId(int storeId)
         {
             var items = new List<StoreBookInventoryViewModel>();
@@ -77,6 +84,18 @@ namespace BookStoreManagement.Repositories
                 while (reader.Read()) items.Add(MapInventoryView(reader));
                 return items;
             }, sql, parameters => AddParameter(parameters, "@StoreId", storeId));
+        }
+
+        public async System.Threading.Tasks.Task<List<StoreBookInventoryViewModel>> GetByStoreIdAsync(int storeId)
+        {
+            const string sql = @"
+                SELECT *
+                FROM vw_StoreBookInventory
+                WHERE StoreId = @StoreId
+                ORDER BY Title;
+            ";
+            var result = await QueryAsync<StoreBookInventoryViewModel>(sql, new { StoreId = storeId });
+            return System.Linq.Enumerable.ToList(result);
         }
 
         public StoreBookInventory? GetByStoreAndBook(int storeId, int bookId)
@@ -95,6 +114,16 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@StoreId", storeId);
                 AddParameter(parameters, "@BookId", bookId);
             });
+        }
+
+        public async System.Threading.Tasks.Task<StoreBookInventory?> GetByStoreAndBookAsync(int storeId, int bookId)
+        {
+            const string sql = @"
+                SELECT Id, StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive, CreatedAt, UpdatedAt
+                FROM StoreBookInventories
+                WHERE StoreId = @StoreId AND BookId = @BookId;
+            ";
+            return await QueryFirstOrDefaultAsync<StoreBookInventory>(sql, new { StoreId = storeId, BookId = bookId });
         }
 
         public List<StoreBookInventoryViewModel> Search(string keyword, int? storeId = null)
@@ -129,6 +158,29 @@ namespace BookStoreManagement.Repositories
             });
         }
 
+        public async System.Threading.Tasks.Task<List<StoreBookInventoryViewModel>> SearchAsync(string keyword, int? storeId = null)
+        {
+            string sql = @"
+                SELECT *
+                FROM vw_StoreBookInventory
+                WHERE (
+                    StoreCode LIKE N'%' + @Keyword + N'%'
+                    OR StoreName LIKE N'%' + @Keyword + N'%'
+                    OR BookCode LIKE N'%' + @Keyword + N'%'
+                    OR ISBN LIKE N'%' + @Keyword + N'%'
+                    OR Title LIKE N'%' + @Keyword + N'%'
+                    OR CategoryName LIKE N'%' + @Keyword + N'%'
+                    OR AuthorName LIKE N'%' + @Keyword + N'%'
+                )
+            ";
+
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            sql += " ORDER BY StoreId, Title;";
+
+            var result = await QueryAsync<StoreBookInventoryViewModel>(sql, new { Keyword = keyword, StoreId = storeId });
+            return System.Linq.Enumerable.ToList(result);
+        }
+
         public int Add(StoreBookInventory inventory)
         {
             const string sql = @"
@@ -146,6 +198,16 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@SellingPrice", inventory.SellingPrice);
                 AddParameter(parameters, "@IsActive", inventory.IsActive);
             });
+        }
+
+        public async System.Threading.Tasks.Task<int> AddAsync(StoreBookInventory inventory)
+        {
+            const string sql = @"
+                INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive)
+                OUTPUT INSERTED.Id
+                VALUES (@StoreId, @BookId, @Quantity, @MinStock, @ImportPrice, @SellingPrice, @IsActive);
+            ";
+            return await ExecuteScalarAsync<int>(sql, inventory);
         }
 
         public bool Update(StoreBookInventory inventory)
@@ -171,6 +233,21 @@ namespace BookStoreManagement.Repositories
             }) > 0;
         }
 
+        public async System.Threading.Tasks.Task<bool> UpdateAsync(StoreBookInventory inventory)
+        {
+            const string sql = @"
+                UPDATE StoreBookInventories
+                SET Quantity = @Quantity,
+                    MinStock = @MinStock,
+                    ImportPrice = @ImportPrice,
+                    SellingPrice = @SellingPrice,
+                    IsActive = @IsActive,
+                    UpdatedAt = SYSDATETIME()
+                WHERE Id = @Id;
+            ";
+            return await ExecuteAsync(sql, inventory) > 0;
+        }
+
         public bool SetActive(int id, bool isActive)
         {
             const string sql = @"
@@ -184,6 +261,17 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@Id", id);
                 AddParameter(parameters, "@IsActive", isActive);
             }) > 0;
+        }
+
+        public async System.Threading.Tasks.Task<bool> SetActiveAsync(int id, bool isActive)
+        {
+            const string sql = @"
+                UPDATE StoreBookInventories
+                SET IsActive = @IsActive,
+                    UpdatedAt = SYSDATETIME()
+                WHERE Id = @Id;
+            ";
+            return await ExecuteAsync(sql, new { Id = id, IsActive = isActive }) > 0;
         }
     }
 }
