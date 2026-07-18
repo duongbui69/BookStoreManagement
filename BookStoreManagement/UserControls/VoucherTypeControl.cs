@@ -161,8 +161,8 @@ namespace BookStoreManagement.UserControls
             dgvData.Columns["Name"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvData.Columns["Description"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
-            dgvData.CellMouseEnter += (s, e) => { _hoveredRowIndex = e.RowIndex; dgvData.InvalidateRow(e.RowIndex); };
-            dgvData.CellMouseLeave += (s, e) => { _hoveredRowIndex = -1; dgvData.InvalidateRow(e.RowIndex); };
+            dgvData.CellMouseEnter += (s, e) => { if (e.RowIndex >= 0) { _hoveredRowIndex = e.RowIndex; dgvData.InvalidateRow(e.RowIndex); } };
+            dgvData.CellMouseLeave += (s, e) => { _hoveredRowIndex = -1; if (e.RowIndex >= 0) dgvData.InvalidateRow(e.RowIndex); };
             dgvData.CellPainting += DgvData_CellPainting;
             dgvData.CellClick += DgvData_CellClick;
 
