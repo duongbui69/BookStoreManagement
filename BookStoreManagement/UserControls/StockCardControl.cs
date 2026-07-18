@@ -54,11 +54,11 @@ namespace BookStoreManagement.UserControls
             this.Load += StockCardControl_Load;
         }
 
-        public void PerformSearch(string keyword)
+        public async void PerformSearch(string keyword)
         {
             _currentSearchTerm = keyword;
             _currentPage = 1;
-            LoadData();
+            await LoadDataAsync();
         }
 
         private void InitializeUI()
@@ -162,7 +162,7 @@ namespace BookStoreManagement.UserControls
                 Font = new Font("Inter", 10, FontStyle.Regular),
                 Cursor = Cursors.Hand
             };
-            btnFilter.Click += (s, e) => { _currentPage = 1; LoadData(); };
+            btnFilter.Click += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
             pnlFilterBar.Controls.AddRange(new Control[] { lblFrom, dtpFromDate, lblTo, dtpToDate, lblBook, cbBookFilter, lblStore, cbStoreFilter, btnFilter });
 
@@ -234,7 +234,7 @@ namespace BookStoreManagement.UserControls
 
             // Pagination
             paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
-            paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
+            paginationControl.PageChanged += async (s, e) => { _currentPage = e.NewPage; await LoadDataAsync(); };
             pnlGridContainer.Controls.Add(paginationControl);
 
             // Assemble layout
@@ -261,35 +261,35 @@ namespace BookStoreManagement.UserControls
             };
         }
 
-        private void StockCardControl_Load(object sender, EventArgs e)
+        private async void StockCardControl_Load(object sender, EventArgs e)
         {
-            LoadFilters();
-            LoadData();
+            await LoadFiltersAsync();
+            await LoadDataAsync();
         }
 
-        private void LoadFilters()
+        private async System.Threading.Tasks.Task LoadFiltersAsync()
         {
-            var books = _bookService.GetAll();
+            var books = await _bookService.GetAllAsync();
             books.Insert(0, new BookStoreManagement.ViewModels.BookListViewModel { Id = 0, Title = "Tất cả sản phẩm" });
             cbBookFilter.DataSource = books;
             cbBookFilter.DisplayMember = "Title";
             cbBookFilter.ValueMember = "Id";
 
-            var stores = _storeService.GetAll();
+            var stores = await _storeService.GetAllAsync();
             stores.Insert(0, new Store { Id = 0, StoreName = "Tất cả các kho" });
             cbStoreFilter.DataSource = stores;
             cbStoreFilter.DisplayMember = "StoreName";
             cbStoreFilter.ValueMember = "Id";
         }
 
-        private void LoadData()
+        private async System.Threading.Tasks.Task LoadDataAsync()
         {
             DateTime fromDate = dtpFromDate.Value;
             DateTime toDate = dtpToDate.Value;
             int bookId = cbBookFilter.SelectedValue != null ? Convert.ToInt32(cbBookFilter.SelectedValue) : 0;
             int storeId = cbStoreFilter.SelectedValue != null ? Convert.ToInt32(cbStoreFilter.SelectedValue) : 0;
 
-            var result = _service.GetPagedTransactions(_currentPage, _pageSize, fromDate, toDate, bookId, storeId);
+            var result = await _service.GetPagedTransactionsAsync(_currentPage, _pageSize, fromDate, toDate, bookId, storeId);
 
             if (this.IsDisposed) return;
             dgvTransactions.Rows.Clear();
@@ -417,7 +417,7 @@ namespace BookStoreManagement.UserControls
             dgvTransactions.Cursor = Cursors.Default;
         }
 
-        private void DgvTransactions_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private async void DgvTransactions_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && dgvTransactions.Columns[e.ColumnIndex].Name == "Actions")
             {
@@ -436,7 +436,7 @@ namespace BookStoreManagement.UserControls
                             if (_service.UpdateNote(transactionId, newNote))
                             {
                                 MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                LoadData();
+                                await LoadDataAsync();
                             }
                             else
                             {
@@ -453,7 +453,7 @@ namespace BookStoreManagement.UserControls
                         if (_service.Delete(transactionId))
                         {
                             MessageBox.Show("Xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            LoadData();
+                            await LoadDataAsync();
                         }
                         else
                         {
