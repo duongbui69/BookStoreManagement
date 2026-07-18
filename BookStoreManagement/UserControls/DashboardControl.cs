@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -72,7 +72,7 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0,0,0,gutter) };
-            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
+            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
             lblSubTitle = new Label { Text = "Welcome back, here's what's happening with your store today.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0,30) };
             
             btnExport = new Guna2Button { Text = "Export Report", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
@@ -520,4 +520,5 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
+
 

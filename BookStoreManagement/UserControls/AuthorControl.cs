@@ -64,7 +64,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label 
             { 
                 Text = "Quản lý tác giả", 
-                Font = new Font("Segoe UI", 18, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 Location = new Point(0, 0), 
                 AutoSize = true 
             };
@@ -485,3 +485,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

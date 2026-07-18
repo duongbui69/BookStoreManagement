@@ -100,7 +100,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label 
             { 
                 Text = "Danh sách danh mục", 
-                Font = new Font("Segoe UI", 16, FontStyle.Bold), 
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 AutoSize = true, 
                 Location = new Point(0, 0) 
             };
@@ -683,4 +683,5 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+
 

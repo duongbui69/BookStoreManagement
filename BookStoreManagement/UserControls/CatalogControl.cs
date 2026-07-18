@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -194,7 +194,7 @@ namespace BookStoreManagement.UserControls
             
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 26) };
             lblTitle.Tag = "CardTitle";
-            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 20F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 45), ForeColor = color };
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 45), ForeColor = color };
             lblValue.Tag = "CardValue";
 
             pnl.Controls.Add(pnlIcon);
@@ -493,4 +493,5 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
+
 

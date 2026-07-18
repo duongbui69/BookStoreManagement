@@ -160,7 +160,7 @@ namespace BookStoreManagement.UserControls
             var pnl = new Guna2Panel { Dock = DockStyle.Left, BorderRadius = 4, BorderThickness = 1 };
             
             var pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 50, CustomBorderThickness = new Padding(0,0,0,1) };
-            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 12) };
+            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 12) };
             pnlHeader.Controls.Add(lblTitle);
 
             grid = new DataGridView
@@ -481,3 +481,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

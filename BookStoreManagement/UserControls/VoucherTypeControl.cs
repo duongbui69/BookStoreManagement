@@ -55,7 +55,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Loại phiếu",
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
@@ -367,3 +367,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

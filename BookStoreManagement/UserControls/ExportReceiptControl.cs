@@ -67,7 +67,7 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label
             {
                 Text = "Xuất kho",
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 20)
             };
@@ -533,3 +533,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+
