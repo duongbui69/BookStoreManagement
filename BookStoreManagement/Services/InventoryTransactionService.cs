@@ -17,7 +17,7 @@ namespace BookStoreManagement.Services
         public (List<InventoryTransactionDto> Items, int TotalCount) GetPagedTransactions(
             int page, int pageSize, DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0)
         {
-            return _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId).GetAwaiter().GetResult();
+            return System.Threading.Tasks.Task.Run(() => _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId)).GetAwaiter().GetResult();
         }
 
         public async System.Threading.Tasks.Task<(List<InventoryTransactionDto> Items, int TotalCount)> GetPagedTransactionsAsync(

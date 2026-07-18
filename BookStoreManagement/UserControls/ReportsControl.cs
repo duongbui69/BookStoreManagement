@@ -73,8 +73,7 @@ namespace BookStoreManagement.UserControls
                 Text = "Xuất Excel", 
                 Size = new Size(130, 36), 
                 BorderRadius = 4, 
-                Font = new Font("Inter", 12F, FontStyle.Bold),
-                Image = Image.FromFile(System.IO.Path.Combine(Application.StartupPath, "Resources", "Icons", "download.png")) // Assume standard icon
+                Font = new Font("Inter", 12F, FontStyle.Bold)
             };
             
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnExportExcel });

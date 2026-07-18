@@ -41,7 +41,7 @@ namespace BookStoreManagement.Repositories
     {
         public ReportStats GetFinancialReports()
         {
-            return GetFinancialReportsAsync().GetAwaiter().GetResult();
+            return System.Threading.Tasks.Task.Run(() => GetFinancialReportsAsync()).GetAwaiter().GetResult();
         }
 
         public async System.Threading.Tasks.Task<ReportStats> GetFinancialReportsAsync()
