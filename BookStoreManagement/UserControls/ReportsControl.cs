@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -180,6 +181,7 @@ namespace BookStoreManagement.UserControls
                 EnableHeadersVisualStyles = false,
                 ScrollBars = ScrollBars.Vertical
             };
+            grid.SetDoubleBuffered(true);
             
             pnl.Controls.Add(grid);
             pnl.Controls.Add(pnlHeader);
@@ -481,4 +483,3 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-

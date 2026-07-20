@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -145,6 +146,7 @@ namespace BookStoreManagement.UserControls
                 EnableHeadersVisualStyles = false,
                 Cursor = Cursors.Hand
             };
+            dgvData.SetDoubleBuffered(true);
 
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Code", HeaderText = "Mã loại", Width = 100 });
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Tên loại phiếu", Width = 200 });
@@ -243,8 +245,14 @@ namespace BookStoreManagement.UserControls
                     Color editColor = rectEdit.Contains(mouseLoc) ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
                     Color deleteColor = rectDelete.Contains(mouseLoc) ? Color.FromArgb(231, 76, 60) : ThemeManager.TextSecondary;
 
-                    TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", 12), rectEdit, editColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                    TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", 12), rectDelete, deleteColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    using (var font = new Font("Segoe UI Emoji", 12))
+                    {
+                    TextRenderer.DrawText(e.Graphics, "✏️", font, rectEdit, editColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    }
+                    using (var font = new Font("Segoe UI Emoji", 12))
+                    {
+                    TextRenderer.DrawText(e.Graphics, "🗑️", font, rectDelete, deleteColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    }
                 }
                 e.Handled = true;
             }
@@ -281,7 +289,10 @@ namespace BookStoreManagement.UserControls
 
             using var brush = new SolidBrush(bg);
             g.FillRectangle(brush, x, y, width, height); // Simplified for WinForms without complex GraphicsPath
-            TextRenderer.DrawText(g, text, new Font("Segoe UI", 9, FontStyle.Bold), new Rectangle(x, y, width, height), fg, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+            using (var font = new Font("Segoe UI", 9, FontStyle.Bold))
+            {
+            TextRenderer.DrawText(g, text, font, new Rectangle(x, y, width, height), fg, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+            }
         }
 
         private void DgvData_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -367,4 +378,3 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-

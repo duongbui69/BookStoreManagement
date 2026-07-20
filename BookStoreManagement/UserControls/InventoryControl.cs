@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -168,6 +169,7 @@ namespace BookStoreManagement.UserControls
                 EnableHeadersVisualStyles = false,
                 ScrollBars = ScrollBars.Both // Both scrollbars enabled
             };
+            dgvInventory.SetDoubleBuffered(true);
             
             SetupGridColumns();
             
@@ -299,8 +301,14 @@ namespace BookStoreManagement.UserControls
                 int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 16 : 14;
                 int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 16 : 14;
 
-                TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", editFontSize), editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", delFontSize), delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                using (var font = new Font("Segoe UI Emoji", editFontSize))
+                {
+                TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
+                using (var font = new Font("Segoe UI Emoji", delFontSize))
+                {
+                    TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
                 
                 e.Handled = true;
             }
@@ -314,7 +322,11 @@ namespace BookStoreManagement.UserControls
                 else if (status == "Hết hàng") { bgColor = Color.FromArgb(250, 200, 200); textColor = Color.FromArgb(180, 0, 0); }
                 else { bgColor = Color.FromArgb(255, 230, 200); textColor = Color.FromArgb(180, 100, 0); }
                 
-                var size = TextRenderer.MeasureText(status, new Font("Segoe UI", 10, FontStyle.Bold));
+                Size size;
+                using (var font = new Font("Segoe UI", 10, FontStyle.Bold))
+                {
+                size = TextRenderer.MeasureText(status, font);
+                }
                 var rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - size.Width - 16) / 2, e.CellBounds.Y + (e.CellBounds.Height - size.Height - 8) / 2, size.Width + 16, size.Height + 8);
                 
                 using (var path = new GraphicsPath())
@@ -331,7 +343,10 @@ namespace BookStoreManagement.UserControls
                     using (var pen = new Pen(textColor, 1)) e.Graphics.DrawPath(pen, path);
                 }
                 
-                TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 10, FontStyle.Bold), rect, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                using (var font = new Font("Segoe UI", 10, FontStyle.Bold))
+                {
+                TextRenderer.DrawText(e.Graphics, status, font, rect, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
                 e.Handled = true;
             }
         }

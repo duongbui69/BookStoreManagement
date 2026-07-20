@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -197,6 +198,7 @@ namespace BookStoreManagement.UserControls
                 EnableHeadersVisualStyles = false,
                 Cursor = Cursors.Hand
             };
+            dgvReceipts.SetDoubleBuffered(true);
 
             // Columns
             dgvReceipts.Columns.Add("ReceiptCode", "MÃ PHIẾU");
@@ -360,9 +362,15 @@ namespace BookStoreManagement.UserControls
                 {
                     var rect = e.CellBounds;
                     rect.Y += 5;
-                    TextRenderer.DrawText(e.Graphics, item.CustomerName, new Font("Segoe UI", 10, FontStyle.Regular), rect, ThemeManager.TextPrimary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    using (var font = new Font("Segoe UI", 10, FontStyle.Regular))
+                    {
+                    TextRenderer.DrawText(e.Graphics, item.CustomerName, font, rect, ThemeManager.TextPrimary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    }
                     rect.Y += 20;
-                    TextRenderer.DrawText(e.Graphics, item.Reason, new Font("Segoe UI", 9, FontStyle.Regular), rect, ThemeManager.TextSecondary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    using (var font = new Font("Segoe UI", 9, FontStyle.Regular))
+                    {
+                    TextRenderer.DrawText(e.Graphics, item.Reason, font, rect, ThemeManager.TextSecondary, TextFormatFlags.Top | TextFormatFlags.HorizontalCenter);
+                    }
                 }
                 e.Handled = true;
             }
@@ -390,8 +398,14 @@ namespace BookStoreManagement.UserControls
                     Color editColor = hoverEdit ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
                     Color deleteColor = hoverDelete ? Color.FromArgb(231, 76, 60) : ThemeManager.TextSecondary;
 
-                    TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", 12), rectEdit, editColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                    TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", 12), rectDelete, deleteColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    using (var font = new Font("Segoe UI Emoji", 12))
+                    {
+                    TextRenderer.DrawText(e.Graphics, "✏️", font, rectEdit, editColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    }
+                    using (var font = new Font("Segoe UI Emoji", 12))
+                    {
+                    TextRenderer.DrawText(e.Graphics, "🗑️", font, rectDelete, deleteColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    }
                 }
                 
                 e.Handled = true;
@@ -533,4 +547,3 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-

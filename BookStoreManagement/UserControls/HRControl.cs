@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -144,6 +145,7 @@ namespace BookStoreManagement.UserControls
                 AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle(), // Keep same as default to avoid zebra striping
                 Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
             };
+            dgvEmployees.SetDoubleBuffered(true);
             
             // Define Columns
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
@@ -496,4 +498,3 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
-

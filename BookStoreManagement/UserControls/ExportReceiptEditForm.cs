@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -119,6 +120,7 @@ namespace BookStoreManagement.UserControls
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowTemplate = { Height = 40 }
             };
+            dgvDetails.SetDoubleBuffered(true);
             dgvDetails.Columns.Add("BookName", "SẢN PHẨM");
             dgvDetails.Columns.Add("Quantity", "SỐ LƯỢNG");
             dgvDetails.Columns.Add("Price", "ĐƠN GIÁ");

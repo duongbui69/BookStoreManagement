@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -135,6 +136,7 @@ namespace BookStoreManagement.UserControls
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ScrollBars = ScrollBars.Both
             };
+            dgvOrders.SetDoubleBuffered(true);
             dgvOrders.RowTemplate.Height = 50;
             dgvOrders.ColumnHeadersHeight = 45;
 
@@ -400,7 +402,10 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, initial, new Font("Segoe UI", 8F, FontStyle.Bold), new Rectangle(x, y, circleSize, circleSize), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 8F, FontStyle.Bold))
+                    {
+                    TextRenderer.DrawText(e.Graphics, initial, font, new Rectangle(x, y, circleSize, circleSize), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                 }
 
                 Rectangle textRect = new Rectangle(e.CellBounds.Left + 45, e.CellBounds.Top, e.CellBounds.Width - 45, e.CellBounds.Height);
@@ -502,7 +507,10 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                    {
+                    TextRenderer.DrawText(e.Graphics, status, font, e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                 }
                 e.Handled = true;
             }

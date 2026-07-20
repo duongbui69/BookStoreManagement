@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -125,6 +126,7 @@ namespace BookStoreManagement.UserControls
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ScrollBars = ScrollBars.Both
             };
+            dgvInvoices.SetDoubleBuffered(true);
             dgvInvoices.RowTemplate.Height = 50;
             dgvInvoices.ColumnHeadersHeight = 45;
 
@@ -285,14 +287,20 @@ namespace BookStoreManagement.UserControls
             if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["OrderCode"].Index && e.Value != null)
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Segoe UI", 9.5F, FontStyle.Bold), e.CellBounds, ThemeManager.ButtonFill, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                using (var font = new Font("Segoe UI", 9.5F, FontStyle.Bold))
+                {
+                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), font, e.CellBounds, ThemeManager.ButtonFill, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["TotalAmount"].Index && e.Value != null)
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 Rectangle textRect = new Rectangle(e.CellBounds.Left, e.CellBounds.Top, e.CellBounds.Width - 15, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), new Font("Segoe UI", 9.5F, FontStyle.Bold), textRect, ThemeManager.ButtonFill, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
+                using (var font = new Font("Segoe UI", 9.5F, FontStyle.Bold))
+                {
+                TextRenderer.DrawText(e.Graphics, e.Value.ToString(), font, textRect, ThemeManager.ButtonFill, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
+                }
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["SubTotal"].Index && e.Value != null)
@@ -373,7 +381,10 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 8.5F, FontStyle.Bold), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                    {
+                    TextRenderer.DrawText(e.Graphics, status, font, e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                 }
                 e.Handled = true;
             }

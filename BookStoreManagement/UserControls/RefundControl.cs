@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -218,6 +219,7 @@ namespace BookStoreManagement.UserControls
                 RowTemplate = { Height = 50 },
                 AllowUserToResizeRows = false
             };
+            dgvRefunds.SetDoubleBuffered(true);
             
             SetupColumns();
             
@@ -520,7 +522,10 @@ namespace BookStoreManagement.UserControls
                     e.Graphics.FillRectangle(bgBrush, badgeRect);
                 }
 
-                TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 9F, FontStyle.Bold), badgeRect, txtColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                using (var font = new Font("Segoe UI", 9F, FontStyle.Bold))
+                {
+                TextRenderer.DrawText(e.Graphics, status, font, badgeRect, txtColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
@@ -593,4 +598,3 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-

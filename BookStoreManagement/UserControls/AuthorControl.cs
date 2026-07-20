@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -121,6 +122,7 @@ namespace BookStoreManagement.UserControls
                 RowTemplate = { Height = 48 },
                 ScrollBars = ScrollBars.Vertical
             };
+            dgvData.SetDoubleBuffered(true);
             dgvData.CellPainting += DgvData_CellPainting;
             dgvData.CellMouseMove += DgvData_CellMouseMove;
             dgvData.CellMouseLeave += DgvData_CellMouseLeave;
@@ -351,7 +353,10 @@ namespace BookStoreManagement.UserControls
                         }
                     }
 
-                    TextRenderer.DrawText(e.Graphics, text.ToUpper(), new Font("Segoe UI", 8, FontStyle.Bold), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 8, FontStyle.Bold))
+                    {
+                    TextRenderer.DrawText(e.Graphics, text.ToUpper(), font, e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                     e.Handled = true;
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
@@ -485,4 +490,3 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-

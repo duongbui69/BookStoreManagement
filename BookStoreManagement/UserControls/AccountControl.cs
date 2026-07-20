@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -117,6 +118,7 @@ namespace BookStoreManagement.UserControls
                 ColumnHeadersHeight = 45,
                 Cursor = Cursors.Hand
             };
+            dgvAccounts.SetDoubleBuffered(true);
 
             // Set up columns
             dgvAccounts.Columns.Add("Id", "Id");

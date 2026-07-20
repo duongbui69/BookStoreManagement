@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -205,6 +206,7 @@ namespace BookStoreManagement.UserControls
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 RowTemplate = { Height = 45 }
             };
+            dgvData.SetDoubleBuffered(true);
             dgvData.CellPainting += DgvData_CellPainting;
             dgvData.CellClick += DgvData_CellClick;
             dgvData.CellMouseEnter += DgvData_CellMouseEnter;
@@ -476,7 +478,10 @@ namespace BookStoreManagement.UserControls
                         }
                     }
 
-                    TextRenderer.DrawText(e.Graphics, text, new Font("Segoe UI", 9, FontStyle.Regular), e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 9, FontStyle.Regular))
+                    {
+                    TextRenderer.DrawText(e.Graphics, text, font, e.CellBounds, fgColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                     e.Handled = true;
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
@@ -683,5 +688,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
-
 

@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -144,6 +145,7 @@ namespace BookStoreManagement.UserControls
                 AlternatingRowsDefaultCellStyle = { BackColor = Color.Empty }, // Disable alternating colors
                 GridColor = Color.LightGray // Outline variant
             };
+            dgvBooks.SetDoubleBuffered(true);
             
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 50 });
@@ -493,5 +495,4 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
-
 

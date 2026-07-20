@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -149,6 +150,7 @@ namespace BookStoreManagement.UserControls
                 BorderStyle = BorderStyle.None,
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
             };
+            dgvProducts.SetDoubleBuffered(true);
             
             dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCode", HeaderText = "Book Code", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
@@ -426,7 +428,11 @@ namespace BookStoreManagement.UserControls
                 float y = bottomY - ((float)sortedMonths[i].Value / maxVal * chartHeight);
                 points[i] = new PointF(x, y);
 
-                g.DrawString($"Tháng {sortedMonths[i].Key}", new Font("Segoe UI", 8F), new SolidBrush(ThemeManager.TextSecondary), new PointF(x - 15, bottomY + 10));
+                using (var font = new Font("Segoe UI", 8F))
+                using (var brush = new SolidBrush(ThemeManager.TextSecondary))
+                {
+                    g.DrawString($"Tháng {sortedMonths[i].Key}", font, brush, new PointF(x - 15, bottomY + 10));
+                }
             }
 
             using (var path = new GraphicsPath())
@@ -520,5 +526,4 @@ namespace BookStoreManagement.UserControls
         }
 }
 }
-
 

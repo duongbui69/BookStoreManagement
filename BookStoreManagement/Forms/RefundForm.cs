@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -125,6 +126,7 @@ namespace BookStoreManagement.Forms
                 BorderStyle = BorderStyle.FixedSingle,
                 RowTemplate = { Height = 40 }
             };
+            dgvDetails.SetDoubleBuffered(true);
 
             if (_refundId == 0)
             {
@@ -420,4 +422,3 @@ namespace BookStoreManagement.Forms
         }
     }
 }
-

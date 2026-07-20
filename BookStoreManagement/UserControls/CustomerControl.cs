@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -109,6 +110,7 @@ namespace BookStoreManagement.UserControls
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ScrollBars = ScrollBars.Both // Allow inner scroll
             };
+            dgvCustomers.SetDoubleBuffered(true);
             dgvCustomers.RowTemplate.Height = 50;
             dgvCustomers.ColumnHeadersHeight = 45;
 
@@ -375,7 +377,10 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.FillPath(brush, path);
                     }
                     
-                    TextRenderer.DrawText(e.Graphics, status, new Font("Segoe UI", 9F, FontStyle.Regular), e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var font = new Font("Segoe UI", 9F, FontStyle.Regular))
+                    {
+                    TextRenderer.DrawText(e.Graphics, status, font, e.CellBounds, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    }
                 }
                 e.Handled = true;
             }

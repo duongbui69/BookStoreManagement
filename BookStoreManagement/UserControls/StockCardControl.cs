@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Services;
@@ -213,6 +214,7 @@ namespace BookStoreManagement.UserControls
                 EnableHeadersVisualStyles = false,
                 ScrollBars = ScrollBars.Both // enable horizontal and vertical scrollbars
             };
+            dgvTransactions.SetDoubleBuffered(true);
 
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Ngày", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
@@ -341,8 +343,14 @@ namespace BookStoreManagement.UserControls
                 int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
                 int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
 
-                TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", editFontSize), editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", delFontSize), delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                using (var font = new Font("Segoe UI Emoji", editFontSize))
+                {
+                TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
+                using (var font = new Font("Segoe UI Emoji", delFontSize))
+                {
+                    TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
                 
                 using (var pen = new Pen(Color.LightGray))
                 {

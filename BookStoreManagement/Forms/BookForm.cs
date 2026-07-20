@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -145,7 +145,11 @@ namespace BookStoreManagement.Forms
             
             _imagePath = BookModel.ImagePath;
             if (!string.IsNullOrEmpty(_imagePath) && File.Exists(_imagePath)) {
-                pbImage.Image = Image.FromFile(_imagePath);
+                using (var fs = new System.IO.FileStream(_imagePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                {
+                    var temp = Image.FromStream(fs);
+                    pbImage.Image = new Bitmap(temp);
+                }
             }
         }
 
@@ -154,7 +158,11 @@ namespace BookStoreManagement.Forms
             using (OpenFileDialog ofd = new OpenFileDialog()) {
                 ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png";
                 if (ofd.ShowDialog() == DialogResult.OK) {
-                    pbImage.Image = Image.FromFile(ofd.FileName);
+                    using (var fs = new System.IO.FileStream(ofd.FileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    {
+                        var temp = Image.FromStream(fs);
+                        pbImage.Image = new Bitmap(temp);
+                    }
                     
                     // Copy to Images folder
                     string imgDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");

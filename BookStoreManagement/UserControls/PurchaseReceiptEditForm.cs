@@ -1,3 +1,4 @@
+using BookStoreManagement.Helpers;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -68,6 +69,7 @@ namespace BookStoreManagement.UserControls
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 BorderStyle = BorderStyle.None
             };
+            dgvDetails.SetDoubleBuffered(true);
             dgvDetails.Columns.Add("BookName", "Tên sách");
             dgvDetails.Columns.Add("Quantity", "Số lượng");
             dgvDetails.Columns.Add("ImportPrice", "Giá nhập");

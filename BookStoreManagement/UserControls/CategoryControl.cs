@@ -1,3 +1,4 @@
+using BookStoreManagement.Helpers;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -122,6 +123,7 @@ namespace BookStoreManagement.UserControls
                 AutoGenerateColumns = false,
                 AlternatingRowsDefaultCellStyle = { BackColor = Color.Empty }, 
             };
+            dgvCategories.SetDoubleBuffered(true);
             
             dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 50 });
@@ -231,8 +233,14 @@ namespace BookStoreManagement.UserControls
                 var editRect = new Rectangle(e.CellBounds.Left + 20, e.CellBounds.Top + (e.CellBounds.Height - 20) / 2, 20, 20);
                 var deleteRect = new Rectangle(editRect.Right + 10, editRect.Top, 20, 20);
                 
-                TextRenderer.DrawText(e.Graphics, "✏️", new Font("Segoe UI Emoji", 12), editRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                TextRenderer.DrawText(e.Graphics, "🗑️", new Font("Segoe UI Emoji", 12), deleteRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                using (var font = new Font("Segoe UI Emoji", 12))
+                {
+                TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
+                using (var font = new Font("Segoe UI Emoji", 12))
+                {
+                TextRenderer.DrawText(e.Graphics, "🗑️", font, deleteRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                }
                 
                 e.Handled = true;
             }

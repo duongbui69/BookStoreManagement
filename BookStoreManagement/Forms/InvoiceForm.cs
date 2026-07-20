@@ -1,4 +1,5 @@
-﻿using System;
+using BookStoreManagement.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -167,6 +168,7 @@ namespace BookStoreManagement.Forms
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 GridColor = ThemeManager.TextBoxBorder
             };
+            dgvProducts.SetDoubleBuffered(true);
             dgvProducts.RowTemplate.Height = 40;
             dgvProducts.ColumnHeadersHeight = 40;
 
@@ -358,4 +360,3 @@ namespace BookStoreManagement.Forms
         }
     }
 }
-

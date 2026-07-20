@@ -62,7 +62,11 @@ namespace BookStoreManagement.Forms
                     string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Covers", _bookVm.ImagePath);
                     if (File.Exists(imagePath))
                     {
-                        picCover.Image = Image.FromFile(imagePath);
+                        using (var fs = new System.IO.FileStream(imagePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                        {
+                            var temp = Image.FromStream(fs);
+                            picCover.Image = new Bitmap(temp);
+                        }
                     }
                 }
             }
