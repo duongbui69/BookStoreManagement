@@ -43,6 +43,7 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlCustomer;
         private Guna2HtmlLabel lblCustomerTitle;
         private Guna2HtmlLabel lblCustomerValue;
+        private Guna2Panel pnlGridHeader;
         private Guna2Panel pnlCashier;
         private Guna2HtmlLabel lblCashierTitle;
         private Guna2HtmlLabel lblCashierValue;
@@ -305,7 +306,7 @@ namespace BookStoreManagement.UserControls
             pnlContent.Controls.Add(pnlGrid);
             pnlGrid.BringToFront(); // To be above bento box in Z-order for fill
 
-            Guna2Panel pnlGridHeader = new Guna2Panel
+            pnlGridHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
                 Height = 48,
@@ -510,8 +511,8 @@ namespace BookStoreManagement.UserControls
 
             pnlGrid.FillColor = ThemeManager.CardBackground;
             pnlGrid.BorderColor = ThemeManager.TextBoxBorder;
-            pnlGrid.Controls[0].BackColor = ThemeManager.CardBackground; // Header
-            ((Guna2Panel)pnlGrid.Controls[0]).CustomBorderColor = ThemeManager.TextBoxBorder;
+            pnlGridHeader.BackColor = ThemeManager.CardBackground;
+            pnlGridHeader.CustomBorderColor = ThemeManager.TextBoxBorder;
             lblGridTitle.ForeColor = ThemeManager.TextPrimary;
             lblGridSummary.ForeColor = ThemeManager.TextSecondary;
 
