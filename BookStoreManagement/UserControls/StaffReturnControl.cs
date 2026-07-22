@@ -640,7 +640,7 @@ namespace BookStoreManagement.UserControls
                     int rowIndex = dgvItems.Rows.Add(
                         stt++,
                         $"{detail.Title}\nCode: {detail.BookCode}",
-                        detail.UnitPrice.ToString("N0"),
+                        detail.UnitPrice.ToString("N0") + " ₫",
                         detail.Quantity,
                         0, // Default return qty is 0
                         "Khách đổi ý", // Default reason
@@ -728,7 +728,7 @@ namespace BookStoreManagement.UserControls
                 if (detail != null && int.TryParse(row.Cells["ReturnQty"].Value?.ToString(), out int returnQty))
                 {
                     decimal refundAmt = returnQty * detail.UnitPrice;
-                    row.Cells["RefundAmount"].Value = refundAmt.ToString("N0");
+                    row.Cells["RefundAmount"].Value = refundAmt.ToString("N0") + " ₫";
                     
                     if (returnQty > 0)
                         row.Cells["RefundAmount"].Style.ForeColor = Color.Firebrick;

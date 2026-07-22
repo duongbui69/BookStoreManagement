@@ -47,7 +47,8 @@ namespace BookStoreManagement.UserControls
         private DataGridView dgvReceipts;
         private PaginationControl pagination;
         private int _currentPage = 1;
-        private const int PageSize = 5;
+        private int PageSize = 10;
+        private bool _isCalculatingPageSize = false;
 
         private int _hoveredRowIndex = -1;
         private int _hoveredColIndex = -1;
@@ -246,6 +247,8 @@ namespace BookStoreManagement.UserControls
             };
             pagination.PageChanged += (s, e) => { _currentPage = e.NewPage; DisplayPage(); };
 
+            dgvReceipts.Resize += DgvReceipts_Resize;
+
             pnlGridContainer.Controls.Add(dgvReceipts);
 
             this.Controls.Add(pnlGridContainer);
@@ -303,7 +306,7 @@ namespace BookStoreManagement.UserControls
         {
             var stats = _receiptService.GetStats();
             lblTotalReceiptsValue.Text = stats.TotalReceipts.ToString("N0");
-            lblTotalValueAmount.Text = stats.TotalValue.ToString("N0");
+            lblTotalValueAmount.Text = stats.TotalValue.ToString("N0") + " ₫";
             lblPendingValue.Text = stats.PendingCount.ToString("N0");
 
             _allReceipts = _receiptService.GetAll();
@@ -334,9 +337,34 @@ namespace BookStoreManagement.UserControls
             _filteredReceipts = filtered.ToList();
             _currentPage = 1;
             
+            CalculatePageSize();
+        }
+
+        private void DgvReceipts_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            CalculatePageSize();
+        }
+
+        private void CalculatePageSize()
+        {
+            if (dgvReceipts.Height == 0) return;
+            _isCalculatingPageSize = true;
+
+            int availableHeight = dgvReceipts.Height - dgvReceipts.ColumnHeadersHeight;
+            int newPageSize = availableHeight / dgvReceipts.RowTemplate.Height;
+            if (newPageSize < 1) newPageSize = 1;
+
+            if (PageSize != newPageSize)
+            {
+                PageSize = newPageSize;
+                _currentPage = 1;
+            }
+
             pagination.UpdatePagination(_filteredReceipts.Count, _currentPage, PageSize);
-            
             DisplayPage();
+
+            _isCalculatingPageSize = false;
         }
 
         private void DisplayPage()
@@ -351,7 +379,7 @@ namespace BookStoreManagement.UserControls
                     item.ReceiptCode,
                     item.SupplierName,
                     item.ImportDate.ToString("dd/MM/yyyy HH:mm"),
-                    item.TotalAmount.ToString("N0"),
+                    item.TotalAmount.ToString("N0") + " ₫",
                     item.Status,
                     ""
                 );

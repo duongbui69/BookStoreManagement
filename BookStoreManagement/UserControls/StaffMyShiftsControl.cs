@@ -355,7 +355,7 @@ namespace BookStoreManagement.UserControls
                     _currentRevenue = orders.Sum(x => x.TotalAmount);
                     _currentOrders = orders.Count;
 
-                    lblRevenue.Text = _currentRevenue.ToString("N0") + " đ";
+                    lblRevenue.Text = _currentRevenue.ToString("N0") + " ₫";
                     lblOrders.Text = _currentOrders.ToString();
 
                     _timer.Start();
@@ -453,7 +453,7 @@ namespace BookStoreManagement.UserControls
                     item.StartTime.ToString("dd/MM/yyyy"),
                     item.ShiftName,
                     timeStr,
-                    item.Revenue.ToString("N0"),
+                    item.Revenue.ToString("N0") + " ₫",
                     item.Status == "Closed" ? "Đã chốt" : "Đang mở",
                     "Chi tiết"
                 );

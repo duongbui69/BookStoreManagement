@@ -54,7 +54,8 @@ namespace BookStoreManagement.UserControls
         private List<ReturnReceiptListViewModel> _filteredRefunds;
 
         private int _currentPage = 1;
-        private int _pageSize = 5; // Yêu cầu chỉ hiển thị 5 sản phẩm/phiếu
+        private int _pageSize = 10;
+        private bool _isCalculatingPageSize = false;
 
         private string _searchKeyword = "";
         
@@ -241,6 +242,8 @@ namespace BookStoreManagement.UserControls
             this.Controls.Add(pnlGridContainer);
             this.Controls.Add(pnlStatsGrid);
             this.Controls.Add(pnlHeader);
+
+            dgvRefunds.Resize += DgvRefunds_Resize;
         }
 
         private Panel CreateStatPanel(string title, out Label lblValue, string icon)
@@ -401,6 +404,27 @@ namespace BookStoreManagement.UserControls
             lblTotalValue.Text = total.ToString("N0");
             lblPendingValue.Text = pending.ToString("N0");
             lblCompletedValue.Text = completed.ToString("N0");
+        }
+
+        private void DgvRefunds_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            _isCalculatingPageSize = true;
+            
+            if (dgvRefunds.Height > 0)
+            {
+                int availableHeight = dgvRefunds.Height - dgvRefunds.ColumnHeadersHeight;
+                int newPageSize = availableHeight / dgvRefunds.RowTemplate.Height;
+                if (newPageSize < 1) newPageSize = 1;
+
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    UpdateGrid();
+                }
+            }
+            _isCalculatingPageSize = false;
         }
 
         private void UpdateGrid()

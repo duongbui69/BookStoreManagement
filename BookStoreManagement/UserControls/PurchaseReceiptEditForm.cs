@@ -122,7 +122,7 @@ namespace BookStoreManagement.UserControls
             {
                 var book = _bookService.GetById(item.BookId);
                 string bookName = book != null ? book.Title : $"Sách ID {item.BookId}";
-                dgvDetails.Rows.Add(bookName, item.Quantity, item.ImportPrice.ToString("N0"), item.LineTotal.ToString("N0"));
+                dgvDetails.Rows.Add(bookName, item.Quantity, item.ImportPrice.ToString("N0") + " ₫", item.LineTotal.ToString("N0") + " ₫");
             }
         }
 

@@ -67,7 +67,7 @@ namespace BookStoreManagement.Forms
 
             lblRevenue = new Guna2HtmlLabel
             {
-                Text = $"Doanh số thực tế: <span style='font-weight:bold;color:#00ba61;'>{currentRevenue.ToString("N0")} đ</span>",
+                Text = $"Doanh số thực tế: <span style='font-weight:bold;color:#00ba61;'>{currentRevenue.ToString("N0")} ₫</span>",
                 Font = new Font("Inter", 10F),
                 Location = new Point(24, 95),
                 UseGdiPlusTextRendering = true

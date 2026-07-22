@@ -339,8 +339,8 @@ namespace BookStoreManagement.UserControls
             decimal bankTransfer = _allItems.Where(x => x.PaymentMethod == AppConstants.PaymentMethods.Banking).Sum(x => x.TotalAmount);
 
             cardTotal.SetValue(totalInvoices.ToString("N0"));
-            cardRevenue.SetValue(shiftRevenue.ToString("N0") + " đ");
-            cardTransfer.SetValue(bankTransfer.ToString("N0") + " đ");
+            cardRevenue.SetValue(shiftRevenue.ToString("N0") + " ₫");
+            cardTransfer.SetValue(bankTransfer.ToString("N0") + " ₫");
         }
 
         private void RenderCurrentPage()
@@ -365,7 +365,7 @@ namespace BookStoreManagement.UserControls
                     item.OrderCode,
                     timeStr,
                     item.CustomerName ?? "Khách lẻ",
-                    item.TotalAmount.ToString("N0") + " đ",
+                    item.TotalAmount.ToString("N0") + " ₫",
                     paymentStr,
                     "Chi tiết"
                 );

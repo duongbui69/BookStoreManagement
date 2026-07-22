@@ -31,7 +31,8 @@ namespace BookStoreManagement.UserControls
         private PaginationControl pagination;
 
         private int _currentPage = 1;
-        private int _pageSize = 5;
+        private int _pageSize = 10;
+        private bool _isCalculatingPageSize = false;
         private string _currentSearchTerm = "";
         
         private int _hoveredRowIndex = -1;
@@ -49,6 +50,27 @@ namespace BookStoreManagement.UserControls
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += InvoiceControl_Load;
+        }
+
+        private void DgvInvoices_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            _isCalculatingPageSize = true;
+            
+            if (dgvInvoices.Height > 0)
+            {
+                int availableHeight = dgvInvoices.Height - dgvInvoices.ColumnHeadersHeight;
+                int newPageSize = availableHeight / dgvInvoices.RowTemplate.Height;
+                if (newPageSize < 1) newPageSize = 1;
+
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    _ = LoadDataAsync();
+                }
+            }
+            _isCalculatingPageSize = false;
         }
 
         private void InitializeUI()
@@ -161,8 +183,10 @@ namespace BookStoreManagement.UserControls
             dgvInvoices.CellClick += DgvInvoices_CellClick;
             
             // 3. Pagination
-            pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
+            pagination = new PaginationControl { Dock = DockStyle.Bottom };
             pagination.PageChanged += async (s, args) => { _currentPage = args.NewPage; await LoadDataAsync(); };
+
+            dgvInvoices.Resize += DgvInvoices_Resize;
 
             pnlGridContainer.Controls.Add(dgvInvoices);
             

@@ -52,7 +52,8 @@ namespace BookStoreManagement.UserControls
         private PaginationControl paginationControl;
         
         private int _currentPage = 1;
-        private int _pageSize = 5;
+        private int _pageSize = 10;
+        private bool _isCalculatingPageSize = false;
         private string _currentSearchTerm = "";
         
         private int _hoveredRowIndex = -1;
@@ -185,6 +186,8 @@ namespace BookStoreManagement.UserControls
             paginationControl.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
             pnlGridContainer.Controls.Add(paginationControl);
             
+            dgvInventory.Resize += DgvInventory_Resize;
+
             // Assemble layout
             pnlContent.Controls.Add(pnlGridContainer);
             pnlContent.Controls.Add(pnlToolbar);
@@ -231,6 +234,27 @@ namespace BookStoreManagement.UserControls
             {
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
+        }
+
+        private void DgvInventory_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            _isCalculatingPageSize = true;
+            
+            if (dgvInventory.Height > 0)
+            {
+                int availableHeight = dgvInventory.Height - dgvInventory.ColumnHeadersHeight;
+                int newPageSize = availableHeight / dgvInventory.RowTemplate.Height;
+                if (newPageSize < 1) newPageSize = 1;
+
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    LoadData();
+                }
+            }
+            _isCalculatingPageSize = false;
         }
 
         private void LoadData()

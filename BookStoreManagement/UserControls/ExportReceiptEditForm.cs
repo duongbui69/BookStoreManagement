@@ -187,8 +187,8 @@ namespace BookStoreManagement.UserControls
                 dgvDetails.Rows.Add(
                     bookName,
                     d.Quantity,
-                    d.Price.ToString("N0") + " đ",
-                    d.LineTotal.ToString("N0") + " đ"
+                    d.Price.ToString("N0") + " ₫",
+                    d.LineTotal.ToString("N0") + " ₫"
                 );
             }
         }

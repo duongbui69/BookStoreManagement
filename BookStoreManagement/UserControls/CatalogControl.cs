@@ -37,7 +37,8 @@ namespace BookStoreManagement.UserControls
         private PaginationControl paginationControl;
         
         private int _currentPage = 1;
-        private int _pageSize = 5; 
+        private int _pageSize = 10;
+        private bool _isCalculatingPageSize = false;
         private string _stockFilter = "";
         private int? _categoryFilter = null;
         private string _currentSearchTerm = "";
@@ -60,6 +61,27 @@ namespace BookStoreManagement.UserControls
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += CatalogControl_Load;
+        }
+
+        private void DgvBooks_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            _isCalculatingPageSize = true;
+            
+            if (dgvBooks.Height > 0)
+            {
+                int availableHeight = dgvBooks.Height - dgvBooks.ColumnHeadersHeight;
+                int newPageSize = availableHeight / dgvBooks.RowTemplate.Height;
+                if (newPageSize < 1) newPageSize = 1;
+
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    _ = LoadDataAsync();
+                }
+            }
+            _isCalculatingPageSize = false;
         }
 
         private void InitializeUI()
@@ -164,6 +186,7 @@ namespace BookStoreManagement.UserControls
             dgvBooks.CellFormatting += DgvBooks_CellFormatting;
             dgvBooks.CellMouseMove += DgvBooks_CellMouseMove;
             dgvBooks.CellMouseLeave += DgvBooks_CellMouseLeave;
+            dgvBooks.Resize += DgvBooks_Resize;
             pnlGridContainer.Controls.Add(dgvBooks);
 
             paginationControl = new PaginationControl { Dock = DockStyle.Bottom };

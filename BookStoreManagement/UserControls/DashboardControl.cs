@@ -220,8 +220,8 @@ namespace BookStoreManagement.UserControls
         {
             currentStats = _dashboardService.GetStats();
             
-            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.TotalRevenue:N0}";
-            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.NetProfit:N0}";
+            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.TotalRevenue:N0} ₫";
+            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.NetProfit:N0} ₫";
             foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
             foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
             
@@ -235,8 +235,8 @@ namespace BookStoreManagement.UserControls
         {
             currentStats = await _dashboardService.GetStatsAsync();
             
-            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.TotalRevenue:N0}";
-            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"${currentStats.NetProfit:N0}";
+            foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.TotalRevenue:N0} ₫";
+            foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.NetProfit:N0} ₫";
             foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
             foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
             

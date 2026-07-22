@@ -21,6 +21,7 @@ namespace BookStoreManagement.ViewModels
         public decimal SellingPrice { get; set; }
         public string StockStatus { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public string? ShelfLocation { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

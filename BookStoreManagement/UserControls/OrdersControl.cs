@@ -36,7 +36,8 @@ namespace BookStoreManagement.UserControls
         private PaginationControl pagination;
 
         private int _currentPage = 1;
-        private int _pageSize = 5;
+        private int _pageSize = 10;
+        private bool _isCalculatingPageSize = false;
         private string _currentSearchTerm = "";
         
         private int _hoveredRowIndex = -1;
@@ -179,6 +180,8 @@ namespace BookStoreManagement.UserControls
             dgvOrders.CurrentCellDirtyStateChanged += DgvOrders_CurrentCellDirtyStateChanged;
             dgvOrders.CellValueChanged += DgvOrders_CellValueChanged;
             
+            dgvOrders.Resize += DgvOrders_Resize;
+            
             // 4. Pagination
             pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
             pagination.PageChanged += async (s, args) => { _currentPage = args.NewPage; await LoadDataAsync(); };
@@ -192,6 +195,27 @@ namespace BookStoreManagement.UserControls
 
             this.Controls.Add(pnlContent);
             ApplyTheme();
+        }
+
+        private void DgvOrders_Resize(object sender, EventArgs e)
+        {
+            if (_isCalculatingPageSize) return;
+            _isCalculatingPageSize = true;
+            
+            if (dgvOrders.Height > 0)
+            {
+                int availableHeight = dgvOrders.Height - dgvOrders.ColumnHeadersHeight;
+                int newPageSize = availableHeight / dgvOrders.RowTemplate.Height;
+                if (newPageSize < 1) newPageSize = 1;
+
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    _ = LoadDataAsync();
+                }
+            }
+            _isCalculatingPageSize = false;
         }
 
         private async void OrdersControl_Load(object? sender, EventArgs e)
@@ -276,7 +300,7 @@ namespace BookStoreManagement.UserControls
                         ord.OrderCode,
                         ord.OrderDate.ToString("dd/MM/yyyy HH:mm"),
                         string.IsNullOrEmpty(ord.CustomerName) ? "Khách vãng lai" : ord.CustomerName,
-                        ord.TotalAmount.ToString("N0"),
+                        ord.TotalAmount.ToString("N0") + " ₫",
                         ord.PaymentMethod,
                         ord.OrderStatus,
                         ""
