@@ -20,7 +20,7 @@ namespace BookStoreManagement.Services
 
         public Shift? GetActiveShift()
         {
-            return _shiftRepository.GetActiveShift(CurrentSession.UserId, CurrentSession.StoreId ?? 0);
+            return _shiftRepository.GetActiveShift(CurrentSession.UserId, CurrentSession.StoreId ?? 1);
         }
 
         public void OpenShift(string shiftName, decimal initialCash)
@@ -34,7 +34,7 @@ namespace BookStoreManagement.Services
             var shift = new Shift
             {
                 StaffId = CurrentSession.UserId,
-                StoreId = CurrentSession.StoreId ?? 0,
+                StoreId = CurrentSession.StoreId ?? 1, // Default to store 1 if user doesn't have a specific store
                 ShiftName = shiftName,
                 StartTime = DateTime.Now,
                 InitialCash = initialCash
@@ -72,7 +72,7 @@ namespace BookStoreManagement.Services
 
         public List<ShiftViewModel> GetShiftHistory()
         {
-            return _shiftRepository.GetShiftHistory(CurrentSession.UserId, CurrentSession.StoreId ?? 0);
+            return _shiftRepository.GetShiftHistory(CurrentSession.UserId, CurrentSession.StoreId ?? 1);
         }
     }
 }
