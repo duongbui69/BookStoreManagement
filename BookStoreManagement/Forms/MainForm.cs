@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
 using BookStoreManagement.Interfaces;
+using BookStoreManagement.Helpers;
 
 namespace BookStoreManagement.Forms
 {
@@ -33,8 +34,16 @@ namespace BookStoreManagement.Forms
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             ApplyTheme();
 
-            // Load Dashboard by default
-            LoadDashboard();
+            // Load Dashboard by default for Admin, POS for Staff
+            if (CurrentSession.IsStaff)
+            {
+                SetActiveTab(btnOrders); // or btnOrders/btnPOS if defined
+                BtnPOS_Click(this, EventArgs.Empty);
+            }
+            else
+            {
+                LoadDashboard();
+            }
         }
 
         private void LoadControl(Control newControl, string placeholder)
@@ -53,7 +62,14 @@ namespace BookStoreManagement.Forms
 
         private void BtnInventory_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.InventoryControl(), "Search by ISBN, title or SKU...");
+            if (CurrentSession.IsAdmin)
+            {
+                LoadControl(new UserControls.InventoryControl(), "Search by ISBN, title or SKU...");
+            }
+            else
+            {
+                LoadControl(new UserControls.StaffInventoryControl(), "Tra cứu tồn kho");
+            }
         }
 
         private void BtnStockCard_Click(object sender, EventArgs e)
@@ -97,7 +113,37 @@ namespace BookStoreManagement.Forms
         private void BtnRefunds_Click(object sender, EventArgs e)
         {
             SetActiveTab(btnOrders); // reuse group tab
-            LoadControl(new UserControls.RefundControl(), "Search return receipts...");
+            if (CurrentSession.IsAdmin)
+            {
+                LoadControl(new UserControls.RefundControl(), "Search return receipts...");
+            }
+            else
+            {
+                LoadControl(new UserControls.StaffReturnControl(), "Xử lý Trả hàng");
+            }
+        }
+
+        private void BtnPOS_Click(object sender, EventArgs e)
+        {
+            // SetActiveTab or handling
+            LoadControl(new UserControls.POSControl(), "Tìm kiếm theo mã vạch, tên sách, tác giả...");
+        }
+
+        private void BtnMyInvoices_Click(object sender, EventArgs e)
+        {
+            if (CurrentSession.IsAdmin)
+            {
+                LoadControl(new UserControls.InvoiceControl(), "Search my invoices...");
+            }
+            else
+            {
+                LoadControl(new UserControls.StaffMyInvoicesControl(), "Lịch sử hoá đơn");
+            }
+        }
+
+        private void BtnMyShifts_Click(object sender, EventArgs e)
+        {
+            LoadControl(new UserControls.StaffMyShiftsControl(), "Ca làm việc của tôi");
         }
 
         private void BtnCustomer_Click(object sender, EventArgs e)
@@ -260,31 +306,28 @@ namespace BookStoreManagement.Forms
             panelSidebar.Controls.Add(navPanel);
             navPanel.BringToFront(); // Dock between pnlBrand and panelUserProfile
 
-            AddMenu("Tổng quan", "dashboard", BtnDashboard_Click);
-
-            var catalogSub = new Dictionary<string, EventHandler>
+            if (_currentUser.RoleId == 1)
             {
-                { "Sách", BtnCatalog_Click },
-                { "Danh mục sách", BtnCategory_Click }
-            };
-            AddAccordionMenu("Quản lý sách", "menu_book", catalogSub);
+                // Admin Menu
+                AddMenu("Tổng quan", "dashboard", BtnDashboard_Click);
 
-            var inventorySub = new Dictionary<string, EventHandler>
-            {
-                { "Thẻ kho", BtnStockCard_Click }
-            };
-            if (_currentUser.RoleId == 1) // Admin only
-            {
-                inventorySub.Add("Nhập kho", BtnPurchaseReceipts_Click);
-                inventorySub.Add("Xuất kho", BtnExportReceipts_Click);
-                inventorySub.Add("Loại phiếu", BtnVoucherTypes_Click);
-            }
-            inventorySub.Add("Thống kê hàng tồn kho", BtnInventory_Click);
+                var catalogSub = new Dictionary<string, EventHandler>
+                {
+                    { "Sách", BtnCatalog_Click },
+                    { "Danh mục sách", BtnCategory_Click }
+                };
+                AddAccordionMenu("Quản lý sách", "menu_book", catalogSub);
 
-            AddAccordionMenu("Quản lý kho", "inventory_2", inventorySub);
+                var inventorySub = new Dictionary<string, EventHandler>
+                {
+                    { "Thẻ kho", BtnStockCard_Click },
+                    { "Nhập kho", BtnPurchaseReceipts_Click },
+                    { "Xuất kho", BtnExportReceipts_Click },
+                    { "Loại phiếu", BtnVoucherTypes_Click },
+                    { "Thống kê hàng tồn kho", BtnInventory_Click }
+                };
+                AddAccordionMenu("Quản lý kho", "inventory_2", inventorySub);
 
-            if (_currentUser.RoleId == 1) // Admin only
-            {
                 var hrSub = new Dictionary<string, EventHandler>
                 {
                     { "Quản lý nhân viên", BtnHR_Click },
@@ -292,19 +335,16 @@ namespace BookStoreManagement.Forms
                     { "Quản lý các cửa hàng", BtnStores_Click }
                 };
                 AddAccordionMenu("Quản lý nhân sự", "group", hrSub);
-            }
 
-            var customerSub = new Dictionary<string, EventHandler>
-            {
-                { "Quản lý khách hàng", BtnCustomer_Click },
-                { "Quản lý đơn hàng", BtnOrders_Click },
-                { "Quản lý hoá đơn", BtnInvoices_Click },
-                { "Quản lý hoàn tiền", BtnRefunds_Click }
-            };
-            AddAccordionMenu("Quản lý khách hàng", "groups", customerSub);
+                var customerSub = new Dictionary<string, EventHandler>
+                {
+                    { "Quản lý khách hàng", BtnCustomer_Click },
+                    { "Quản lý đơn hàng", BtnOrders_Click },
+                    { "Quản lý hoá đơn", BtnInvoices_Click },
+                    { "Quản lý hoàn tiền", BtnRefunds_Click }
+                };
+                AddAccordionMenu("Quản lý khách hàng", "groups", customerSub);
 
-            if (_currentUser.RoleId == 1) // Admin only
-            {
                 var masterSub = new Dictionary<string, EventHandler>
                 {
                     { "Quản lý tác giả", BtnAuthor_Click },
@@ -314,6 +354,15 @@ namespace BookStoreManagement.Forms
                 AddAccordionMenu("Quản lý danh mục", "category", masterSub);
                 
                 AddMenu("Báo cáo thống kê", "assessment", BtnReports_Click);
+            }
+            else
+            {
+                // Staff Menu
+                AddMenu("Quầy bán hàng (POS)", "point_of_sale", BtnPOS_Click);
+                AddMenu("Trả hàng", "assignment_return", BtnRefunds_Click);
+                AddMenu("Tra cứu tồn kho", "inventory_2", BtnInventory_Click);
+                AddMenu("Hoá đơn của tôi", "receipt_long", BtnMyInvoices_Click);
+                AddMenu("Ca làm việc của tôi", "schedule", BtnMyShifts_Click);
             }
         }
 
@@ -557,6 +606,8 @@ namespace BookStoreManagement.Forms
             loginForm.ShowDialog();
             this.Close();
         }
+
+
 
         private void btnExit_Click(object sender, EventArgs e)
         {

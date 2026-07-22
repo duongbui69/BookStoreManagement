@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -51,7 +51,7 @@ namespace BookStoreManagement.Forms
             lblCategory.Text = $"Category: {_bookVm.CategoryName}";
             lblPublisher.Text = $"Publisher: {_bookVm.PublisherName}";
             lblISBN.Text = $"ISBN: {_bookVm.ISBN}";
-            lblPrice.Text = $"Price: {_bookVm.SellingPrice:N0} VND";
+            lblPrice.Text = $"Price: {_bookVm.SellingPrice:N0} ₫";
             lblStock.Text = $"Stock: {_bookVm.Quantity} (Min: {_bookVm.MinStock})";
             txtDescription.Text = _description ?? "No description available.";
 
@@ -91,3 +91,4 @@ namespace BookStoreManagement.Forms
         public static extern bool ReleaseCapture();
     }
 }
+

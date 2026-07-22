@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -40,7 +40,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = "Chi Tiết Đơn Hàng";
+            this.Text = "Chi Tiáº¿t ÄÆ¡n HÃ ng";
             this.Size = new Size(500, 550);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -54,34 +54,34 @@ namespace BookStoreManagement.Forms
             int spacing = 60;
 
             // Order Code
-            Label lblCode = new Label { Text = "Mã Đơn Hàng", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblCode = new Label { Text = "MÃ£ ÄÆ¡n HÃ ng", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtOrderCode = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 440, Height = 36, BorderRadius = 4, ReadOnly = true, FillColor = Color.WhiteSmoke };
             this.Controls.Add(lblCode);
             this.Controls.Add(txtOrderCode);
             yPos += spacing;
 
             // Order Date
-            Label lblDate = new Label { Text = "Ngày Đặt", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblDate = new Label { Text = "NgÃ y Äáº·t", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtOrderDate = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 210, Height = 36, BorderRadius = 4, ReadOnly = true, FillColor = Color.WhiteSmoke };
             this.Controls.Add(lblDate);
             this.Controls.Add(txtOrderDate);
 
             // Total Amount
-            Label lblAmount = new Label { Text = "Tổng Tiền", Location = new Point(250, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblAmount = new Label { Text = "Tá»•ng Tiá»n", Location = new Point(250, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtTotalAmount = new Guna2TextBox { Location = new Point(250, yPos + 20), Width = 210, Height = 36, BorderRadius = 4, ReadOnly = true, FillColor = Color.WhiteSmoke };
             this.Controls.Add(lblAmount);
             this.Controls.Add(txtTotalAmount);
             yPos += spacing;
 
             // Payment Method
-            Label lblPayment = new Label { Text = "Phương Thức Thanh Toán", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblPayment = new Label { Text = "PhÆ°Æ¡ng Thá»©c Thanh ToÃ¡n", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtPaymentMethod = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 440, Height = 36, BorderRadius = 4, ReadOnly = true, FillColor = Color.WhiteSmoke };
             this.Controls.Add(lblPayment);
             this.Controls.Add(txtPaymentMethod);
             yPos += spacing;
 
             // Status
-            Label lblStatus = new Label { Text = "Trạng Thái", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblStatus = new Label { Text = "Tráº¡ng ThÃ¡i", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cbOrderStatus = new Guna2ComboBox { Location = new Point(20, yPos + 20), Width = 440, Height = 36, BorderRadius = 4 };
             cbOrderStatus.Items.AddRange(new string[] { AppConstants.OrderStatuses.Completed, AppConstants.OrderStatuses.Cancelled });
             this.Controls.Add(lblStatus);
@@ -89,17 +89,17 @@ namespace BookStoreManagement.Forms
             yPos += spacing;
 
             // Note
-            Label lblNote = new Label { Text = "Ghi Chú", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblNote = new Label { Text = "Ghi ChÃº", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtNote = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 440, Height = 60, BorderRadius = 4, Multiline = true };
             this.Controls.Add(lblNote);
             this.Controls.Add(txtNote);
             yPos += 90;
 
             // Buttons
-            btnCancel = new Guna2Button { Text = "Đóng", Location = new Point(240, yPos), Width = 100, Height = 40, BorderRadius = 4, FillColor = Color.Transparent, BorderThickness = 1, ForeColor = Color.Black, Cursor = Cursors.Hand };
+            btnCancel = new Guna2Button { Text = "ÄÃ³ng", Location = new Point(240, yPos), Width = 100, Height = 40, BorderRadius = 4, FillColor = Color.Transparent, BorderThickness = 1, ForeColor = Color.Black, Cursor = Cursors.Hand };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
             
-            btnSave = new Guna2Button { Text = "Lưu Thay Đổi", Location = new Point(360, yPos), Width = 100, Height = 40, BorderRadius = 4, Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "LÆ°u Thay Äá»•i", Location = new Point(360, yPos), Width = 100, Height = 40, BorderRadius = 4, Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
 
             this.Controls.Add(btnCancel);
@@ -112,7 +112,7 @@ namespace BookStoreManagement.Forms
             {
                 txtOrderCode.Text = OrderModel.OrderCode;
                 txtOrderDate.Text = OrderModel.OrderDate.ToString("dd/MM/yyyy HH:mm");
-                txtTotalAmount.Text = OrderModel.TotalAmount.ToString("N0") + " VND";
+                txtTotalAmount.Text = OrderModel.TotalAmount.ToString("N0") + " ₫";
                 txtPaymentMethod.Text = OrderModel.PaymentMethod;
                 cbOrderStatus.SelectedItem = OrderModel.OrderStatus;
                 txtNote.Text = OrderModel.Note;
@@ -125,14 +125,14 @@ namespace BookStoreManagement.Forms
             {
                 if (OrderModel != null)
                 {
-                    // Lấy Repository bằng Reflection hoặc tạo UpdateOrder nếu cần
-                    // Ở đây chỉ mô phỏng việc lưu vì chưa có UpdateOrder
-                    // Để an toàn, chỉ cập nhật nếu trạng thái là Cancelled, vì Service đã có CancelOrder
+                    // Láº¥y Repository báº±ng Reflection hoáº·c táº¡o UpdateOrder náº¿u cáº§n
+                    // á»ž Ä‘Ã¢y chá»‰ mÃ´ phá»ng viá»‡c lÆ°u vÃ¬ chÆ°a cÃ³ UpdateOrder
+                    // Äá»ƒ an toÃ n, chá»‰ cáº­p nháº­t náº¿u tráº¡ng thÃ¡i lÃ  Cancelled, vÃ¬ Service Ä‘Ã£ cÃ³ CancelOrder
                     if (cbOrderStatus.SelectedItem?.ToString() == AppConstants.OrderStatuses.Cancelled && OrderModel.OrderStatus != AppConstants.OrderStatuses.Cancelled)
                     {
                         _service.CancelOrder(OrderModel.Id);
                     }
-                    MessageBox.Show("Cập nhật đơn hàng thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Cáº­p nháº­t Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng!", "ThÃ nh cÃ´ng", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
                 this.DialogResult = DialogResult.OK;
@@ -140,7 +140,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -158,3 +158,4 @@ namespace BookStoreManagement.Forms
         }
     }
 }
+

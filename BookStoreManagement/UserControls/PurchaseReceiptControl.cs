@@ -18,6 +18,7 @@ namespace BookStoreManagement.UserControls
         private readonly PurchaseReceiptService _receiptService;
         private readonly SupplierService _supplierService;
         private List<PurchaseReceiptListViewModel> _allReceipts = new();
+        private List<PurchaseReceiptListViewModel> _filteredReceipts = new();
         
         // UI Components
         private Label lblTitle;
@@ -330,10 +331,10 @@ namespace BookStoreManagement.UserControls
                 filtered = filtered.Where(x => x.SupplierId == supId);
             }
 
-            _allReceipts = filtered.ToList();
+            _filteredReceipts = filtered.ToList();
             _currentPage = 1;
             
-            pagination.UpdatePagination(_allReceipts.Count, _currentPage, PageSize);
+            pagination.UpdatePagination(_filteredReceipts.Count, _currentPage, PageSize);
             
             DisplayPage();
         }
@@ -342,7 +343,7 @@ namespace BookStoreManagement.UserControls
         {
             if (this.IsDisposed) return;
             dgvReceipts.Rows.Clear();
-            var paged = _allReceipts.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+            var paged = _filteredReceipts.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
 
             foreach (var item in paged)
             {

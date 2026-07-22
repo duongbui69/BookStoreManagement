@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Themes;
@@ -95,11 +95,11 @@ namespace BookStoreManagement.UserControls
 
             // --- 3. Sidebar Menu ---
             int btnY = 0;
-            btnGeneral = CreateMenuButton("🏢", "General Settings", btnY); btnY += 50;
-            btnAppearance = CreateMenuButton("🎨", "Appearance", btnY); btnY += 50;
-            btnSecurity = CreateMenuButton("🔐", "Security & Roles", btnY); btnY += 50;
-            btnAlerts = CreateMenuButton("🔔", "Alerts & Notifications", btnY); btnY += 50;
-            btnBackup = CreateMenuButton("💾", "Data & Backups", btnY); btnY += 50;
+            btnGeneral = CreateMenuButton("ðŸ¢", "General Settings", btnY); btnY += 50;
+            btnAppearance = CreateMenuButton("ðŸŽ¨", "Appearance", btnY); btnY += 50;
+            btnSecurity = CreateMenuButton("ðŸ”", "Security & Roles", btnY); btnY += 50;
+            btnAlerts = CreateMenuButton("ðŸ””", "Alerts & Notifications", btnY); btnY += 50;
+            btnBackup = CreateMenuButton("ðŸ’¾", "Data & Backups", btnY); btnY += 50;
 
             btnGeneral.Click += (s, e) => ShowPanel(pnlGeneral, btnGeneral);
             btnAppearance.Click += (s, e) => ShowPanel(pnlAppearance, btnAppearance);
@@ -212,7 +212,7 @@ namespace BookStoreManagement.UserControls
 
             var card2 = CreateCard("Region & Language", "public", 180, 320);
             var cbTimezone = CreateComboGroup("System Timezone", new[] { "Eastern Time (US)", "Central Time", "Pacific Time", "Vietnam (GMT+7)" }, 20, 70);
-            var cbCurrency = CreateComboGroup("Currency", new[] { "USD ($)", "VND (₫)" }, 340, 70);
+            var cbCurrency = CreateComboGroup("Currency", new[] { "USD ($)", "₫ (â‚«)" }, 340, 70);
             
             card2.Controls.AddRange(new Control[] { cbTimezone, cbCurrency });
 
@@ -341,7 +341,7 @@ namespace BookStoreManagement.UserControls
             primaryLabels.Add(lblStatusVal);
             standardLabels.Add(lblStatusSub);
 
-            var btnManual = new Guna2Button { Text = "▶ Run Manual Backup", Size = new Size(300, 40), Location = new Point(20, 180), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            var btnManual = new Guna2Button { Text = "â–¶ Run Manual Backup", Size = new Size(300, 40), Location = new Point(20, 180), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             var btnRestore = new Guna2Button { Text = "Restore from File", Size = new Size(300, 40), Location = new Point(20, 230), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             
             outlineButtons.Add(btnManual);
@@ -491,3 +491,4 @@ namespace BookStoreManagement.UserControls
         }
     }
 }
+

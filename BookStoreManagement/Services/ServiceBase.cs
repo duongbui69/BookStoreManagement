@@ -41,15 +41,14 @@ namespace BookStoreManagement.Services
                 return requestedStoreId;
             }
 
-            Require(CurrentSession.StoreId.HasValue && CurrentSession.StoreId.Value > 0,
-                "Tài khoản nhân viên chưa được gán cửa hàng.");
+            int storeIdToUse = CurrentSession.StoreId ?? 1;
 
-            if (requestedStoreId > 0 && requestedStoreId != CurrentSession.StoreId.Value)
+            if (requestedStoreId > 0 && requestedStoreId != storeIdToUse)
             {
                 throw new Exception("Nhân viên chỉ được thao tác tại cửa hàng của mình.");
             }
 
-            return CurrentSession.StoreId.Value;
+            return storeIdToUse;
         }
 
         protected int? ResolveStoreIdForRead(int? requestedStoreId)
@@ -61,15 +60,14 @@ namespace BookStoreManagement.Services
                 return requestedStoreId;
             }
 
-            Require(CurrentSession.StoreId.HasValue && CurrentSession.StoreId.Value > 0,
-                "Tài khoản nhân viên chưa được gán cửa hàng.");
+            int storeIdToUse = CurrentSession.StoreId ?? 1;
 
-            if (requestedStoreId.HasValue && requestedStoreId.Value != CurrentSession.StoreId.Value)
+            if (requestedStoreId.HasValue && requestedStoreId.Value != storeIdToUse)
             {
                 throw new Exception("Nhân viên chỉ được xem dữ liệu của cửa hàng mình.");
             }
 
-            return CurrentSession.StoreId.Value;
+            return storeIdToUse;
         }
     }
 }

@@ -81,7 +81,7 @@ namespace BookStoreManagement.UserControls
         
         private void LoadFilters()
         {
-            var categories = _categoryService.GetAll();
+            var categories = _categoryService.GetActive();
             categories.Insert(0, new Models.Category { Id = 0, CategoryName = "Thể loại: Tất cả" });
             cbCategory.DataSource = categories;
             cbCategory.DisplayMember = "CategoryName";
