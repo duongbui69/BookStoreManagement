@@ -10,9 +10,7 @@ namespace BookStoreManagement.Forms
     public partial class MainForm : Form
     {
         private User _currentUser;
-        private Guna.UI2.WinForms.Guna2TextBox txtGlobalSearch;
-        private Label lblIcon;
-        private ISearchableControl _currentSearchableControl;
+
 
         public MainForm(User user)
         {
@@ -55,8 +53,6 @@ namespace BookStoreManagement.Forms
             panelMain.Controls.Clear();
 
             newControl.Dock = DockStyle.Fill;
-            _currentSearchableControl = newControl as ISearchableControl;
-            UpdateGlobalSearch(placeholder);
             panelMain.Controls.Add(newControl);
         }
 
@@ -212,32 +208,7 @@ namespace BookStoreManagement.Forms
             LoadControl(new UserControls.SupplierControl(), "Tìm theo tên, mã, email, sđt...");
         }
 
-        private void UpdateGlobalSearch(string placeholder)
-        {
-            if (txtGlobalSearch != null)
-            {
-                txtGlobalSearch.TextChanged -= TxtGlobalSearch_TextChanged;
-                txtGlobalSearch.Text = "";
-                
-                if (string.IsNullOrEmpty(placeholder))
-                {
-                    txtGlobalSearch.Visible = false;
-                    if (lblIcon != null) lblIcon.Visible = false;
-                }
-                else
-                {
-                    txtGlobalSearch.Visible = true;
-                    txtGlobalSearch.PlaceholderText = placeholder;
-                    if (lblIcon != null) lblIcon.Visible = true;
-                }
-                txtGlobalSearch.TextChanged += TxtGlobalSearch_TextChanged;
-            }
-        }
 
-        private void TxtGlobalSearch_TextChanged(object sender, EventArgs e)
-        {
-            _currentSearchableControl?.PerformSearch(txtGlobalSearch.Text);
-        }
 
         private void SetActiveTab(Guna.UI2.WinForms.Guna2Button activeButton)
         {
@@ -282,17 +253,8 @@ namespace BookStoreManagement.Forms
             panelSidebar.Controls.Remove(btnHR);
             panelSidebar.Controls.Remove(btnReports);
 
-            Guna.UI2.WinForms.Guna2Panel pnlBrand = new Guna.UI2.WinForms.Guna2Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 100,
-                BackColor = Color.Transparent
-            };
-            panelSidebar.Controls.Add(pnlBrand);
-            lblBrand.Parent = pnlBrand;
-            lblSubBrand.Parent = pnlBrand;
-            lblBrand.Location = new Point(20, 25);
-            lblSubBrand.Location = new Point(23, 55);
+            lblBrand.Visible = false;
+            lblSubBrand.Visible = false;
 
             navPanel = new FlowLayoutPanel
             {
@@ -575,15 +537,19 @@ namespace BookStoreManagement.Forms
             {
                 container.ForeColor = Themes.ThemeManager.TextSecondary;
             }
-            else if (container.Tag?.ToString() == "ThemeSearch")
+            else if (container.Tag?.ToString() == "ThemeClockPanel")
             {
-                if (container is Guna.UI2.WinForms.Guna2TextBox txt)
+                if (container is Guna.UI2.WinForms.Guna2Panel pnl)
                 {
-                    txt.FillColor = Themes.ThemeManager.TextBoxBackground;
-                    txt.ForeColor = Themes.ThemeManager.TextPrimary;
-                    txt.BorderColor = Themes.ThemeManager.TextBoxBorder;
+                    pnl.FillColor = Themes.ThemeManager.ButtonFill;
+                    pnl.BorderThickness = 0;
                 }
             }
+            else if (container.Tag?.ToString() == "ThemeClockText")
+            {
+                container.ForeColor = Color.White;
+            }
+
             
             if (container is Guna.UI2.WinForms.Guna2ToggleSwitch tgl)
             {
@@ -618,9 +584,40 @@ namespace BookStoreManagement.Forms
         {
             panelSidebar.Controls.Remove(btnSettings);
             
-            panelUserProfile.Height = 175;
+            panelUserProfile.Dock = DockStyle.Top;
+            panelUserProfile.Height = 80;
             
-            btnSettings.Parent = panelUserProfile;
+            btnAvatar.Parent = panelUserProfile;
+            lblUsername.Parent = panelUserProfile;
+            lblRole.Parent = panelUserProfile;
+
+            btnAvatar.Location = new Point(20, 20);
+            lblUsername.Location = new Point(65, 20);
+            lblRole.Location = new Point(65, 42);
+            lblRole.Text = _currentUser.RoleId == 1 ? "System Administrator" : "Staff Member";
+            lblRole.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            lblRole.Text = lblRole.Text.ToUpper();
+            lblRole.ForeColor = Themes.ThemeManager.TextSecondary;
+
+            Guna.UI2.WinForms.Guna2Panel panelFooter = new Guna.UI2.WinForms.Guna2Panel
+            {
+                Name = "panelFooter",
+                Dock = DockStyle.Bottom,
+                Height = 100,
+                BackColor = Color.Transparent
+            };
+            panelSidebar.Controls.Add(panelFooter);
+
+            Guna.UI2.WinForms.Guna2Panel sep = new Guna.UI2.WinForms.Guna2Panel 
+            { 
+                Name = "FooterSep",
+                Location = new Point(20, 0), 
+                Size = new Size(220, 1), 
+                FillColor = Themes.ThemeManager.TextBoxBorder 
+            };
+            panelFooter.Controls.Add(sep);
+
+            btnSettings.Parent = panelFooter;
             btnSettings.Location = new Point(0, 10);
             btnSettings.Size = new Size(260, 40);
             btnSettings.Text = "⚙   Settings";
@@ -632,7 +629,7 @@ namespace BookStoreManagement.Forms
             btnSettings.HoverState.FillColor = Themes.ThemeManager.HoverColor;
             btnSettings.CustomBorderThickness = new Padding(0);
 
-            btnLogout.Parent = panelUserProfile;
+            btnLogout.Parent = panelFooter;
             btnLogout.Location = new Point(0, 50);
             btnLogout.Size = new Size(260, 40);
             btnLogout.Text = "🚪   Logout";
@@ -642,23 +639,6 @@ namespace BookStoreManagement.Forms
             btnLogout.Font = new Font("Segoe UI", 10F);
             btnLogout.ForeColor = Themes.ThemeManager.TextSecondary;
             btnLogout.HoverState.FillColor = Themes.ThemeManager.HoverColor;
-
-            Guna.UI2.WinForms.Guna2Panel sep = new Guna.UI2.WinForms.Guna2Panel 
-            { 
-                Name = "FooterSep",
-                Location = new Point(20, 105), 
-                Size = new Size(220, 1), 
-                FillColor = Themes.ThemeManager.TextBoxBorder 
-            };
-            panelUserProfile.Controls.Add(sep);
-
-            btnAvatar.Location = new Point(20, 120);
-            lblUsername.Location = new Point(65, 120);
-            lblRole.Location = new Point(65, 142);
-            lblRole.Text = _currentUser.RoleId == 1 ? "System Administrator" : "Staff Member";
-            lblRole.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
-            lblRole.Text = lblRole.Text.ToUpper();
-            lblRole.ForeColor = Themes.ThemeManager.TextSecondary;
         }
 
         private void InitializeTopBar()
@@ -673,29 +653,15 @@ namespace BookStoreManagement.Forms
 
             Guna.UI2.WinForms.Guna2Panel pnlLeft = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Left, Width = 400 };
             
-            lblIcon = new Label 
-            { 
-                Text = "🔍", 
-                Font = new Font("Segoe UI Emoji", 14F),
+            Label lblTopTitle = new Label 
+            {
+                Text = "BOOKSTORE MANAGEMENT",
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(20, 15),
-                Visible = false
+                Location = new Point(20, 12),
+                Tag = "ThemeTextPrimary"
             };
-            
-            txtGlobalSearch = new Guna.UI2.WinForms.Guna2TextBox 
-            { 
-                PlaceholderText = "Search...",
-                BorderRadius = 6,
-                Location = new Point(60, 10),
-                Size = new Size(320, 36),
-                Font = new Font("Segoe UI", 10F),
-                Visible = false
-            };
-            txtGlobalSearch.TextChanged += TxtGlobalSearch_TextChanged;
-
-            pnlLeft.Controls.Add(lblIcon);
-            pnlLeft.Controls.Add(txtGlobalSearch);
-            
+            pnlLeft.Controls.Add(lblTopTitle);
             Guna.UI2.WinForms.Guna2Panel pnlRight = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Right, Width = 480 };
             
             panelTop.Controls.Remove(btnMinimize);
@@ -708,48 +674,24 @@ namespace BookStoreManagement.Forms
             pnlRight.Controls.Add(btnMaximize);
             pnlRight.Controls.Add(btnMinimize);
 
-            Guna.UI2.WinForms.Guna2Panel pnlTheme = new Guna.UI2.WinForms.Guna2Panel 
-            { 
-                Location = new Point(20, 12),
-                Size = new Size(130, 32),
-                BorderRadius = 16,
-                BorderThickness = 1,
-            };
-            Label lblLight = new Label { Text = "☀️", Font = new Font("Segoe UI Emoji", 10F), AutoSize = true, Location = new Point(10, 6) };
-            Guna.UI2.WinForms.Guna2ToggleSwitch tglTheme = new Guna.UI2.WinForms.Guna2ToggleSwitch 
-            { 
-                Location = new Point(45, 6),
-                Size = new Size(40, 20),
-                Checked = Themes.ThemeManager.IsDarkMode
-            };
-            tglTheme.CheckedChanged += (s, e) => {
-                if (tglTheme.Checked != Themes.ThemeManager.IsDarkMode)
-                    Themes.ThemeManager.ToggleTheme();
-            };
-            Label lblDark = new Label { Text = "🌙", Font = new Font("Segoe UI Emoji", 10F), AutoSize = true, Location = new Point(95, 6) };
-            pnlTheme.Controls.Add(lblLight);
-            pnlTheme.Controls.Add(tglTheme);
-            pnlTheme.Controls.Add(lblDark);
-            pnlRight.Controls.Add(pnlTheme);
+            btnThemeToggle.Location = new Point(230, 12);
+            btnThemeToggle.Size = new Size(40, 32);
+            btnThemeToggle.BorderRadius = 4;
+            btnThemeToggle.Font = new Font("Segoe UI Emoji", 12F);
+            btnThemeToggle.TextOffset = new Point(0, 0);
+            pnlRight.Controls.Add(btnThemeToggle);
 
-            Guna.UI2.WinForms.Guna2Panel pnlClock = new Guna.UI2.WinForms.Guna2Panel
-            {
-                Location = new Point(165, 12),
-                Size = new Size(100, 32),
-                BorderRadius = 4,
-                BorderThickness = 1,
-            };
             Label lblClock = new Label 
             { 
                 Text = DateTime.Now.ToString("HH:mm:ss"),
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(15, 6)
+                Location = new Point(130, 16),
+                BackColor = Color.Transparent
             };
-            pnlClock.Controls.Add(lblClock);
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 1000, Enabled = true };
             timer.Tick += (s, e) => lblClock.Text = DateTime.Now.ToString("HH:mm:ss");
-            pnlRight.Controls.Add(pnlClock);
+            pnlRight.Controls.Add(lblClock);
 
             Guna.UI2.WinForms.Guna2Button btnNotif = new Guna.UI2.WinForms.Guna2Button
             {
@@ -768,14 +710,8 @@ namespace BookStoreManagement.Forms
             // Tag for theming later
             pnlLeft.Tag = "TopLeft";
             pnlRight.Tag = "TopRight";
-            lblIcon.Tag = "ThemeTextPrimary";
-            txtGlobalSearch.Tag = "ThemeSearch";
-            pnlTheme.Tag = "ThemePanel";
-            lblLight.Tag = "ThemeTextSecondary";
-            lblDark.Tag = "ThemeTextSecondary";
-            tglTheme.Tag = "ThemeToggle";
-            pnlClock.Tag = "ThemePanel";
-            lblClock.Tag = "ThemeTextSecondary";
+
+            lblClock.Tag = "ThemeTextPrimary";
             btnNotif.Tag = "ThemeTextSecondary";
         }
     }

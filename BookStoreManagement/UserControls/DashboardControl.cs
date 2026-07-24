@@ -20,8 +20,6 @@ namespace BookStoreManagement.UserControls
         private readonly DashboardService _dashboardService;
         private BookService _bookService;
 
-        private int _hoveredRowIndex = -1;
-        private int _hoveredAction = 0;
 
         private Guna2Panel pnlContent;
         
@@ -159,13 +157,6 @@ namespace BookStoreManagement.UserControls
             dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Stock", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 60 });
             dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Threshold", HeaderText = "Min", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 50 });
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Actions", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
-            dgvProducts.Columns.Add(actionCol);
-
-            dgvProducts.CellPainting += DgvTopProducts_CellPainting;
-            dgvProducts.CellMouseClick += DgvTopProducts_CellMouseClick;
-            dgvProducts.CellMouseMove += DgvTopProducts_CellMouseMove;
-            dgvProducts.CellMouseLeave += DgvTopProducts_CellMouseLeave;
             dgvProducts.CellFormatting += DgvProducts_CellFormatting;
             
             pnlTableContainer.Controls.Add(dgvProducts);
@@ -256,131 +247,7 @@ namespace BookStoreManagement.UserControls
             paginationControl.UpdatePagination(currentStats.LowStockItems.Count, _currentPage, _pageSize);
         }
 
-        private void DgvTopProducts_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
 
-            if (dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
-            {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                
-                var rect = e.CellBounds;
-                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
-                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
-                
-                if (e.RowIndex == _hoveredRowIndex)
-                {
-                    if (_hoveredAction == 1)
-                    {
-                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
-                            e.Graphics.FillRectangle(brush, editRect);
-                    }
-                    else if (_hoveredAction == 2)
-                    {
-                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
-                            e.Graphics.FillRectangle(brush, delRect);
-                    }
-                }
-
-                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
-                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
-
-                using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
-                using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
-                
-                using (var pen = new Pen(Color.LightGray))
-                {
-                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 8, rect.X + rect.Width / 2, rect.Bottom - 8);
-                }
-                
-                e.Handled = true;
-            }
-        }
-
-        private void DgvTopProducts_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
-            {
-                int action = (e.X < dgvProducts.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
-                
-                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
-                {
-                    int oldRow = _hoveredRowIndex;
-                    _hoveredRowIndex = e.RowIndex;
-                    _hoveredAction = action;
-                    
-                    if (oldRow >= 0) dgvProducts.InvalidateCell(e.ColumnIndex, oldRow);
-                    dgvProducts.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
-                }
-                dgvProducts.Cursor = Cursors.Hand;
-            }
-            else
-            {
-                if (_hoveredRowIndex >= 0)
-                {
-                    int oldRow = _hoveredRowIndex;
-                    _hoveredRowIndex = -1;
-                    _hoveredAction = 0;
-                    if (e.ColumnIndex >= 0) dgvProducts.InvalidateCell(dgvProducts.Columns["Actions"].Index, oldRow);
-                }
-                dgvProducts.Cursor = Cursors.Default;
-            }
-        }
-
-        private void DgvTopProducts_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            if (_hoveredRowIndex >= 0)
-            {
-                int oldRow = _hoveredRowIndex;
-                _hoveredRowIndex = -1;
-                _hoveredAction = 0;
-                dgvProducts.InvalidateCell(dgvProducts.Columns["Actions"].Index, oldRow);
-            }
-            dgvProducts.Cursor = Cursors.Default;
-        }
-
-        private async void DgvTopProducts_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex >= 0 && dgvProducts.Columns[e.ColumnIndex].Name == "Actions")
-            {
-                int bookId = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells[0].Value);
-                
-                if (e.X < dgvProducts.Columns[e.ColumnIndex].Width / 2)
-                {
-                    // Edit
-                    var book = _bookService.GetById(bookId);
-                    if (book != null)
-                    {
-                        var frm = new Forms.BookForm(book);
-                        if (frm.ShowDialog() == DialogResult.OK)
-                        {
-                            await LoadDataAsync();
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Book not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    // Delete
-                    if (MessageBox.Show("Are you sure you want to delete this book?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                    {
-                        try
-                        {
-                            _bookService.SetActive(bookId, false);
-                            MessageBox.Show("Book deleted successfully!");
-                            await LoadDataAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                }
-            }
-        }
 
         private void DgvProducts_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -431,7 +298,12 @@ namespace BookStoreManagement.UserControls
                 using (var font = new Font("Segoe UI", 8F))
                 using (var brush = new SolidBrush(ThemeManager.TextSecondary))
                 {
-                    g.DrawString($"Tháng {sortedMonths[i].Key}", font, brush, new PointF(x - 15, bottomY + 10));
+                    var format = new StringFormat();
+                    format.Alignment = StringAlignment.Center;
+                    g.TranslateTransform(x, bottomY + 15);
+                    g.RotateTransform(-45);
+                    g.DrawString($"Tháng {sortedMonths[i].Key}", font, brush, 0, 0, format);
+                    g.ResetTransform();
                 }
             }
 

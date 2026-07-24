@@ -209,7 +209,7 @@ namespace BookStoreManagement.UserControls
             dgvData.SetDoubleBuffered(true);
             dgvData.CellPainting += DgvData_CellPainting;
             dgvData.CellClick += DgvData_CellClick;
-            dgvData.CellMouseEnter += DgvData_CellMouseEnter;
+            dgvData.CellMouseMove += DgvData_CellMouseMove;
             dgvData.CellMouseLeave += DgvData_CellMouseLeave;
             dgvData.Cursor = Cursors.Hand;
             pnlDataContainer.Controls.Add(dgvData);
@@ -486,19 +486,35 @@ namespace BookStoreManagement.UserControls
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
                 {
-                    // Draw Edit and Delete icons
-                    Rectangle rect = e.CellBounds;
-                    int iconSize = 20;
-                    int spacing = 10;
-                    int totalWidth = iconSize * 2 + spacing;
-                    int startX = rect.X + (rect.Width - totalWidth) / 2;
-                    int startY = rect.Y + (rect.Height - iconSize) / 2;
+                    e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                    
+                    var rect = e.CellBounds;
+                    var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                    var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
+                    
+                    if (e.RowIndex == hoveredRow)
+                    {
+                        if (hoveredAction == 1)
+                        {
+                            using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                                e.Graphics.FillRectangle(brush, editRect);
+                        }
+                        else if (hoveredAction == 2)
+                        {
+                            using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                                e.Graphics.FillRectangle(brush, delRect);
+                        }
+                    }
 
-                    Rectangle editRect = new Rectangle(startX, startY, iconSize, iconSize);
-                    Rectangle deleteRect = new Rectangle(startX + iconSize + spacing, startY, iconSize, iconSize);
+                    int editFontSize = (hoveredRow == e.RowIndex && hoveredAction == 1) ? 14 : 12;
+                    int delFontSize = (hoveredRow == e.RowIndex && hoveredAction == 2) ? 14 : 12;
 
-                    DrawIcon(e.Graphics, editRect, "\ue3c9", hoveredRow == e.RowIndex && hoveredCol == e.ColumnIndex && hoveredAction == 1 ? ThemeManager.ButtonFill : ThemeManager.TextSecondary); // Edit icon
-                    DrawIcon(e.Graphics, deleteRect, "\ue872", hoveredRow == e.RowIndex && hoveredCol == e.ColumnIndex && hoveredAction == 2 ? Color.Red : ThemeManager.TextSecondary); // Delete icon
+                    using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                    using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                    
+                    using (var pen = new Pen(Color.LightGray))
+                        e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 5, rect.X + rect.Width / 2, rect.Bottom - 5);
+
                     e.Handled = true;
                 }
                 else
@@ -508,57 +524,50 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void DrawIcon(Graphics g, Rectangle rect, string iconCode, Color color)
-        {
-            using (Font iconFont = new Font("Material Symbols Outlined", 14))
-            {
-                TextRenderer.DrawText(g, iconCode, iconFont, rect, color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-            }
-        }
-
         private int hoveredRow = -1;
         private int hoveredCol = -1;
         private int hoveredAction = 0; // 0=none, 1=edit, 2=delete
 
-        private void DgvData_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        private void DgvData_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && dgvData.Columns[e.ColumnIndex].Name == "colAction")
             {
-                hoveredRow = e.RowIndex;
-                hoveredCol = e.ColumnIndex;
+                int action = (e.X < dgvData.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                
+                if (hoveredRow != e.RowIndex || hoveredAction != action)
+                {
+                    int oldRow = hoveredRow;
+                    hoveredRow = e.RowIndex;
+                    hoveredAction = action;
+                    
+                    if (oldRow >= 0) dgvData.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvData.InvalidateCell(e.ColumnIndex, hoveredRow);
+                }
+                dgvData.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (hoveredRow >= 0)
+                {
+                    int oldRow = hoveredRow;
+                    hoveredRow = -1;
+                    hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvData.InvalidateCell(dgvData.Columns["colAction"].Index, oldRow);
+                }
+                dgvData.Cursor = Cursors.Default;
             }
         }
 
         private void DgvData_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
-            hoveredRow = -1;
-            hoveredCol = -1;
-            hoveredAction = 0;
-            dgvData.Invalidate();
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-            if (hoveredRow >= 0 && hoveredCol >= 0)
+            if (hoveredRow >= 0)
             {
-                Rectangle cellRect = dgvData.GetCellDisplayRectangle(hoveredCol, hoveredRow, false);
-                Point mouseInCell = new Point(e.X - dgvData.Left - cellRect.X, e.Y - dgvData.Top - cellRect.Y);
-                
-                int iconSize = 20;
-                int spacing = 10;
-                int totalWidth = iconSize * 2 + spacing;
-                int startX = (cellRect.Width - totalWidth) / 2;
-                
-                if (mouseInCell.X >= startX && mouseInCell.X <= startX + iconSize)
-                    hoveredAction = 1;
-                else if (mouseInCell.X >= startX + iconSize + spacing && mouseInCell.X <= startX + totalWidth)
-                    hoveredAction = 2;
-                else
-                    hoveredAction = 0;
-
-                dgvData.InvalidateCell(hoveredCol, hoveredRow);
+                int oldRow = hoveredRow;
+                hoveredRow = -1;
+                hoveredAction = 0;
+                dgvData.InvalidateCell(dgvData.Columns["colAction"].Index, oldRow);
             }
+            dgvData.Cursor = Cursors.Default;
         }
 
         private async void DgvData_CellClick(object sender, DataGridViewCellEventArgs e)

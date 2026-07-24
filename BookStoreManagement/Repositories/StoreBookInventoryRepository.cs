@@ -18,6 +18,7 @@ namespace BookStoreManagement.Repositories
                 MinStock = GetInt(reader, "MinStock"),
                 ImportPrice = GetNullableDecimal(reader, "ImportPrice"),
                 SellingPrice = GetDecimal(reader, "SellingPrice"),
+                ShelfLocation = GetNullableString(reader, "ShelfLocation"),
                 IsActive = GetBool(reader, "IsActive"),
                 CreatedAt = GetDateTime(reader, "CreatedAt"),
                 UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
@@ -43,6 +44,7 @@ namespace BookStoreManagement.Repositories
                 MinStock = GetInt(reader, "MinStock"),
                 ImportPrice = GetNullableDecimal(reader, "ImportPrice"),
                 SellingPrice = GetDecimal(reader, "SellingPrice"),
+                ShelfLocation = GetNullableString(reader, "ShelfLocation"),
                 StockStatus = GetString(reader, "StockStatus"),
                 IsActive = GetBool(reader, "IsActive"),
                 CreatedAt = GetDateTime(reader, "CreatedAt"),
@@ -101,7 +103,7 @@ namespace BookStoreManagement.Repositories
         public StoreBookInventory? GetByStoreAndBook(int storeId, int bookId)
         {
             const string sql = @"
-                SELECT Id, StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, ShelfLocation, IsActive, CreatedAt, UpdatedAt
                 FROM StoreBookInventories
                 WHERE StoreId = @StoreId AND BookId = @BookId;
             ";
@@ -119,7 +121,7 @@ namespace BookStoreManagement.Repositories
         public async System.Threading.Tasks.Task<StoreBookInventory?> GetByStoreAndBookAsync(int storeId, int bookId)
         {
             const string sql = @"
-                SELECT Id, StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive, CreatedAt, UpdatedAt
+                SELECT Id, StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, ShelfLocation, IsActive, CreatedAt, UpdatedAt
                 FROM StoreBookInventories
                 WHERE StoreId = @StoreId AND BookId = @BookId;
             ";
@@ -184,9 +186,9 @@ namespace BookStoreManagement.Repositories
         public int Add(StoreBookInventory inventory)
         {
             const string sql = @"
-                INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive)
+                INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, ShelfLocation, IsActive)
                 OUTPUT INSERTED.Id
-                VALUES (@StoreId, @BookId, @Quantity, @MinStock, @ImportPrice, @SellingPrice, @IsActive);
+                VALUES (@StoreId, @BookId, @Quantity, @MinStock, @ImportPrice, @SellingPrice, @ShelfLocation, @IsActive);
             ";
             return ExecuteScalarInt(sql, parameters =>
             {
@@ -196,6 +198,7 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@MinStock", inventory.MinStock);
                 AddParameter(parameters, "@ImportPrice", inventory.ImportPrice);
                 AddParameter(parameters, "@SellingPrice", inventory.SellingPrice);
+                AddParameter(parameters, "@ShelfLocation", inventory.ShelfLocation);
                 AddParameter(parameters, "@IsActive", inventory.IsActive);
             });
         }
@@ -203,9 +206,9 @@ namespace BookStoreManagement.Repositories
         public async System.Threading.Tasks.Task<int> AddAsync(StoreBookInventory inventory)
         {
             const string sql = @"
-                INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, IsActive)
+                INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, ImportPrice, SellingPrice, ShelfLocation, IsActive)
                 OUTPUT INSERTED.Id
-                VALUES (@StoreId, @BookId, @Quantity, @MinStock, @ImportPrice, @SellingPrice, @IsActive);
+                VALUES (@StoreId, @BookId, @Quantity, @MinStock, @ImportPrice, @SellingPrice, @ShelfLocation, @IsActive);
             ";
             return await ExecuteScalarAsync<int>(sql, inventory);
         }
@@ -218,6 +221,7 @@ namespace BookStoreManagement.Repositories
                     MinStock = @MinStock,
                     ImportPrice = @ImportPrice,
                     SellingPrice = @SellingPrice,
+                    ShelfLocation = @ShelfLocation,
                     IsActive = @IsActive,
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;
@@ -229,6 +233,7 @@ namespace BookStoreManagement.Repositories
                 AddParameter(parameters, "@MinStock", inventory.MinStock);
                 AddParameter(parameters, "@ImportPrice", inventory.ImportPrice);
                 AddParameter(parameters, "@SellingPrice", inventory.SellingPrice);
+                AddParameter(parameters, "@ShelfLocation", inventory.ShelfLocation);
                 AddParameter(parameters, "@IsActive", inventory.IsActive);
             }) > 0;
         }
@@ -241,6 +246,7 @@ namespace BookStoreManagement.Repositories
                     MinStock = @MinStock,
                     ImportPrice = @ImportPrice,
                     SellingPrice = @SellingPrice,
+                    ShelfLocation = @ShelfLocation,
                     IsActive = @IsActive,
                     UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id;

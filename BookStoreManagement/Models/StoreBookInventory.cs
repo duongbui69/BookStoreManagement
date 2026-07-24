@@ -11,6 +11,7 @@ namespace BookStoreManagement.Models
         public int MinStock { get; set; } = 5;
         public decimal? ImportPrice { get; set; }
         public decimal SellingPrice { get; set; }
+        public string? ShelfLocation { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

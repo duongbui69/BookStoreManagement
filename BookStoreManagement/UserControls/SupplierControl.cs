@@ -349,26 +349,35 @@ namespace BookStoreManagement.UserControls
                 }
                 else if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
                 {
-                    e.PaintBackground(e.CellBounds, true);
+                    e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                     
-                    int iconSize = 20;
-                    int spacing = 10;
-                    int totalWidth = (iconSize * 2) + spacing;
-                    int startX = e.CellBounds.X + (e.CellBounds.Width - totalWidth) / 2;
-                    int startY = e.CellBounds.Y + (e.CellBounds.Height - iconSize) / 2;
+                    var rect = e.CellBounds;
+                    var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                    var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
                     
-                    Rectangle editRect = new Rectangle(startX, startY, iconSize, iconSize);
-                    Rectangle deleteRect = new Rectangle(startX + iconSize + spacing, startY, iconSize, iconSize);
-
-                    bool isHoveredRow = hoveredRow == e.RowIndex;
-                    Color editColor = (isHoveredRow && hoveredAction == 1) ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
-                    Color deleteColor = (isHoveredRow && hoveredAction == 2) ? Color.Red : ThemeManager.TextSecondary;
-
-                    if (isHoveredRow)
+                    if (e.RowIndex == hoveredRow)
                     {
-                        DrawIcon(e.Graphics, editRect, "\ue3c9", editColor); // Edit icon
-                        DrawIcon(e.Graphics, deleteRect, "\ue872", deleteColor); // Delete icon
+                        if (hoveredAction == 1)
+                        {
+                            using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                                e.Graphics.FillRectangle(brush, editRect);
+                        }
+                        else if (hoveredAction == 2)
+                        {
+                            using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                                e.Graphics.FillRectangle(brush, delRect);
+                        }
                     }
+
+                    int editFontSize = (hoveredRow == e.RowIndex && hoveredAction == 1) ? 14 : 12;
+                    int delFontSize = (hoveredRow == e.RowIndex && hoveredAction == 2) ? 14 : 12;
+
+                    using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                    using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                    
+                    using (var pen = new Pen(Color.LightGray))
+                        e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 5, rect.X + rect.Width / 2, rect.Bottom - 5);
+
                     e.Handled = true;
                 }
             }
@@ -384,54 +393,44 @@ namespace BookStoreManagement.UserControls
 
         private void DgvData_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            if (e.RowIndex >= 0 && dgvData.Columns[e.ColumnIndex].Name == "colAction")
             {
-                int oldHoveredRow = hoveredRow;
-                int oldHoveredAction = hoveredAction;
+                int action = (e.X < dgvData.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
                 
-                hoveredRow = e.RowIndex;
-                hoveredCol = e.ColumnIndex;
-                
-                if (dgvData.Columns[e.ColumnIndex].Name == "colAction")
+                if (hoveredRow != e.RowIndex || hoveredAction != action)
                 {
-                    var cellBounds = dgvData.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-                    int iconSize = 20;
-                    int spacing = 10;
-                    int totalWidth = (iconSize * 2) + spacing;
-                    int startX = (cellBounds.Width - totalWidth) / 2;
+                    int oldRow = hoveredRow;
+                    hoveredRow = e.RowIndex;
+                    hoveredAction = action;
                     
-                    int mouseX = e.X;
-                    if (mouseX >= startX && mouseX <= startX + iconSize)
-                    {
-                        hoveredAction = 1; // Edit
-                    }
-                    else if (mouseX >= startX + iconSize + spacing && mouseX <= startX + totalWidth)
-                    {
-                        hoveredAction = 2; // Delete
-                    }
-                    else
-                    {
-                        hoveredAction = 0;
-                    }
+                    if (oldRow >= 0) dgvData.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvData.InvalidateCell(e.ColumnIndex, hoveredRow);
                 }
-                else
+                dgvData.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (hoveredRow >= 0)
                 {
+                    int oldRow = hoveredRow;
+                    hoveredRow = -1;
                     hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvData.InvalidateCell(dgvData.Columns["colAction"].Index, oldRow);
                 }
-
-                if (oldHoveredRow != hoveredRow || oldHoveredAction != hoveredAction)
-                {
-                    dgvData.Invalidate();
-                }
+                dgvData.Cursor = Cursors.Default;
             }
         }
 
         private void DgvData_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
-            hoveredRow = -1;
-            hoveredCol = -1;
-            hoveredAction = 0;
-            dgvData.Invalidate();
+            if (hoveredRow >= 0)
+            {
+                int oldRow = hoveredRow;
+                hoveredRow = -1;
+                hoveredAction = 0;
+                dgvData.InvalidateCell(dgvData.Columns["colAction"].Index, oldRow);
+            }
+            dgvData.Cursor = Cursors.Default;
         }
 
         private async void DgvData_CellClick(object sender, DataGridViewCellEventArgs e)

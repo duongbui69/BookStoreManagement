@@ -288,7 +288,7 @@ namespace BookStoreManagement.UserControls
                     item.Title,
                     item.AuthorName ?? "Unknown",
                     item.CategoryName,
-                    GenerateDummyShelf(item.CategoryName),
+                    item.ShelfLocation ?? "Chưa xếp kệ",
                     item.Quantity,
                     GetStatusText(item.Quantity, item.MinStock)
                 );
@@ -306,19 +306,7 @@ namespace BookStoreManagement.UserControls
             paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
         }
 
-        private string GenerateDummyShelf(string categoryName)
-        {
-            if (string.IsNullOrEmpty(categoryName)) return "Kệ Khác";
-            char firstChar = char.ToUpper(categoryName[0]);
-            if (firstChar < 'A' || firstChar > 'Z') firstChar = 'K';
-            
-            // Simple deterministic hash for a specific book category so it's consistent
-            int hash = Math.Abs(categoryName.GetHashCode());
-            int shelfNum = (hash % 5) + 1;
-            int slotNum = (hash % 10) + 1;
-            
-            return $"Kệ {firstChar}{shelfNum}-{slotNum:D2}";
-        }
+
 
         private string GetStatusText(int qty, int minStock)
         {

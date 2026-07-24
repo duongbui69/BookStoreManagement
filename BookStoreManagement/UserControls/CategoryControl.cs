@@ -39,6 +39,9 @@ namespace BookStoreManagement.UserControls
         private int _pageSize = 5; 
         private string _statusFilter = "";
         private string _currentSearchTerm = "";
+        
+        private int _hoveredRowIndex = -1;
+        private int _hoveredAction = 0;
 
         public void PerformSearch(string keyword)
         {
@@ -139,6 +142,8 @@ namespace BookStoreManagement.UserControls
             dgvCategories.CellPainting += DgvCategories_CellPainting;
             dgvCategories.CellMouseClick += DgvCategories_CellMouseClick;
             dgvCategories.CellFormatting += DgvCategories_CellFormatting;
+            dgvCategories.CellMouseMove += DgvCategories_CellMouseMove;
+            dgvCategories.CellMouseLeave += DgvCategories_CellMouseLeave;
 
             pnlGridContainer.Controls.Add(dgvCategories);
 
@@ -230,46 +235,98 @@ namespace BookStoreManagement.UserControls
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
-                var editRect = new Rectangle(e.CellBounds.Left + 20, e.CellBounds.Top + (e.CellBounds.Height - 20) / 2, 20, 20);
-                var deleteRect = new Rectangle(editRect.Right + 10, editRect.Top, 20, 20);
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
                 
-                using (var font = new Font("Segoe UI Emoji", 12))
+                if (e.RowIndex == _hoveredRowIndex)
                 {
-                TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    if (_hoveredAction == 1)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
+                    }
                 }
-                using (var font = new Font("Segoe UI Emoji", 12))
-                {
-                TextRenderer.DrawText(e.Graphics, "🗑️", font, deleteRect, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                }
+
+                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
+                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
+
+                using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
                 
+                using (var pen = new Pen(Color.LightGray))
+                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 5, rect.X + rect.Width / 2, rect.Bottom - 5);
+
                 e.Handled = true;
             }
+        }
+
+        private void DgvCategories_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Action"].Index)
+            {
+                int action = (e.X < dgvCategories.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                
+                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = e.RowIndex;
+                    _hoveredAction = action;
+                    
+                    if (oldRow >= 0) dgvCategories.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvCategories.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
+                }
+                dgvCategories.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRowIndex >= 0)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = -1;
+                    _hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvCategories.InvalidateCell(dgvCategories.Columns["Action"].Index, oldRow);
+                }
+                dgvCategories.Cursor = Cursors.Default;
+            }
+        }
+
+        private void DgvCategories_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_hoveredRowIndex >= 0)
+            {
+                int oldRow = _hoveredRowIndex;
+                _hoveredRowIndex = -1;
+                _hoveredAction = 0;
+                dgvCategories.InvalidateCell(dgvCategories.Columns["Action"].Index, oldRow);
+            }
+            dgvCategories.Cursor = Cursors.Default;
         }
 
         private void DgvCategories_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Action"].Index)
             {
-                var editRect = new Rectangle(dgvCategories.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).Left + 20, 
-                                             dgvCategories.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).Top + (dgvCategories.Rows[e.RowIndex].Height - 20) / 2, 20, 20);
-                var deleteRect = new Rectangle(editRect.Right + 10, editRect.Top, 20, 20);
-
-                if (editRect.Contains(e.Location))
+                int id = Convert.ToInt32(dgvCategories.Rows[e.RowIndex].Cells[0].Value);
+                if (e.X < dgvCategories.Columns[e.ColumnIndex].Width / 2)
                 {
-                    int id = Convert.ToInt32(dgvCategories.Rows[e.RowIndex].Cells[0].Value);
                     var form = new CategoryForm(_categoryService.GetById(id));
                     if (form.ShowDialog() == DialogResult.OK)
                     {
                         LoadData();
                     }
                 }
-                else if (deleteRect.Contains(e.Location))
+                else
                 {
                     if (MessageBox.Show("Bạn có chắc chắn muốn xóa danh mục này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         try
                         {
-                            int id = Convert.ToInt32(dgvCategories.Rows[e.RowIndex].Cells[0].Value);
                             _categoryService.SetActive(id, false);
                             MessageBox.Show("Xóa danh mục thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadData();
