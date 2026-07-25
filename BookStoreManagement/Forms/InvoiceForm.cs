@@ -71,7 +71,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeUI()
         {
-            this.Text = "Chi tiết Hóa đơn";
+            this.Text = "Invoice Details";
             this.Size = new Size(800, 800);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.None;
@@ -83,7 +83,7 @@ namespace BookStoreManagement.Forms
 
             // 1. Header
             pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = "CHI TIẾT HOÁ ĐƠN", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
+            lblTitle = new Label { Text = "INVOICE DETAILS", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
             
             btnClose = new Button { Text = "X", Size = new Size(40, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Cursor = Cursors.Hand };
             btnClose.FlatAppearance.BorderSize = 0;
@@ -99,13 +99,13 @@ namespace BookStoreManagement.Forms
             Panel pnlFooterTopBorder = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = ThemeManager.TextBoxBorder };
             pnlFooter.Controls.Add(pnlFooterTopBorder);
 
-            btnExportPdf = new Button { Text = "Xuất PDF", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.ButtonFill, ForeColor = Color.White, Location = new Point(650, 15) };
+            btnExportPdf = new Button { Text = "Export PDF", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.ButtonFill, ForeColor = Color.White, Location = new Point(650, 15) };
             btnExportPdf.FlatAppearance.BorderSize = 0;
 
-            btnPrint = new Button { Text = "In Hoá đơn", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.ButtonFill, Location = new Point(515, 15) };
+            btnPrint = new Button { Text = "Print Invoice", Size = new Size(120, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.ButtonFill, Location = new Point(515, 15) };
             btnPrint.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
 
-            btnCloseFooter = new Button { Text = "Đóng", Size = new Size(100, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.TextPrimary, Location = new Point(400, 15) };
+            btnCloseFooter = new Button { Text = "Close", Size = new Size(100, 40), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, BackColor = ThemeManager.Background, ForeColor = ThemeManager.TextPrimary, Location = new Point(400, 15) };
             btnCloseFooter.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
             btnCloseFooter.Click += (s, e) => this.Close();
 
@@ -128,19 +128,19 @@ namespace BookStoreManagement.Forms
             tlpInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tlpInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 
-            pnlInvoiceInfo = CreateInfoBox("THÔNG TIN HÓA ĐƠN", out lblInvoiceTitle);
+            pnlInvoiceInfo = CreateInfoBox("INVOICE INFO", out lblInvoiceTitle);
             pnlInvoiceInfo.Margin = new Padding(0, 0, 12, 0);
-            lblOrderCode = AddInfoRow(pnlInvoiceInfo, "Mã hóa đơn:", "...", 40, true);
-            lblOrderDate = AddInfoRow(pnlInvoiceInfo, "Ngày lập:", "...", 65);
-            lblStaffName = AddInfoRow(pnlInvoiceInfo, "Nhân viên bán:", "...", 90);
-            lblStatus = AddInfoRow(pnlInvoiceInfo, "Trạng thái:", "...", 115, true, ThemeManager.ButtonFill);
+            lblOrderCode = AddInfoRow(pnlInvoiceInfo, "Invoice ID:", "...", 40, true);
+            lblOrderDate = AddInfoRow(pnlInvoiceInfo, "Creation date:", "...", 65);
+            lblStaffName = AddInfoRow(pnlInvoiceInfo, "Salesperson:", "...", 90);
+            lblStatus = AddInfoRow(pnlInvoiceInfo, "Status:", "...", 115, true, ThemeManager.ButtonFill);
 
-            pnlCustomerInfo = CreateInfoBox("THÔNG TIN KHÁCH HÀNG", out lblCustomerTitle);
+            pnlCustomerInfo = CreateInfoBox("CUSTOMER INFO", out lblCustomerTitle);
             pnlCustomerInfo.Margin = new Padding(12, 0, 0, 0);
-            lblCustomerName = AddInfoRow(pnlCustomerInfo, "Tên KH:", "...", 40, true);
+            lblCustomerName = AddInfoRow(pnlCustomerInfo, "Customer Name:", "...", 40, true);
             lblCustomerMST = AddInfoRow(pnlCustomerInfo, "MST/CCCD:", "...", 65);
-            lblCustomerPhone = AddInfoRow(pnlCustomerInfo, "Điện thoại:", "...", 90);
-            lblCustomerAddress = AddInfoRow(pnlCustomerInfo, "Địa chỉ:", "...", 115);
+            lblCustomerPhone = AddInfoRow(pnlCustomerInfo, "Phone:", "...", 90);
+            lblCustomerAddress = AddInfoRow(pnlCustomerInfo, "Address:", "...", 115);
 
             tlpInfo.Controls.Add(pnlInvoiceInfo, 0, 0);
             tlpInfo.Controls.Add(pnlCustomerInfo, 1, 0);
@@ -148,7 +148,7 @@ namespace BookStoreManagement.Forms
             // Product Grid
             pnlProductContainer = new Panel { Dock = DockStyle.Top, Height = 250, Margin = new Padding(0, 24, 0, 24) };
             
-            lblProductTitle = new Label { Text = "CHI TIẾT SẢN PHẨM", Dock = DockStyle.Top, Height = 40, Font = new Font("Segoe UI", 10F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleCenter, BackColor = ThemeManager.CardBackground, ForeColor = ThemeManager.ButtonFill };
+            lblProductTitle = new Label { Text = "PRODUCT DETAILS", Dock = DockStyle.Top, Height = 40, Font = new Font("Segoe UI", 10F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleCenter, BackColor = ThemeManager.CardBackground, ForeColor = ThemeManager.ButtonFill };
             Panel pnlGridBorder = new Panel { Dock = DockStyle.Fill, Padding = new Padding(1), BackColor = ThemeManager.TextBoxBorder };
             pnlProductContainer.Controls.Add(pnlGridBorder);
             pnlGridBorder.Controls.Add(lblProductTitle); // Will be pushed down. Wait, Dock = Fill. Better: Top for label, Fill for Grid.
@@ -173,10 +173,10 @@ namespace BookStoreManagement.Forms
             dgvProducts.ColumnHeadersHeight = 40;
 
             dgvProducts.Columns.Add("STT", "STT");
-            dgvProducts.Columns.Add("Title", "Tên sách / Sản phẩm");
-            dgvProducts.Columns.Add("UnitPrice", "Đơn giá");
+            dgvProducts.Columns.Add("Title", "Book / Product title");
+            dgvProducts.Columns.Add("UnitPrice", "Unit price");
             dgvProducts.Columns.Add("Quantity", "SL");
-            dgvProducts.Columns.Add("LineTotal", "Thành tiền");
+            dgvProducts.Columns.Add("LineTotal", "Total amount");
 
             dgvProducts.Columns["STT"].Width = 50;
             dgvProducts.Columns["Quantity"].Width = 60;
@@ -202,14 +202,14 @@ namespace BookStoreManagement.Forms
             // Manual right alignment
             pnlSummary.Resize += (s, e) => pnlSummaryBox.Location = new Point(pnlSummary.Width - pnlSummaryBox.Width, 0);
 
-            lblSubTotal = AddSummaryRow(pnlSummaryBox, "Tổng tiền hàng:", "0 ₫", 10);
-            lblDiscount = AddSummaryRow(pnlSummaryBox, "Chiết khấu:", "0 ₫", 35);
+            lblSubTotal = AddSummaryRow(pnlSummaryBox, "Total merchandise:", "0 ₫", 10);
+            lblDiscount = AddSummaryRow(pnlSummaryBox, "Discount:", "0 ₫", 35);
             lblVAT = AddSummaryRow(pnlSummaryBox, "VAT (8%):", "0 ₫", 60);
             
             Panel pnlLine = new Panel { Width = 280, Height = 1, BackColor = ThemeManager.TextBoxBorder, Location = new Point(10, 90) };
             pnlSummaryBox.Controls.Add(pnlLine);
 
-            Label lblTotalText = new Label { Text = "TỔNG CỘNG:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(10, 105) };
+            Label lblTotalText = new Label { Text = "TOTAL:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(10, 105) };
             lblTotalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 150, Location = new Point(140, 100) };
             
             pnlSummaryBox.Controls.Add(lblTotalText);
@@ -287,7 +287,7 @@ namespace BookStoreManagement.Forms
                 var details = await _orderService.GetDetailsAsync(_salesOrderId);
                 if (details == null || details.Count == 0)
                 {
-                    MessageBox.Show("Không tìm thấy thông tin chi tiết hóa đơn.");
+                    MessageBox.Show("Invoice details not found.");
                     this.Close();
                     return;
                 }
@@ -300,8 +300,8 @@ namespace BookStoreManagement.Forms
                 lblStatus.Text = first.OrderStatus;
                 
                 // Colors for status
-                if (first.OrderStatus.ToLower().Contains("hoàn thành") || first.OrderStatus.ToLower().Contains("đã thanh toán")) lblStatus.ForeColor = Color.FromArgb(34, 197, 94);
-                else if (first.OrderStatus.ToLower().Contains("hủy") || first.OrderStatus.ToLower().Contains("chưa thanh toán")) lblStatus.ForeColor = Color.FromArgb(239, 68, 68);
+                if (first.OrderStatus.ToLower().Contains("completed") || first.OrderStatus.ToLower().Contains("paid")) lblStatus.ForeColor = Color.FromArgb(34, 197, 94);
+                else if (first.OrderStatus.ToLower().Contains("cancelled") || first.OrderStatus.ToLower().Contains("unpaid")) lblStatus.ForeColor = Color.FromArgb(239, 68, 68);
                 else lblStatus.ForeColor = Color.FromArgb(245, 158, 11);
 
                 if (first.CustomerId.HasValue && first.CustomerId.Value > 0)
@@ -324,7 +324,7 @@ namespace BookStoreManagement.Forms
                 }
                 else
                 {
-                    lblCustomerName.Text = "Khách vãng lai";
+                    lblCustomerName.Text = "Walk-in customer";
                     lblCustomerMST.Text = "-";
                     lblCustomerPhone.Text = "-";
                     lblCustomerAddress.Text = "-";
@@ -355,7 +355,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải chi tiết: " + ex.Message);
+                MessageBox.Show("Error loading details: " + ex.Message);
             }
         }
     }

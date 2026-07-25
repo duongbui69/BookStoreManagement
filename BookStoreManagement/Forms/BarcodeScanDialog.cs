@@ -77,7 +77,7 @@ namespace BookStoreManagement.Forms
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(161, 27);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Quét Mã Vạch";
+            this.lblTitle.Text = "Scan Barcode";
             
             // lblDescription
             this.lblDescription.BackColor = System.Drawing.Color.Transparent;
@@ -86,7 +86,7 @@ namespace BookStoreManagement.Forms
             this.lblDescription.Name = "lblDescription";
             this.lblDescription.Size = new System.Drawing.Size(273, 18);
             this.lblDescription.TabIndex = 1;
-            this.lblDescription.Text = "Sử dụng máy quét hoặc nhập tay mã hóa đơn/sản phẩm.";
+            this.lblDescription.Text = "Use a scanner or manually enter invoice/product code.";
             
             // txtBarcode
             this.txtBarcode.BorderRadius = 4;
@@ -109,7 +109,7 @@ namespace BookStoreManagement.Forms
             this.btnConfirm.Name = "btnConfirm";
             this.btnConfirm.Size = new System.Drawing.Size(130, 42);
             this.btnConfirm.TabIndex = 3;
-            this.btnConfirm.Text = "Xác nhận";
+            this.btnConfirm.Text = "Confirm";
             this.btnConfirm.Click += new System.EventHandler(this.BtnConfirm_Click);
             
             // btnCancel
@@ -120,7 +120,7 @@ namespace BookStoreManagement.Forms
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(130, 42);
             this.btnCancel.TabIndex = 4;
-            this.btnCancel.Text = "Hủy";
+            this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             
             // BarcodeScanDialog
@@ -161,7 +161,7 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                MessageBox.Show("Vui lòng nhập mã vạch.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter barcode.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 

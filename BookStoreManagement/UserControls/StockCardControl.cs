@@ -77,7 +77,7 @@ namespace BookStoreManagement.UserControls
             pnlPageHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 60,
+                Height = 80,
                 BackColor = Color.Transparent
             };
 
@@ -524,25 +524,7 @@ namespace BookStoreManagement.UserControls
         {
             if (dgvTransactions == null) return;
             
-            dgvTransactions.BackgroundColor = ThemeManager.CardBackground;
-            dgvTransactions.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvTransactions.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvTransactions.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
-            dgvTransactions.ColumnHeadersDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-
-            dgvTransactions.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvTransactions.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvTransactions.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvTransactions.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
-
-            foreach (DataGridViewColumn col in dgvTransactions.Columns)
-            {
-                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
+            ThemeManager.ApplyDataGridViewStyle(dgvTransactions);
         }
     }
 }

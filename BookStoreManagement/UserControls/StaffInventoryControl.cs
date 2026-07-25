@@ -65,23 +65,23 @@ namespace BookStoreManagement.UserControls
 
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Tra cứu tồn kho",
+                Text = "Lookup inventory",
                 Font = new Font("Inter", 18F, FontStyle.Bold),
-                Location = new Point(0, 0)
+                Location = new Point(0, 10)
             };
             pnlHeader.Controls.Add(lblTitle);
 
             lblSubtitle = new Guna2HtmlLabel
             {
-                Text = "Xem tình trạng sách tại cửa hàng.",
+                Text = "View book status at store.",
                 Font = new Font("Inter", 10F),
-                Location = new Point(0, 32)
+                Location = new Point(0, 55)
             };
             pnlHeader.Controls.Add(lblSubtitle);
 
             btnFilter = new Guna2Button
             {
-                Text = "Lọc",
+                Text = "Filter",
                 BorderRadius = 4,
                 BorderThickness = 1,
                 Font = new Font("Inter", 9F, FontStyle.Bold),
@@ -94,7 +94,7 @@ namespace BookStoreManagement.UserControls
 
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Tìm theo mã, tên sách, tác giả...",
+                PlaceholderText = "Search by code, title, author...",
                 BorderRadius = 4,
                 Size = new Size(300, 40),
                 Location = new Point(pnlHeader.Width - 410, 16),
@@ -148,21 +148,21 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            dgvInventory.Columns.Add("BookCode", "Mã Sách");
+            dgvInventory.Columns.Add("BookCode", "Book Code");
             dgvInventory.Columns["BookCode"].Width = 100;
 
-            dgvInventory.Columns.Add("Title", "Tên Sách");
+            dgvInventory.Columns.Add("Title", "Book Title");
             dgvInventory.Columns["Title"].FillWeight = 200;
 
-            dgvInventory.Columns.Add("Author", "Tác Giả");
-            dgvInventory.Columns.Add("Category", "Thể Loại");
-            dgvInventory.Columns.Add("Shelf", "Vị Trí Kệ");
+            dgvInventory.Columns.Add("Author", "Authors");
+            dgvInventory.Columns.Add("Category", "Categories");
+            dgvInventory.Columns.Add("Shelf", "Shelf Location");
             
-            dgvInventory.Columns.Add("Stock", "Tồn Kho");
+            dgvInventory.Columns.Add("Stock", "Inventory");
             dgvInventory.Columns["Stock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInventory.Columns["Stock"].Width = 100;
 
-            dgvInventory.Columns.Add("Status", "Trạng Thái");
+            dgvInventory.Columns.Add("Status", "Status");
             dgvInventory.Columns["Status"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvInventory.Columns["Status"].Width = 120;
 
@@ -191,20 +191,7 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.FillColor = ThemeManager.CardBackground;
             pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
 
-            dgvInventory.BackgroundColor = ThemeManager.CardBackground;
-            dgvInventory.GridColor = ThemeManager.TextBoxBorder;
-            dgvInventory.ThemeStyle.HeaderStyle.BackColor = ThemeManager.Background;
-            dgvInventory.ThemeStyle.HeaderStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvInventory.ThemeStyle.RowsStyle.BackColor = ThemeManager.CardBackground;
-            dgvInventory.ThemeStyle.RowsStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvInventory.ThemeStyle.RowsStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvInventory.ThemeStyle.RowsStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvInventory.ThemeStyle.AlternatingRowsStyle.BackColor = ThemeManager.CardBackground;
-            dgvInventory.ThemeStyle.AlternatingRowsStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvInventory.ThemeStyle.AlternatingRowsStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvInventory.ThemeStyle.AlternatingRowsStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvInventory.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvInventory.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvInventory);
         }
 
         private void DgvInventory_Resize(object? sender, EventArgs e)
@@ -265,7 +252,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -288,7 +275,7 @@ namespace BookStoreManagement.UserControls
                     item.Title,
                     item.AuthorName ?? "Unknown",
                     item.CategoryName,
-                    item.ShelfLocation ?? "Chưa xếp kệ",
+                    item.ShelfLocation ?? "Not shelved",
                     item.Quantity,
                     GetStatusText(item.Quantity, item.MinStock)
                 );
@@ -310,9 +297,9 @@ namespace BookStoreManagement.UserControls
 
         private string GetStatusText(int qty, int minStock)
         {
-            if (qty <= 0) return "Hết Hàng";
-            if (qty <= minStock) return "Sắp Hết";
-            return "Còn Hàng";
+            if (qty <= 0) return "Out of Stock";
+            if (qty <= minStock) return "Low Stock";
+            return "In Stock";
         }
 
         private void DgvInventory_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
@@ -327,12 +314,12 @@ namespace BookStoreManagement.UserControls
 
                 Color bgColor, textColor;
 
-                if (status == "Hết Hàng")
+                if (status == "Out of Stock")
                 {
                     bgColor = Color.FromArgb(40, Color.Firebrick);
                     textColor = Color.Firebrick;
                 }
-                else if (status == "Sắp Hết")
+                else if (status == "Low Stock")
                 {
                     bgColor = Color.FromArgb(40, Color.DarkOrange);
                     textColor = Color.DarkOrange;

@@ -11,7 +11,7 @@ namespace BookStoreManagement.Models
         public int UserId { get; set; }
         public DateTime ExportDate { get; set; }
         public decimal TotalAmount { get; set; }
-        public string Status { get; set; } = "Hoàn thành";
+        public string Status { get; set; } = "Completed";
         public string? Note { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace BookStoreManagement.Helpers
             UserId = user.Id;
             UserCode = user.UserCode ?? string.Empty;
             StoreId = user.StoreId ?? 1; // Default to 1 if not assigned
-            StoreName = user.StoreName ?? "Cửa hàng chính";
+            StoreName = user.StoreName ?? "Main Store";
             RoleId = user.RoleId;
             RoleName = user.RoleName ?? string.Empty;
             Username = user.Username;

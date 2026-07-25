@@ -27,7 +27,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = _store == null ? "Thêm mới cửa hàng" : "Cập nhật cửa hàng";
+            this.Text = _store == null ? "Add new store" : "Update store";
             this.Size = new Size(500, 600);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -77,14 +77,14 @@ namespace BookStoreManagement.Forms
             startY += spacing;
 
             // Status
-            chkIsActive = new CheckBox { Text = "Hoạt động (Active)", Location = new Point(20, startY + 20), AutoSize = true, Font = new Font("Segoe UI", 10), Checked = true };
+            chkIsActive = new CheckBox { Text = "Active", Location = new Point(20, startY + 20), AutoSize = true, Font = new Font("Segoe UI", 10), Checked = true };
             this.Controls.Add(chkIsActive);
             startY += spacing;
 
             // Buttons
             btnSave = new Button
             {
-                Text = "Lưu (Save)",
+                Text = "Save",
                 Location = new Point(250, startY + 20),
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
@@ -96,7 +96,7 @@ namespace BookStoreManagement.Forms
 
             btnCancel = new Button
             {
-                Text = "Huỷ (Cancel)",
+                Text = "Cancel",
                 Location = new Point(360, startY + 20),
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
@@ -160,7 +160,7 @@ namespace BookStoreManagement.Forms
                 string.IsNullOrWhiteSpace(txtStoreName.Text) || 
                 string.IsNullOrWhiteSpace(txtAddress.Text))
             {
-                MessageBox.Show("Vui lòng điền các trường bắt buộc (*).", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please fill required fields (*).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -168,7 +168,7 @@ namespace BookStoreManagement.Forms
             {
                 if (_repository.IsStoreCodeExists(txtStoreCode.Text))
                 {
-                    MessageBox.Show("Mã cửa hàng đã tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Store code already exists.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 

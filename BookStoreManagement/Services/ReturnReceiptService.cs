@@ -54,7 +54,7 @@ namespace BookStoreManagement.Services
         public ReturnReceipt? GetById(int id)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(id > 0, "Id phiếu trả không hợp lệ.");
+            Require(id > 0, "Invalid return receipt ID.");
             ReturnReceipt? receipt = _repository.GetById(id);
             if (receipt != null) PermissionService.RequireSameStoreOrAdmin(receipt.StoreId);
             return receipt;
@@ -63,7 +63,7 @@ namespace BookStoreManagement.Services
         public List<ReturnReceiptDetailFullViewModel> GetDetails(int returnReceiptId)
         {
             ReturnReceipt? receipt = GetById(returnReceiptId);
-            Require(receipt != null, "Không tìm thấy phiếu trả.");
+            Require(receipt != null, "Return receipt not found.");
             return _repository.GetDetails(returnReceiptId);
         }
 
@@ -82,19 +82,19 @@ namespace BookStoreManagement.Services
         public List<ReturnReceiptListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(fromDate <= toDate, "Khoảng ngày không hợp lệ.");
+            Require(fromDate <= toDate, "Invalid date range.");
             int? resolvedStoreId = ResolveStoreIdForRead(storeId);
             return _repository.GetByDateRange(fromDate, toDate, resolvedStoreId);
         }
 
         private void ValidateDetails(List<ReturnReceiptDetail> details)
         {
-            Require(details != null && details.Count > 0, "Phiếu trả phải có ít nhất một sách.");
+            Require(details != null && details.Count > 0, "Return receipt must have at least one book.");
             foreach (var detail in details)
             {
-                Require(detail.BookId > 0, "Sách không hợp lệ.");
-                Require(detail.Quantity > 0, "Số lượng trả phải lớn hơn 0.");
-                Require(detail.UnitPrice >= 0, "Đơn giá hoàn không hợp lệ.");
+                Require(detail.BookId > 0, "Invalid book.");
+                Require(detail.Quantity > 0, "Return quantity must be greater than 0.");
+                Require(detail.UnitPrice >= 0, "Invalid refund unit price.");
                 detail.ReturnReason = TrimNullable(detail.ReturnReason);
             }
         }
@@ -137,7 +137,7 @@ namespace BookStoreManagement.Services
         public async System.Threading.Tasks.Task<ReturnReceipt?> GetByIdAsync(int id)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(id > 0, "Id phiếu trả không hợp lệ.");
+            Require(id > 0, "Invalid return receipt ID.");
             ReturnReceipt? receipt = await _repository.GetByIdAsync(id);
             if (receipt != null) PermissionService.RequireSameStoreOrAdmin(receipt.StoreId);
             return receipt;
@@ -146,7 +146,7 @@ namespace BookStoreManagement.Services
         public async System.Threading.Tasks.Task<List<ReturnReceiptDetailFullViewModel>> GetDetailsAsync(int returnReceiptId)
         {
             ReturnReceipt? receipt = await GetByIdAsync(returnReceiptId);
-            Require(receipt != null, "Không tìm thấy phiếu trả.");
+            Require(receipt != null, "Return receipt not found.");
             return await _repository.GetDetailsAsync(returnReceiptId);
         }
 
@@ -165,7 +165,7 @@ namespace BookStoreManagement.Services
         public async System.Threading.Tasks.Task<List<ReturnReceiptListViewModel>> GetByDateRangeAsync(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(fromDate <= toDate, "Khoảng ngày không hợp lệ.");
+            Require(fromDate <= toDate, "Invalid date range.");
             int? resolvedStoreId = ResolveStoreIdForRead(storeId);
             return await _repository.GetByDateRangeAsync(fromDate, toDate, resolvedStoreId);
         }

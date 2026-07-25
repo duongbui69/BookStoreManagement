@@ -9,7 +9,7 @@ namespace BookStoreManagement.Helpers
         {
             if (string.IsNullOrWhiteSpace(password))
             {
-                throw new Exception("Mật khẩu không được để trống.");
+                throw new Exception("Password cannot be empty.");
             }
 
             return BCrypt.Net.BCrypt.HashPassword(password);

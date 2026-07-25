@@ -67,10 +67,10 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
             // 1. Page Header
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
             
             lblTitle = new Label { Text = "Account Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Manage admin and staff access permissions.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
+            lblSubTitle = new Label { Text = "Manage admin and staff access permissions.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
             
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
@@ -88,7 +88,7 @@ namespace BookStoreManagement.UserControls
             tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            btnFilter = new Guna2Button { Text = "Lọc", Size = new Size(100, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1, Margin = new Padding(0, 0, 15, 0) };
+            btnFilter = new Guna2Button { Text = "Filter", Size = new Size(100, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1, Margin = new Padding(0, 0, 15, 0) };
             btnAdd = new Guna2Button { Text = "+ Add User", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0) };
             
             btnAdd.Click += BtnAdd_Click;
@@ -124,14 +124,14 @@ namespace BookStoreManagement.UserControls
             dgvAccounts.Columns.Add("Id", "Id");
             dgvAccounts.Columns["Id"].Visible = false;
             
-            dgvAccounts.Columns.Add("Username", "Tên Đăng Nhập");
-            dgvAccounts.Columns.Add("FullName", "Họ Tên");
+            dgvAccounts.Columns.Add("Username", "Username");
+            dgvAccounts.Columns.Add("FullName", "Full Name");
             dgvAccounts.Columns.Add("Email", "Email");
-            dgvAccounts.Columns.Add("RoleName", "Vai Trò");
-            dgvAccounts.Columns.Add("StoreName", "Chi Nhánh");
-            dgvAccounts.Columns.Add("LastUpdate", "Lần Cập Nhật");
-            dgvAccounts.Columns.Add("Status", "Trạng Thái");
-            dgvAccounts.Columns.Add("Actions", "Hành Động");
+            dgvAccounts.Columns.Add("RoleName", "Role");
+            dgvAccounts.Columns.Add("StoreName", "Branch");
+            dgvAccounts.Columns.Add("LastUpdate", "Last Update");
+            dgvAccounts.Columns.Add("Status", "Status");
+            dgvAccounts.Columns.Add("Actions", "Action");
             
             // Disable alternating rows colors explicitly by making it same as default
             dgvAccounts.AlternatingRowsDefaultCellStyle.BackColor = Color.Empty;
@@ -191,7 +191,7 @@ namespace BookStoreManagement.UserControls
                         item.RoleName,
                         item.StoreName,
                         item.LastUpdate.ToString("dd/MM/yyyy HH:mm"),
-                        item.IsActive ? "Hoạt động" : "Bị khóa",
+                        item.IsActive ? "Active" : "Locked",
                         ""
                     );
                     dgvAccounts.Rows[rowIndex].Tag = item;
@@ -257,7 +257,7 @@ namespace BookStoreManagement.UserControls
                     }
                     else if (_hoveredAction == 2) // Delete
                     {
-                        if (MessageBox.Show($"Bạn có chắc chắn muốn vô hiệu hóa/xóa tài khoản {item.Username}?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                        if (MessageBox.Show($"Are you sure you want to disable/delete account {item.Username}?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
                             try
                             {
@@ -303,7 +303,7 @@ namespace BookStoreManagement.UserControls
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
                 string status = e.Value?.ToString() ?? "";
-                bool isActive = status == "Hoạt động";
+                bool isActive = status == "Active";
                 
                 Color bgColor = isActive ? Color.FromArgb(40, 46, 204, 113) : Color.FromArgb(40, 231, 76, 60);
                 Color textColor = isActive ? Color.FromArgb(39, 174, 96) : Color.FromArgb(192, 57, 43);
@@ -394,26 +394,7 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.FillColor = ThemeManager.CardBackground;
             pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
             
-            dgvAccounts.BackgroundColor = ThemeManager.CardBackground;
-            dgvAccounts.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvAccounts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.TextBoxBackground;
-            dgvAccounts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvAccounts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.TextBoxBackground;
-            dgvAccounts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            
-            dgvAccounts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvAccounts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvAccounts.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvAccounts.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvAccounts.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            
-            dgvAccounts.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            
-            
-            pagination.BackColor = ThemeManager.CardBackground;
-            
-            dgvAccounts.Invalidate();
+            ThemeManager.ApplyDataGridViewStyle(dgvAccounts);
         }
     }
 }

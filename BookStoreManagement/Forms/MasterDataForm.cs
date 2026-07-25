@@ -65,7 +65,7 @@ namespace BookStoreManagement.Forms
 
             lblTitle = new Label
             {
-                Text = recordId.HasValue ? "Cập nhật dữ liệu" : "Thêm mới dữ liệu",
+                Text = recordId.HasValue ? "Update data" : "Add new data",
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(24, 24)
@@ -88,7 +88,7 @@ namespace BookStoreManagement.Forms
 
             int yPos = 80;
 
-            lblName = new Label { Text = "Tên", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+            lblName = new Label { Text = "Name", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
             txtName = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
             pnlMain.Controls.Add(lblName);
             pnlMain.Controls.Add(txtName);
@@ -96,7 +96,7 @@ namespace BookStoreManagement.Forms
 
             if (dataType == "Publisher")
             {
-                lblPhone = new Label { Text = "Số điện thoại", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+                lblPhone = new Label { Text = "Phone number", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
                 txtPhone = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
                 pnlMain.Controls.Add(lblPhone);
                 pnlMain.Controls.Add(txtPhone);
@@ -110,17 +110,17 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                lblDesc = new Label { Text = "Mô tả", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+                lblDesc = new Label { Text = "Description", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
                 txtDesc = new TextBox { Location = new Point(24, yPos + 25), Width = this.Width - 52, Height = 80, Multiline = true, Font = new Font("Segoe UI", 10), Padding = new Padding(8) };
                 pnlMain.Controls.Add(lblDesc);
                 pnlMain.Controls.Add(txtDesc);
                 yPos += 120;
             }
 
-            lblStatus = new Label { Text = "Trạng thái", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
+            lblStatus = new Label { Text = "Status", AutoSize = true, Location = new Point(24, yPos), Font = new Font("Segoe UI", 10) };
             cboStatus = new ComboBox { Location = new Point(24, yPos + 25), Width = 150, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
-            cboStatus.Items.Add("Hoạt động");
-            cboStatus.Items.Add("Tạm khóa");
+            cboStatus.Items.Add("Active");
+            cboStatus.Items.Add("Locked");
             cboStatus.SelectedIndex = 0;
             pnlMain.Controls.Add(lblStatus);
             pnlMain.Controls.Add(cboStatus);
@@ -130,7 +130,7 @@ namespace BookStoreManagement.Forms
 
             btnCancel = new Button
             {
-                Text = "Hủy",
+                Text = "Cancel",
                 Size = new Size(100, 36),
                 Location = new Point(this.Width - 232, this.Height - 60),
                 FlatStyle = FlatStyle.Flat,
@@ -140,7 +140,7 @@ namespace BookStoreManagement.Forms
 
             btnSave = new Button
             {
-                Text = "Lưu thay đổi",
+                Text = "Save changes",
                 Size = new Size(120, 36),
                 Location = new Point(this.Width - 148, this.Height - 60),
                 FlatStyle = FlatStyle.Flat,
@@ -199,15 +199,15 @@ namespace BookStoreManagement.Forms
         {
             if (!recordId.HasValue)
             {
-                if (dataType == "Category") lblTitle.Text = "Thêm Thể loại mới";
-                else if (dataType == "Author") lblTitle.Text = "Thêm Tác giả mới";
-                else if (dataType == "Publisher") lblTitle.Text = "Thêm Nhà xuất bản mới";
+                if (dataType == "Category") lblTitle.Text = "Add New Category";
+                else if (dataType == "Author") lblTitle.Text = "Add New Author";
+                else if (dataType == "Publisher") lblTitle.Text = "Add New Publisher";
                 return;
             }
 
             if (dataType == "Category")
             {
-                lblTitle.Text = "Cập nhật Thể loại";
+                lblTitle.Text = "Update Category";
                 var category = await _categoryRepo.GetByIdAsync(recordId.Value);
                 if (category != null)
                 {
@@ -218,7 +218,7 @@ namespace BookStoreManagement.Forms
             }
             else if (dataType == "Author")
             {
-                lblTitle.Text = "Cập nhật Tác giả";
+                lblTitle.Text = "Update Author";
                 var author = await _authorRepo.GetByIdAsync(recordId.Value);
                 if (author != null)
                 {
@@ -229,7 +229,7 @@ namespace BookStoreManagement.Forms
             }
             else if (dataType == "Publisher")
             {
-                lblTitle.Text = "Cập nhật Nhà xuất bản";
+                lblTitle.Text = "Update Publisher";
                 var publisher = await _publisherRepo.GetByIdAsync(recordId.Value);
                 if (publisher != null)
                 {
@@ -245,7 +245,7 @@ namespace BookStoreManagement.Forms
         {
             if (string.IsNullOrWhiteSpace(txtName.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter name!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -257,7 +257,7 @@ namespace BookStoreManagement.Forms
                 {
                     if (await _categoryRepo.IsNameExistsAsync(txtName.Text, recordId))
                     {
-                        MessageBox.Show("Tên thể loại đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Category name already exists!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -276,7 +276,7 @@ namespace BookStoreManagement.Forms
                 {
                     if (await _authorRepo.IsNameExistsAsync(txtName.Text, recordId))
                     {
-                        MessageBox.Show("Tên tác giả đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Author name already exists!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -295,7 +295,7 @@ namespace BookStoreManagement.Forms
                 {
                     if (await _publisherRepo.IsNameExistsAsync(txtName.Text, recordId))
                     {
-                        MessageBox.Show("Tên nhà xuất bản đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Publisher name already exists!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -316,7 +316,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Đã xảy ra lỗi: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

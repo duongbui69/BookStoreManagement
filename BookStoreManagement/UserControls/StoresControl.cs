@@ -57,7 +57,7 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
             lblTitle = new Label { Text = "Store Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Manage bookstore locations, personnel, and operational status.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblSubTitle = new Label { Text = "Manage bookstore locations, personnel, and operational status.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
             btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Add Store", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
@@ -364,7 +364,7 @@ namespace BookStoreManagement.UserControls
             }
             else if (deleteRect.Contains(e.Location))
             {
-                if (MessageBox.Show($"Bạn có chắc muốn xoá cửa hàng '{store.StoreName}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                if (MessageBox.Show($"Bạn có chắc muốn xoá cửa hàng '{store.StoreName}'?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     await _repository.SetActiveAsync(storeId, false);
                     await LoadDataAsync();
@@ -387,17 +387,7 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.BackColor = ThemeManager.Background;
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
 
-            dgvStores.BackgroundColor = ThemeManager.Background;
-            dgvStores.GridColor = ThemeManager.TextBoxBorder;
-            dgvStores.DefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvStores.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvStores.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvStores.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-
-            dgvStores.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvStores.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvStores.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvStores.ColumnHeadersHeight = 45;
+            ThemeManager.ApplyDataGridViewStyle(dgvStores);
         }
     }
 }

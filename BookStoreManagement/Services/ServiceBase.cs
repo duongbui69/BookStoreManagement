@@ -37,7 +37,7 @@ namespace BookStoreManagement.Services
 
             if (CurrentSession.IsAdmin)
             {
-                Require(requestedStoreId > 0, "Cửa hàng không hợp lệ.");
+                Require(requestedStoreId > 0, "Invalid store.");
                 return requestedStoreId;
             }
 
@@ -45,7 +45,7 @@ namespace BookStoreManagement.Services
 
             if (requestedStoreId > 0 && requestedStoreId != storeIdToUse)
             {
-                throw new Exception("Nhân viên chỉ được thao tác tại cửa hàng của mình.");
+                throw new Exception("Employee can only operate in their store.");
             }
 
             return storeIdToUse;
@@ -64,7 +64,7 @@ namespace BookStoreManagement.Services
 
             if (requestedStoreId.HasValue && requestedStoreId.Value != storeIdToUse)
             {
-                throw new Exception("Nhân viên chỉ được xem dữ liệu của cửa hàng mình.");
+                throw new Exception("Employee can only view data of their store.");
             }
 
             return storeIdToUse;

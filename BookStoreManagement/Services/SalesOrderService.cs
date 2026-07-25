@@ -76,16 +76,16 @@ namespace BookStoreManagement.Services
         public SalesOrder? GetById(int id)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(id > 0, "Id hóa đơn không hợp lệ.");
+            Require(id > 0, "Invalid invoice ID.");
             SalesOrder? order = _salesOrderRepository.GetById(id);
-            if (order != null && !CurrentSession.IsAdmin && order.UserId != CurrentSession.UserId) throw new Exception("Bạn chỉ được xem hóa đơn do mình lập.");
+            if (order != null && !CurrentSession.IsAdmin && order.UserId != CurrentSession.UserId) throw new Exception("You can only view invoices you created.");
             return order;
         }
 
         public List<SalesOrderDetailFullViewModel> GetDetails(int salesOrderId)
         {
             SalesOrder? order = GetById(salesOrderId);
-            Require(order != null, "Không tìm thấy hóa đơn.");
+            Require(order != null, "Invoice not found.");
             return _salesOrderRepository.GetDetails(salesOrderId);
         }
 
@@ -108,21 +108,21 @@ namespace BookStoreManagement.Services
         public bool CancelOrder(int salesOrderId)
         {
             PermissionService.RequireAdmin();
-            Require(salesOrderId > 0, "Id hóa đơn không hợp lệ.");
+            Require(salesOrderId > 0, "Invalid invoice ID.");
             return _salesOrderRepository.CancelOrder(salesOrderId);
         }
 
         private void ValidateDetails(int storeId, List<SalesOrderDetail> details)
         {
-            Require(details != null && details.Count > 0, "Hóa đơn phải có ít nhất một sách.");
+            Require(details != null && details.Count > 0, "Invoice must contain at least one book.");
             foreach (var detail in details)
             {
-                Require(detail.BookId > 0, "Sách không hợp lệ.");
-                Require(detail.Quantity > 0, "Số lượng bán phải lớn hơn 0.");
-                Require(detail.UnitPrice >= 0, "Đơn giá không hợp lệ.");
-                Require(detail.DiscountAmount >= 0, "Giảm giá không hợp lệ.");
+                Require(detail.BookId > 0, "Invalid book.");
+                Require(detail.Quantity > 0, "Sales quantity must be greater than 0.");
+                Require(detail.UnitPrice >= 0, "Invalid unit price.");
+                Require(detail.DiscountAmount >= 0, "Invalid discount.");
                 bool hasStock = _bookRepository.HasEnoughStock(storeId, detail.BookId, detail.Quantity);
-                if (!hasStock) throw new Exception("Sách không đủ tồn kho để bán.");
+                if (!hasStock) throw new Exception("Not enough stock to sell.");
             }
         }
 
@@ -183,16 +183,16 @@ namespace BookStoreManagement.Services
         public async Task<SalesOrder?> GetByIdAsync(int id)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(id > 0, "Id hóa đơn không hợp lệ.");
+            Require(id > 0, "Invalid invoice ID.");
             SalesOrder? order = await _salesOrderRepository.GetByIdAsync(id);
-            if (order != null && !CurrentSession.IsAdmin && order.UserId != CurrentSession.UserId) throw new Exception("Bạn chỉ được xem hóa đơn do mình lập.");
+            if (order != null && !CurrentSession.IsAdmin && order.UserId != CurrentSession.UserId) throw new Exception("You can only view invoices you created.");
             return order;
         }
 
         public async Task<List<SalesOrderDetailFullViewModel>> GetDetailsAsync(int salesOrderId)
         {
             SalesOrder? order = await GetByIdAsync(salesOrderId);
-            Require(order != null, "Không tìm thấy hóa đơn.");
+            Require(order != null, "Invoice not found.");
             return await _salesOrderRepository.GetDetailsAsync(salesOrderId);
         }
 
@@ -215,7 +215,7 @@ namespace BookStoreManagement.Services
         public async Task<bool> CancelOrderAsync(int salesOrderId)
         {
             PermissionService.RequireAdmin();
-            Require(salesOrderId > 0, "Id hóa đơn không hợp lệ.");
+            Require(salesOrderId > 0, "Invalid invoice ID.");
             return await _salesOrderRepository.CancelOrderAsync(salesOrderId);
         }
     }

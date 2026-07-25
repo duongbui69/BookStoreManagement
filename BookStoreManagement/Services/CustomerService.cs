@@ -17,7 +17,7 @@ namespace BookStoreManagement.Services
         public async Task<Customer?> GetByIdAsync(int id) 
         { 
             PermissionService.RequireStaffOrAdmin(); 
-            Require(id > 0, "Id khách hàng không hợp lệ."); 
+            Require(id > 0, "Invalid customer ID."); 
             return await _repository.GetByIdAsync(id); 
         }
 
@@ -42,8 +42,8 @@ namespace BookStoreManagement.Services
             customer.Address = TrimNullable(customer.Address);
             customer.IsActive = true;
 
-            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode)) throw new Exception("Mã khách hàng đã tồn tại.");
-            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber)) throw new Exception("Số CMND/CCCD đã tồn tại.");
+            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode)) throw new Exception("Customer code already exists.");
+            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber)) throw new Exception("ID Card already exists.");
 
             return await _repository.AddAsync(customer);
         }
@@ -51,7 +51,7 @@ namespace BookStoreManagement.Services
         public async Task<bool> UpdateAsync(Customer customer)
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(customer.Id > 0, "Id khách hàng không hợp lệ.");
+            Require(customer.Id > 0, "Invalid customer ID.");
             Validate(customer);
 
             customer.CustomerCode = Trim(customer.CustomerCode).ToUpperInvariant();
@@ -61,8 +61,8 @@ namespace BookStoreManagement.Services
             customer.Email = TrimNullable(customer.Email);
             customer.Address = TrimNullable(customer.Address);
 
-            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode, customer.Id)) throw new Exception("Mã khách hàng đã tồn tại.");
-            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber, customer.Id)) throw new Exception("Số CMND/CCCD đã tồn tại.");
+            if (await _repository.IsCustomerCodeExistsAsync(customer.CustomerCode, customer.Id)) throw new Exception("Customer code already exists.");
+            if (!string.IsNullOrWhiteSpace(customer.IdentityNumber) && await _repository.IsIdentityNumberExistsAsync(customer.IdentityNumber, customer.Id)) throw new Exception("ID Card already exists.");
 
             return await _repository.UpdateAsync(customer);
         }
@@ -70,30 +70,30 @@ namespace BookStoreManagement.Services
         public async Task<bool> SetActiveAsync(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id khách hàng không hợp lệ.");
+            Require(id > 0, "Invalid customer ID.");
             return await _repository.SetActiveAsync(id, isActive);
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id khách hàng không hợp lệ.");
+            Require(id > 0, "Invalid customer ID.");
             return await _repository.DeleteAsync(id);
         }
 
         public async Task<bool> DeleteMultipleAsync(IEnumerable<int> ids)
         {
             PermissionService.RequireAdmin();
-            Require(ids != null, "Danh sách Id không hợp lệ.");
+            Require(ids != null, "Invalid ID list.");
             return await _repository.DeleteMultipleAsync(ids);
         }
 
         private void Validate(Customer customer)
         {
-            Require(customer != null, "Dữ liệu khách hàng không hợp lệ.");
-            Require(!string.IsNullOrWhiteSpace(customer.FullName), "Tên khách hàng không được để trống.");
-            Require(customer.FullName.Length <= 150, "Tên khách hàng không được vượt quá 150 ký tự.");
-            Require(customer.Points >= 0, "Điểm tích lũy không được nhỏ hơn 0.");
+            Require(customer != null, "Invalid customer data.");
+            Require(!string.IsNullOrWhiteSpace(customer.FullName), "Customer name cannot be empty.");
+            Require(customer.FullName.Length <= 150, "Customer name cannot exceed 150 chars.");
+            Require(customer.Points >= 0, "Reward points cannot be < 0.");
         }
     }
 }

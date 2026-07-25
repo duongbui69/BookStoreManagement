@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Themes;
@@ -70,9 +70,9 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
             // 1. Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Margin = new Padding(0, 0, 0, gutter) };
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
             lblTitle = new Label { Text = "System Settings", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Manage core configuration, security, and operational parameters.", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(2, 40) };
+            lblSubTitle = new Label { Text = "Manage core configuration, security, and operational parameters.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
             
             primaryLabels.Add(lblTitle);
@@ -363,7 +363,7 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel CreateInputGroup(string label, string value, bool readOnly, int x, int y)
         {
             var pnl = new Guna2Panel { Height = 65, Width = 240, Location = new Point(x, y) };
-            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
             var txt = new Guna2TextBox { Text = value, ReadOnly = readOnly, Location = new Point(0, 25), Size = new Size(240, 36), BorderRadius = 4 };
             pnl.Controls.AddRange(new Control[] { lbl, txt });
             pnl.Resize += (s, e) => txt.Width = pnl.Width;
@@ -376,7 +376,7 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel CreateComboGroup(string label, string[] items, int x, int y)
         {
             var pnl = new Guna2Panel { Height = 65, Width = 240, Location = new Point(x, y) };
-            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            var lbl = new Label { Text = label, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
             var cb = new Guna2ComboBox { Location = new Point(0, 25), Size = new Size(240, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
             cb.Items.AddRange(items);
             if (items.Length > 0) cb.SelectedIndex = 0;

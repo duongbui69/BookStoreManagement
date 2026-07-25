@@ -26,7 +26,6 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
-        private Guna2Button btnExport;
 
         private TableLayoutPanel tlpStats;
         private Guna2Panel card1, card2, card3, card4;
@@ -68,18 +67,13 @@ namespace BookStoreManagement.UserControls
             int gutter = 20;
             this.Padding = new Padding(0);
 
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = false };
 
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0,0,0,gutter) };
-            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0,0,0,gutter) };
+            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
             lblSubTitle = new Label { Text = "Welcome back, here's what's happening with your store today.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0,30) };
             
-            btnExport = new Guna2Button { Text = "Export Report", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            
-            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnExport });
-            pnlPageHeader.Resize += (s, e) => {
-                btnExport.Location = new Point(pnlPageHeader.Width - 140, 12);
-            };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
             tlpStats = new TableLayoutPanel 
             { 
@@ -89,10 +83,15 @@ namespace BookStoreManagement.UserControls
             };
             for(int i=0; i<4; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             
-            card1 = CreateStatCard("Total Sales", "$0", Color.FromArgb(41, 128, 185));
-            card2 = CreateStatCard("Net Profit", "$0", Color.FromArgb(128, 90, 213));
-            card3 = CreateStatCard("Total Orders", "0", Color.FromArgb(46, 204, 113));
-            card4 = CreateStatCard("Low Stock Alerts", "0", Color.FromArgb(231, 76, 60));
+            card1 = CreateStatCard("TOTAL SALES", "$0", Color.FromArgb(41, 128, 185));
+            card2 = CreateStatCard("NET PROFIT", "$0", Color.FromArgb(128, 90, 213));
+            card3 = CreateStatCard("TOTAL ORDERS", "0", Color.FromArgb(46, 204, 113));
+            card4 = CreateStatCard("LOW STOCK ALERTS", "0", Color.FromArgb(231, 76, 60));
+            
+            card1.Margin = new Padding(0, 0, 10, 0);
+            card2.Margin = new Padding(10, 0, 10, 0);
+            card3.Margin = new Padding(10, 0, 10, 0);
+            card4.Margin = new Padding(10, 0, 0, 0);
             
             tlpStats.Controls.Add(card1, 0, 0);
             tlpStats.Controls.Add(card2, 1, 0);
@@ -101,8 +100,7 @@ namespace BookStoreManagement.UserControls
 
             tlpMain = new TableLayoutPanel
             {
-                Dock = DockStyle.Top,
-                Height = 450,
+                Dock = DockStyle.Fill,
                 ColumnCount = 2,
                 RowCount = 1,
                 Margin = new Padding(0, 0, 0, gutter),
@@ -171,12 +169,19 @@ namespace BookStoreManagement.UserControls
 
             tlpMain.Controls.Add(pnlTableContainer, 1, 0);
 
+            Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+            Panel spacer2 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+
             pnlContent.Controls.Add(tlpMain);
+            pnlContent.Controls.Add(spacer2);
             pnlContent.Controls.Add(tlpStats);
+            pnlContent.Controls.Add(spacer1);
             pnlContent.Controls.Add(pnlPageHeader);
             
             pnlPageHeader.BringToFront();
+            spacer1.BringToFront();
             tlpStats.BringToFront();
+            spacer2.BringToFront();
             tlpMain.BringToFront();
 
             this.Controls.Add(pnlContent);
@@ -186,7 +191,7 @@ namespace BookStoreManagement.UserControls
 
         private Guna2Panel CreateStatCard(string title, string value, Color leftColor)
         {
-            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,10,0) };
+            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0) };
             
             var leftBar = new Panel { Dock = DockStyle.Left, Width = 4, BackColor = leftColor };
             leftBar.Tag = "LeftBarColor";
@@ -344,8 +349,6 @@ namespace BookStoreManagement.UserControls
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
             
-            btnExport.FillColor = ThemeManager.ButtonFill;
-            btnExport.ForeColor = ThemeManager.ButtonText;
 
             ApplyThemeToCard(card1);
             ApplyThemeToCard(card2);
@@ -362,25 +365,7 @@ namespace BookStoreManagement.UserControls
             pnlTableHeader.CustomBorderColor = ThemeManager.TextBoxBorder;
             lblTableTitle.ForeColor = ThemeManager.TextPrimary;
 
-            dgvProducts.BackgroundColor = ThemeManager.CardBackground;
-            dgvProducts.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvProducts.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvProducts.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvProducts.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.ButtonFill;
-            dgvProducts.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
-
-            dgvProducts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvProducts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvProducts.DefaultCellStyle.SelectionBackColor = ThemeManager.ButtonFill;
-            dgvProducts.DefaultCellStyle.SelectionForeColor = Color.White;
-            
-            dgvProducts.EnableHeadersVisualStyles = false;
-            dgvProducts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvProducts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dgvProducts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
-            dgvProducts.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            ThemeManager.ApplyDataGridViewStyle(dgvProducts);
             
             pnlLineChart.Invalidate();
         }

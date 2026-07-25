@@ -46,7 +46,7 @@ namespace BookStoreManagement.UserControls
         // Pagination
         private int _currentPage = 1;
         private const int _pageSize = 9;
-        private string _currentCategory = "Tất cả";
+        private string _currentCategory = "All";
         
         // Cart
         private Dictionary<int, CartItem> _cart = new Dictionary<int, CartItem>();
@@ -98,13 +98,13 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(15, 15),
                 Size = new Size(350, 40),
                 BorderRadius = 8,
-                PlaceholderText = "Tìm kiếm theo mã vạch, tên sách...",
+                PlaceholderText = "Search by barcode, title...",
                 IconLeftOffset = new Point(5, 0)
             };
             txtSearch.TextChanged += (s, e) => { _currentPage = 1; FilterBooks(); };
             
-            var btnScan = CreateOutlineButton("Quét mã", 380, 15);
-            var btnFilter = CreateOutlineButton("Lọc", 490, 15);
+            var btnScan = CreateOutlineButton("Scan barcode", 380, 15);
+            var btnFilter = CreateOutlineButton("Filter", 490, 15);
             
             pnlTop.Controls.Add(txtSearch);
             pnlTop.Controls.Add(btnScan);
@@ -152,7 +152,7 @@ namespace BookStoreManagement.UserControls
             // Customer Card
             var pnlCustomer = new Guna2Panel { Dock = DockStyle.Top, Height = 120, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 0, 0, 15) };
             var lblCustTitle = new Label { Text = "👤 Khách hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 15), AutoSize = true };
-            var btnAddCust = new Label { Text = "Thêm mới", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlCustomer.Width - 80, 18), AutoSize = true, Cursor = Cursors.Hand };
+            var btnAddCust = new Label { Text = "Add New", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlCustomer.Width - 80, 18), AutoSize = true, Cursor = Cursors.Hand };
             
             txtCustomer = new Guna2TextBox
             {
@@ -160,7 +160,7 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(pnlCustomer.Width - 30, 40),
                 Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right,
                 BorderRadius = 8,
-                PlaceholderText = "Tìm theo SĐT hoặc tên..."
+                PlaceholderText = "Search by phone or name..."
             };
             pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, txtCustomer });
             pnlRight.Controls.Add(pnlCustomer);
@@ -168,26 +168,26 @@ namespace BookStoreManagement.UserControls
             // Summary Card (Bottom)
             var pnlSummary = new Guna2Panel { Dock = DockStyle.Bottom, Height = 220, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 15, 0, 0) };
             
-            var lblTotalText = new Label { Text = "Tổng tiền hàng", Font = new Font("Segoe UI", 10F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 15), AutoSize = true };
+            var lblTotalText = new Label { Text = "Total merchandise", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 15), AutoSize = true };
             lblTotalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(pnlSummary.Width - 100, 15), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
             
-            var lblDiscountText = new Label { Text = "Giảm giá", Font = new Font("Segoe UI", 10F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 45), AutoSize = true };
+            var lblDiscountText = new Label { Text = "Discount", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 45), AutoSize = true };
             lblDiscount = new Label { Text = "- 0 ₫", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlSummary.Width - 100, 45), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
 
             var line = new Guna2Panel { Location = new Point(15, 75), Size = new Size(pnlSummary.Width - 30, 1), FillColor = ThemeManager.TextBoxBorder, Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right };
 
-            var lblFinalText = new Label { Text = "Khách cần trả", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 90), AutoSize = true };
+            var lblFinalText = new Label { Text = "Customer needs to pay", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 90), AutoSize = true };
             lblFinalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlSummary.Width - 150, 85), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
 
-            var btnCash = CreateOutlineButton("Tiền mặt", 15, 130, 120);
+            var btnCash = CreateOutlineButton("Cash", 15, 130, 120);
             btnCash.FillColor = Color.FromArgb(20, ThemeManager.ButtonFill);
             btnCash.ForeColor = ThemeManager.ButtonFill;
-            var btnTransfer = CreateOutlineButton("Chuyển khoản", 145, 130, 120);
+            var btnTransfer = CreateOutlineButton("Bank transfer", 145, 130, 120);
 
-            var btnSave = CreateOutlineButton("Lưu tạm", 15, 175, 100);
+            var btnSave = CreateOutlineButton("Save draft", 15, 175, 100);
             btnCheckout = new Guna2Button
             {
-                Text = "Thanh toán (F9)",
+                Text = "Pay (F9)",
                 Location = new Point(125, 175),
                 Size = new Size(pnlSummary.Width - 140, 35),
                 Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right,
@@ -204,7 +204,7 @@ namespace BookStoreManagement.UserControls
             var pnlCart = new Guna2Panel { Dock = DockStyle.Fill, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1 };
             var pnlCartTop = new Guna2Panel { Dock = DockStyle.Top, Height = 40, CustomBorderThickness = new Padding(0, 0, 0, 1), CustomBorderColor = ThemeManager.TextBoxBorder };
             var lblCartTitle = new Label { Text = "🛒 Giỏ hàng (0)", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(10, 10), AutoSize = true };
-            var btnClearCart = new Label { Text = "Xóa hết", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlCart.Width - 70, 12), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, Cursor = Cursors.Hand };
+            var btnClearCart = new Label { Text = "Clear all", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlCart.Width - 70, 12), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, Cursor = Cursors.Hand };
             btnClearCart.Click += (s, e) => { _cart.Clear(); RenderCart(); };
             
             pnlCartTop.Controls.Add(lblCartTitle);
@@ -284,7 +284,7 @@ namespace BookStoreManagement.UserControls
         private void RenderCategories()
         {
             flpCategories.Controls.Clear();
-            var allBtn = CreateCategoryButton("Tất cả", true);
+            var allBtn = CreateCategoryButton("All", true);
             flpCategories.Controls.Add(allBtn);
 
             foreach (var cat in _categories)
@@ -342,7 +342,7 @@ namespace BookStoreManagement.UserControls
         {
             var query = _allBooks.AsEnumerable();
             
-            if (_currentCategory != "Tất cả")
+            if (_currentCategory != "All")
             {
                 query = query.Where(b => b.CategoryName == _currentCategory);
             }
@@ -494,7 +494,7 @@ namespace BookStoreManagement.UserControls
         {
             if (item.Quantity <= 0)
             {
-                MessageBox.Show("Sách này đã hết hàng trong kho!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("This book is out of stock!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -506,7 +506,7 @@ namespace BookStoreManagement.UserControls
                 }
                 else
                 {
-                    MessageBox.Show("Không đủ số lượng trong kho!", "Cảnh báo");
+                    MessageBox.Show("Not enough stock!", "Warning");
                 }
             }
             else
@@ -600,11 +600,11 @@ namespace BookStoreManagement.UserControls
         {
             if (_cart.Count == 0)
             {
-                MessageBox.Show("Giỏ hàng đang trống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Cart is empty!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var confirm = MessageBox.Show("Xác nhận thanh toán hóa đơn này?", "Thanh toán", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirm = MessageBox.Show("Confirm payment for this invoice?", "Payment", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
                 try
@@ -624,9 +624,9 @@ namespace BookStoreManagement.UserControls
                         });
                     }
 
-                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, "Tiền mặt", "Bán tại quầy", details);
+                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, "Cash", "Over-the-counter", details);
 
-                    MessageBox.Show("Thanh toán thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Payment successful!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _cart.Clear();
                     RenderCart();
                     
@@ -636,7 +636,7 @@ namespace BookStoreManagement.UserControls
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi khi thanh toán: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Lỗi khi thanh toán: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

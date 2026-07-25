@@ -53,14 +53,14 @@ namespace BookStoreManagement.Services
 
         public bool ChangeMyPassword(string oldPassword, string newPassword, string confirmPassword)
         {
-            Require(CurrentSession.UserId > 0, "Vui lòng đăng nhập.");
+            Require(CurrentSession.UserId > 0, "Please log in.");
 
             User? user = _userRepository.GetById(CurrentSession.UserId);
-            Require(user != null, "Không tìm thấy tài khoản hiện tại.");
+            Require(user != null, "Current account not found.");
 
             if (!PasswordHasher.VerifyPassword(oldPassword, user!.PasswordHash))
             {
-                throw new Exception("Mật khẩu cũ không đúng.");
+                throw new Exception("Old password is incorrect.");
             }
 
             ValidatePassword(newPassword, confirmPassword);
@@ -70,12 +70,12 @@ namespace BookStoreManagement.Services
 
         public void ValidatePassword(string password, string? confirmPassword = null)
         {
-            Require(!string.IsNullOrWhiteSpace(password), "Mật khẩu không được để trống.");
-            Require(password.Length >= 6, "Mật khẩu phải có ít nhất 6 ký tự.");
+            Require(!string.IsNullOrWhiteSpace(password), "Password cannot be empty.");
+            Require(password.Length >= 6, "Password must have at least 6 characters.");
 
             if (confirmPassword != null)
             {
-                Require(password == confirmPassword, "Mật khẩu xác nhận không khớp.");
+                Require(password == confirmPassword, "Confirmation password does not match.");
             }
         }
     }

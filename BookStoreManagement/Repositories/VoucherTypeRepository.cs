@@ -26,7 +26,7 @@ namespace BookStoreManagement.Repositories
                         Name = GetString(reader, "Name"),
                         Description = GetNullableString(reader, "Description"),
                         GroupType = GetString(reader, "GroupType"),
-                        Status = GetString(reader, "Status")
+                        Status = GetBool(reader, "Status") ? "Active" : "Inactive"
                     });
                 }
                 return true;
@@ -51,7 +51,7 @@ namespace BookStoreManagement.Repositories
                         Name = GetString(reader, "Name"),
                         Description = GetNullableString(reader, "Description"),
                         GroupType = GetString(reader, "GroupType"),
-                        Status = GetString(reader, "Status")
+                        Status = GetBool(reader, "Status") ? "Active" : "Inactive"
                     };
                 }
                 return true;

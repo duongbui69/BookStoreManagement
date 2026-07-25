@@ -50,5 +50,39 @@ namespace BookStoreManagement.Themes
         public static Color ButtonFill => IsDarkMode ? DarkButtonFill : LightButtonFill;
         public static Color ButtonText => IsDarkMode ? DarkButtonText : LightButtonText;
         public static Color HoverColor => IsDarkMode ? DarkHoverColor : LightHoverColor;
+
+        public static void ApplyDataGridViewStyle(System.Windows.Forms.DataGridView dgv)
+        {
+            if (dgv == null) return;
+            
+            dgv.EnableHeadersVisualStyles = false;
+            dgv.RowHeadersVisible = false;
+            dgv.AllowUserToAddRows = false;
+            dgv.AllowUserToResizeRows = false;
+            dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            dgv.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            
+            if (dgv.RowTemplate.Height < 50) dgv.RowTemplate.Height = 50;
+
+            dgv.BackgroundColor = CardBackground;
+            dgv.GridColor = TextBoxBorder;
+            
+            dgv.DefaultCellStyle.BackColor = CardBackground;
+            dgv.DefaultCellStyle.ForeColor = TextPrimary;
+            dgv.DefaultCellStyle.SelectionBackColor = ButtonFill; 
+            dgv.DefaultCellStyle.SelectionForeColor = ButtonText;
+
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;
+            dgv.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            
+            foreach (System.Windows.Forms.DataGridViewColumn col in dgv.Columns)
+            {
+                col.HeaderCell.Style.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                col.HeaderCell.Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            }
+        }
     }
 }

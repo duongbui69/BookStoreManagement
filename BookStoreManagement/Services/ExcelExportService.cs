@@ -10,8 +10,8 @@ namespace BookStoreManagement.Services
         public void ExportDataTable(DataTable dataTable, string filePath, string sheetName = "Data")
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(dataTable != null, "Không có dữ liệu để xuất Excel.");
-            Require(!string.IsNullOrWhiteSpace(filePath), "Đường dẫn file Excel không hợp lệ.");
+            Require(dataTable != null, "No data to export to Excel.");
+            Require(!string.IsNullOrWhiteSpace(filePath), "Invalid Excel file path.");
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add(string.IsNullOrWhiteSpace(sheetName) ? "Data" : sheetName);
@@ -23,8 +23,8 @@ namespace BookStoreManagement.Services
         public void ExportDataGridView(DataGridView dataGridView, string filePath, string sheetName = "Data")
         {
             PermissionService.RequireStaffOrAdmin();
-            Require(dataGridView != null, "Không có bảng dữ liệu để xuất Excel.");
-            Require(!string.IsNullOrWhiteSpace(filePath), "Đường dẫn file Excel không hợp lệ.");
+            Require(dataGridView != null, "No data table to export to Excel.");
+            Require(!string.IsNullOrWhiteSpace(filePath), "Invalid Excel file path.");
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add(string.IsNullOrWhiteSpace(sheetName) ? "Data" : sheetName);

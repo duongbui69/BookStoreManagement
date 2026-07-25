@@ -12,6 +12,6 @@ namespace BookStoreManagement.Models
         public DateTime ImportDate { get; set; }
         public decimal TotalAmount { get; set; }
         public string? Note { get; set; }
-        public string Status { get; set; } = "Đã nhập";
+        public string Status { get; set; } = "Imported";
     }
 }

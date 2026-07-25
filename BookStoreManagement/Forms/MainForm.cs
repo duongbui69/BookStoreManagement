@@ -64,28 +64,28 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                LoadControl(new UserControls.StaffInventoryControl(), "Tra cứu tồn kho");
+                LoadControl(new UserControls.StaffInventoryControl(), "Lookup inventory");
             }
         }
 
         private void BtnStockCard_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.StockCardControl(), "Tìm kiếm thẻ kho...");
+            LoadControl(new UserControls.StockCardControl(), "Search stock card...");
         }
 
         private void BtnPurchaseReceipts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.PurchaseReceiptControl(), "Tìm kiếm phiếu nhập...");
+            LoadControl(new UserControls.PurchaseReceiptControl(), "Search import receipt...");
         }
 
         private void BtnExportReceipts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.ExportReceiptControl(), "Tìm kiếm phiếu xuất...");
+            LoadControl(new UserControls.ExportReceiptControl(), "Search export receipt...");
         }
 
         private void BtnVoucherTypes_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.VoucherTypeControl(), "Tìm kiếm loại phiếu...");
+            LoadControl(new UserControls.VoucherTypeControl(), "Search receipt type...");
         }
 
         private void BtnCatalog_Click(object sender, EventArgs e)
@@ -115,14 +115,14 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                LoadControl(new UserControls.StaffReturnControl(), "Xử lý Trả hàng");
+                LoadControl(new UserControls.StaffReturnControl(), "Process Return");
             }
         }
 
         private void BtnPOS_Click(object sender, EventArgs e)
         {
             // SetActiveTab or handling
-            LoadControl(new UserControls.POSControl(), "Tìm kiếm theo mã vạch, tên sách, tác giả...");
+            LoadControl(new UserControls.POSControl(), "Search by barcode, title, author...");
         }
 
         private void BtnMyInvoices_Click(object sender, EventArgs e)
@@ -133,13 +133,13 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                LoadControl(new UserControls.StaffMyInvoicesControl(), "Lịch sử hoá đơn");
+                LoadControl(new UserControls.StaffMyInvoicesControl(), "Invoice history");
             }
         }
 
         private void BtnMyShifts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.StaffMyShiftsControl(), "Ca làm việc của tôi");
+            LoadControl(new UserControls.StaffMyShiftsControl(), "My shifts");
         }
 
         private void BtnCustomer_Click(object sender, EventArgs e)
@@ -190,22 +190,22 @@ namespace BookStoreManagement.Forms
 
         private void BtnCategory_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.CategoryControl(), "Tìm kiếm danh mục...");
+            LoadControl(new UserControls.CategoryControl(), "Search category...");
         }
 
         private void BtnAuthor_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.AuthorControl(), "Tìm theo tên, mã...");
+            LoadControl(new UserControls.AuthorControl(), "Search by name, code...");
         }
 
         private void BtnPublisher_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.PublisherControl(), "Tìm kiếm nhà xuất bản...");
+            LoadControl(new UserControls.PublisherControl(), "Search publisher...");
         }
 
         private void BtnSupplier_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.SupplierControl(), "Tìm theo tên, mã, email, sđt...");
+            LoadControl(new UserControls.SupplierControl(), "Search by name, code, email, phone...");
         }
 
 
@@ -271,60 +271,60 @@ namespace BookStoreManagement.Forms
             if (_currentUser.RoleId == 1)
             {
                 // Admin Menu
-                AddMenu("Tổng quan", "dashboard", BtnDashboard_Click);
+                AddMenu("Overview", "dashboard", BtnDashboard_Click);
 
                 var catalogSub = new Dictionary<string, EventHandler>
                 {
-                    { "Sách", BtnCatalog_Click },
-                    { "Danh mục sách", BtnCategory_Click }
+                    { "Book", BtnCatalog_Click },
+                    { "Book Categories", BtnCategory_Click }
                 };
-                AddAccordionMenu("Quản lý sách", "menu_book", catalogSub);
+                AddAccordionMenu("Book management", "menu_book", catalogSub);
 
                 var inventorySub = new Dictionary<string, EventHandler>
                 {
-                    { "Thẻ kho", BtnStockCard_Click },
-                    { "Nhập kho", BtnPurchaseReceipts_Click },
-                    { "Xuất kho", BtnExportReceipts_Click },
-                    { "Loại phiếu", BtnVoucherTypes_Click },
-                    { "Thống kê hàng tồn kho", BtnInventory_Click }
+                    { "Stock card", BtnStockCard_Click },
+                    { "Import", BtnPurchaseReceipts_Click },
+                    { "Export", BtnExportReceipts_Click },
+                    { "Receipt type", BtnVoucherTypes_Click },
+                    { "Inventory statistics", BtnInventory_Click }
                 };
-                AddAccordionMenu("Quản lý kho", "inventory_2", inventorySub);
+                AddAccordionMenu("Inventory management", "inventory_2", inventorySub);
 
                 var hrSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý nhân viên", BtnHR_Click },
-                    { "Quản lý tài khoản", BtnAccount_Click },
-                    { "Quản lý các cửa hàng", BtnStores_Click }
+                    { "Employee management", BtnHR_Click },
+                    { "Account management", BtnAccount_Click },
+                    { "Manage stores", BtnStores_Click }
                 };
-                AddAccordionMenu("Quản lý nhân sự", "group", hrSub);
+                AddAccordionMenu("HR management", "group", hrSub);
 
                 var customerSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý khách hàng", BtnCustomer_Click },
-                    { "Quản lý đơn hàng", BtnOrders_Click },
-                    { "Quản lý hoá đơn", BtnInvoices_Click },
-                    { "Quản lý hoàn tiền", BtnRefunds_Click }
+                    { "Customer management", BtnCustomer_Click },
+                    { "Order management", BtnOrders_Click },
+                    { "Invoice management", BtnInvoices_Click },
+                    { "Refund management", BtnRefunds_Click }
                 };
-                AddAccordionMenu("Quản lý khách hàng", "groups", customerSub);
+                AddAccordionMenu("Customer management", "groups", customerSub);
 
                 var masterSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý tác giả", BtnAuthor_Click },
-                    { "Quản lý nhà xuất bản", BtnPublisher_Click },
-                    { "Quản lý nhà cung cấp", BtnSupplier_Click }
+                    { "Author management", BtnAuthor_Click },
+                    { "Publisher management", BtnPublisher_Click },
+                    { "Supplier management", BtnSupplier_Click }
                 };
-                AddAccordionMenu("Quản lý danh mục", "category", masterSub);
+                AddAccordionMenu("Manage Categories", "category", masterSub);
                 
-                AddMenu("Báo cáo thống kê", "assessment", BtnReports_Click);
+                AddMenu("Statistical Reports", "assessment", BtnReports_Click);
             }
             else
             {
                 // Staff Menu
-                AddMenu("Quầy bán hàng (POS)", "point_of_sale", BtnPOS_Click);
-                AddMenu("Trả hàng", "assignment_return", BtnRefunds_Click);
-                AddMenu("Tra cứu tồn kho", "inventory_2", BtnInventory_Click);
-                AddMenu("Hoá đơn của tôi", "receipt_long", BtnMyInvoices_Click);
-                AddMenu("Ca làm việc của tôi", "schedule", BtnMyShifts_Click);
+                AddMenu("Point of Sale (POS)", "point_of_sale", BtnPOS_Click);
+                AddMenu("Return", "assignment_return", BtnRefunds_Click);
+                AddMenu("Lookup inventory", "inventory_2", BtnInventory_Click);
+                AddMenu("My Invoices", "receipt_long", BtnMyInvoices_Click);
+                AddMenu("My shifts", "schedule", BtnMyShifts_Click);
             }
         }
 

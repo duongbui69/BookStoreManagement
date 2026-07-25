@@ -36,32 +36,32 @@ namespace BookStoreManagement.Services
         public bool UpdateStock(int bookId, string warehouse, int currentStock, int minStock)
         {
             PermissionService.RequireAdmin();
-            Require(bookId > 0, "Id sách không hợp lệ.");
-            Require(currentStock >= 0, "Số lượng tồn không hợp lệ.");
-            Require(minStock >= 0, "Tồn tối thiểu không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
+            Require(currentStock >= 0, "Invalid stock quantity.");
+            Require(minStock >= 0, "Invalid min stock.");
             return _repo.UpdateStock(bookId, warehouse, currentStock, minStock);
         }
 
         public async System.Threading.Tasks.Task<bool> UpdateStockAsync(int bookId, string warehouse, int currentStock, int minStock)
         {
             PermissionService.RequireAdmin();
-            Require(bookId > 0, "Id sách không hợp lệ.");
-            Require(currentStock >= 0, "Số lượng tồn không hợp lệ.");
-            Require(minStock >= 0, "Tồn tối thiểu không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
+            Require(currentStock >= 0, "Invalid stock quantity.");
+            Require(minStock >= 0, "Invalid min stock.");
             return await _repo.UpdateStockAsync(bookId, warehouse, currentStock, minStock);
         }
 
         public bool DeleteStock(int bookId, string warehouse)
         {
             PermissionService.RequireAdmin();
-            Require(bookId > 0, "Id sách không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
             return _repo.DeleteStock(bookId, warehouse);
         }
 
         public async System.Threading.Tasks.Task<bool> DeleteStockAsync(int bookId, string warehouse)
         {
             PermissionService.RequireAdmin();
-            Require(bookId > 0, "Id sách không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
             return await _repo.DeleteStockAsync(bookId, warehouse);
         }
     }

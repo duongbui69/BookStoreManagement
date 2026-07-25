@@ -58,11 +58,11 @@ namespace BookStoreManagement.UserControls
             this.Padding = new Padding(32);
 
             // Header Section
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 70 };
+            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 100 };
             
             lblTitle = new Label 
             { 
-                Text = "Quản lý nhà xuất bản", 
+                Text = "Publisher management", 
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 Location = new Point(0, 0), 
                 AutoSize = true 
@@ -70,9 +70,9 @@ namespace BookStoreManagement.UserControls
 
             lblSubTitle = new Label 
             { 
-                Text = "Quản lý danh sách các nhà xuất bản đối tác.", 
-                Font = new Font("Segoe UI", 10), 
-                Location = new Point(0, 32), 
+                Text = "Manage partner publishers list.", 
+                Font = new Font("Segoe UI", 11F), 
+                Location = new Point(0, 55), 
                 AutoSize = true 
             };
 
@@ -93,7 +93,7 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(130, 40), 
                 FlatStyle = FlatStyle.Flat 
             };
-            btnExport.Click += (s, e) => MessageBox.Show("Tính năng đang phát triển!");
+            btnExport.Click += (s, e) => MessageBox.Show("Feature under development!");
 
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnAdd, btnExport });
             pnlHeader.Resize += (s, e) => 
@@ -165,11 +165,11 @@ namespace BookStoreManagement.UserControls
         {
             dgvData.Columns.Clear();
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colIndex", HeaderText = "#", Width = 50, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCode", HeaderText = "MÃ NXB", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colName", HeaderText = "TÊN NHÀ XUẤT BẢN", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAddress", HeaderText = "ĐỊA CHỈ", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCode", HeaderText = "PUBLISHER ID", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colName", HeaderText = "PUBLISHER NAME", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAddress", HeaderText = "ADDRESS", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colEmail", HeaderText = "EMAIL", Width = 180, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "TRẠNG THÁI", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "STATUS", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "ACTION", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
 
             foreach (DataGridViewColumn col in dgvData.Columns)
@@ -192,15 +192,7 @@ namespace BookStoreManagement.UserControls
             btnExport.ForeColor = ThemeManager.TextPrimary;
             btnExport.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
             
-            dgvData.BackgroundColor = ThemeManager.CardBackground;
-            dgvData.GridColor = ThemeManager.TextBoxBorder;
-            dgvData.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvData.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvData.DefaultCellStyle.SelectionBackColor = ThemeManager.ButtonFill;
-            dgvData.DefaultCellStyle.SelectionForeColor = ThemeManager.ButtonText;
-            dgvData.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvData.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvData.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
+            ThemeManager.ApplyDataGridViewStyle(dgvData);
             
             lblPaginationInfo.ForeColor = ThemeManager.TextSecondary;
         }
@@ -238,7 +230,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -249,7 +241,7 @@ namespace BookStoreManagement.UserControls
             
             if (totalRecords == 0)
             {
-                lblPaginationInfo.Text = "Không có dữ liệu";
+                lblPaginationInfo.Text = "No data";
             }
             else
             {
@@ -308,7 +300,7 @@ namespace BookStoreManagement.UserControls
                 FlatStyle = FlatStyle.Flat,
                 BackColor = ThemeManager.CardBackground,
                 ForeColor = ThemeManager.TextPrimary,
-                Font = new Font("Segoe UI", 10),
+                Font = new Font("Segoe UI", 11F),
                 Cursor = Cursors.Hand
             };
         }
@@ -333,7 +325,7 @@ namespace BookStoreManagement.UserControls
                     e.PaintBackground(e.CellBounds, true);
                     bool isActive = currentPublishers[e.RowIndex].IsActive;
                     
-                    string text = isActive ? "Đang hợp tác" : "Ngừng hợp tác";
+                    string text = isActive ? "Cooperating" : "Stop cooperation";
                     Color bgColor = isActive ? Color.FromArgb(107, 254, 156) : Color.FromArgb(225, 226, 228);
                     Color fgColor = isActive ? Color.FromArgb(0, 82, 40) : Color.FromArgb(67, 71, 77);
 
@@ -465,7 +457,7 @@ namespace BookStoreManagement.UserControls
                 else if (hoveredAction == 2) // Delete
                 {
                     var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa nhà xuất bản '{publisher.PublisherName}'?", 
-                        "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                        "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     
                     if (result == DialogResult.Yes)
                     {
@@ -478,12 +470,12 @@ namespace BookStoreManagement.UserControls
                             }
                             else
                             {
-                                MessageBox.Show("Không thể xóa nhà xuất bản này. Có thể dữ liệu đang được sử dụng ở nơi khác.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Cannot delete this publisher. Data might be in use elsewhere.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Lỗi khi xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error deleting: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }

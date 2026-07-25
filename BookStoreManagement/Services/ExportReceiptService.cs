@@ -24,25 +24,25 @@ namespace BookStoreManagement.Services
 
         public ExportReceipt? GetById(int id) 
         { 
-            Require(id > 0, "Id phiếu xuất không hợp lệ."); 
+            Require(id > 0, "Invalid export receipt ID."); 
             return _repository.GetById(id); 
         }
 
         public async System.Threading.Tasks.Task<ExportReceipt?> GetByIdAsync(int id) 
         { 
-            Require(id > 0, "Id phiếu xuất không hợp lệ."); 
+            Require(id > 0, "Invalid export receipt ID."); 
             return await _repository.GetByIdAsync(id); 
         }
 
         public List<ExportReceiptDetail> GetDetails(int receiptId) 
         { 
-            Require(receiptId > 0, "Id phiếu xuất không hợp lệ."); 
+            Require(receiptId > 0, "Invalid export receipt ID."); 
             return _repository.GetDetails(receiptId); 
         }
 
         public async System.Threading.Tasks.Task<List<ExportReceiptDetail>> GetDetailsAsync(int receiptId) 
         { 
-            Require(receiptId > 0, "Id phiếu xuất không hợp lệ."); 
+            Require(receiptId > 0, "Invalid export receipt ID."); 
             return await _repository.GetDetailsAsync(receiptId); 
         }
 
@@ -58,15 +58,15 @@ namespace BookStoreManagement.Services
 
         public void UpdateStatus(int id, string status) 
         { 
-            Require(id > 0, "Id phiếu xuất không hợp lệ."); 
-            Require(!string.IsNullOrWhiteSpace(status), "Trạng thái không hợp lệ."); 
+            Require(id > 0, "Invalid export receipt ID."); 
+            Require(!string.IsNullOrWhiteSpace(status), "Invalid status."); 
             _repository.UpdateStatus(id, status); 
         }
 
         public async System.Threading.Tasks.Task UpdateStatusAsync(int id, string status) 
         { 
-            Require(id > 0, "Id phiếu xuất không hợp lệ."); 
-            Require(!string.IsNullOrWhiteSpace(status), "Trạng thái không hợp lệ."); 
+            Require(id > 0, "Invalid export receipt ID."); 
+            Require(!string.IsNullOrWhiteSpace(status), "Invalid status."); 
             await _repository.UpdateStatusAsync(id, status); 
         }
     }

@@ -65,26 +65,26 @@ namespace BookStoreManagement.UserControls
             this.AutoScroll = true;
 
             // Header
-            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.Transparent };
+            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.Transparent };
             
             lblTitle = new Label
             {
-                Text = "Xuất kho",
+                Text = "Export",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(0, 20)
+                Location = new Point(0, 0)
             };
             lblSubTitle = new Label
             {
-                Text = "Inventory Management > Xuất kho",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                Text = "Manage export receipts and track goods leaving the inventory.",
+                Font = new Font("Segoe UI", 11F),
                 AutoSize = true,
-                Location = new Point(0, 0)
+                Location = new Point(0, 45)
             };
 
             btnExport = new Guna2Button
             {
-                Text = "Xuất Excel",
+                Text = "Export Excel",
                 Size = new Size(120, 36),
                 BorderRadius = 4,
                 BorderThickness = 1,
@@ -94,7 +94,7 @@ namespace BookStoreManagement.UserControls
             };
             btnAdd = new Guna2Button
             {
-                Text = "+ Lập phiếu xuất",
+                Text = "+ Create Export Receipt",
                 Size = new Size(140, 36),
                 BorderRadius = 4,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -102,7 +102,7 @@ namespace BookStoreManagement.UserControls
                 Cursor = Cursors.Hand
             };
 
-            pnlHeader.Controls.AddRange(new Control[] { lblSubTitle, lblTitle, btnExport, btnAdd });
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnExport, btnAdd });
 
             // Stat Cards Container
             TableLayoutPanel pnlStats = new TableLayoutPanel
@@ -118,9 +118,9 @@ namespace BookStoreManagement.UserControls
             pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            cardTotalReceipts = CreateStatCard("TỔNG PHIẾU XUẤT", out lblTotalReceiptsValue);
-            cardTotalValue = CreateStatCard("TỔNG GIÁ TRỊ XUẤT", out lblTotalValueAmount);
-            cardPending = CreateStatCard("ĐƠN HÀNG CHỜ", out lblPendingValue);
+            cardTotalReceipts = CreateStatCard("TOTAL EXPORT RECEIPTS", out lblTotalReceiptsValue);
+            cardTotalValue = CreateStatCard("TOTAL EXPORT VALUE", out lblTotalValueAmount);
+            cardPending = CreateStatCard("PENDING ORDERS", out lblPendingValue);
 
             pnlStats.Controls.Add(cardTotalReceipts, 0, 0);
             pnlStats.Controls.Add(cardTotalValue, 1, 0);
@@ -139,7 +139,7 @@ namespace BookStoreManagement.UserControls
 
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Tìm mã phiếu...",
+                PlaceholderText = "Search receipt ID...",
                 Size = new Size(200, 36),
                 Location = new Point(12, 12),
                 BorderRadius = 4
@@ -151,12 +151,12 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(220, 12),
                 BorderRadius = 4
             };
-            cbReason.Items.AddRange(new object[] { "Lý do xuất", "Bán sỉ", "Bán lẻ", "Chuyển kho nội bộ", "Hủy hàng" });
+            cbReason.Items.Add("Export reason");
             cbReason.SelectedIndex = 0;
 
             btnFilter = new Guna2Button
             {
-                Text = "Lọc",
+                Text = "Filter",
                 Size = new Size(60, 36),
                 Location = new Point(390, 12),
                 BorderRadius = 4,
@@ -166,7 +166,7 @@ namespace BookStoreManagement.UserControls
 
             btnRefresh = new Guna2Button
             {
-                Text = "Tải lại",
+                Text = "Reload",
                 Size = new Size(80, 36),
                 Location = new Point(460, 12),
                 BorderRadius = 4,
@@ -203,16 +203,16 @@ namespace BookStoreManagement.UserControls
             dgvReceipts.SetDoubleBuffered(true);
 
             // Columns
-            dgvReceipts.Columns.Add("ReceiptCode", "MÃ PHIẾU");
-            dgvReceipts.Columns.Add("CustomerReason", "KHÁCH HÀNG / MỤC ĐÍCH");
-            dgvReceipts.Columns.Add("ExportDate", "NGÀY XUẤT");
-            dgvReceipts.Columns.Add("UserName", "NGƯỜI LẬP");
-            dgvReceipts.Columns.Add("Status", "TRẠNG THÁI");
+            dgvReceipts.Columns.Add("ReceiptCode", "RECEIPT ID");
+            dgvReceipts.Columns.Add("CustomerReason", "CUSTOMER / PURPOSE");
+            dgvReceipts.Columns.Add("ExportDate", "EXPORT DATE");
+            dgvReceipts.Columns.Add("UserName", "CREATOR");
+            dgvReceipts.Columns.Add("Status", "STATUS");
             
             var actionCol = new DataGridViewTextBoxColumn
             {
                 Name = "Action",
-                HeaderText = "THAO TÁC",
+                HeaderText = "ACTION",
                 Width = 100,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.None
             };
@@ -265,7 +265,7 @@ namespace BookStoreManagement.UserControls
                 Text = title,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(16, 16)
+                Location = new Point(0, 0)
             };
 
             lblValue = new Label
@@ -289,6 +289,25 @@ namespace BookStoreManagement.UserControls
             lblPendingValue.Text = stats.PendingCount.ToString("N0");
 
             _allReceipts = _receiptService.GetAll();
+            
+            // Populate cbReason dynamically
+            string selectedReason = cbReason.SelectedIndex > 0 ? cbReason.SelectedItem?.ToString() : null;
+            cbReason.Items.Clear();
+            cbReason.Items.Add("Export reason");
+            var distinctReasons = _allReceipts.Select(x => x.Reason).Distinct().Where(r => !string.IsNullOrEmpty(r)).OrderBy(r => r).ToList();
+            foreach (var r in distinctReasons)
+            {
+                cbReason.Items.Add(r);
+            }
+            if (selectedReason != null && cbReason.Items.Contains(selectedReason))
+            {
+                cbReason.SelectedItem = selectedReason;
+            }
+            else
+            {
+                cbReason.SelectedIndex = 0;
+            }
+
             ApplyFilters();
         }
 
@@ -483,10 +502,10 @@ namespace BookStoreManagement.UserControls
 
         private void DeleteReceipt(ExportReceiptListViewModel item)
         {
-            var result = MessageBox.Show($"Bạn có chắc muốn xóa phiếu xuất '{item.ReceiptCode}' không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var result = MessageBox.Show($"Are you sure you want to delete export receipt '{item.ReceiptCode}'?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
-                _receiptService.UpdateStatus(item.Id, "Đã hủy");
+                _receiptService.UpdateStatus(item.Id, "Cancelled");
                 LoadData();
             }
         }
@@ -559,20 +578,7 @@ namespace BookStoreManagement.UserControls
         {
             if (dgvReceipts == null) return;
             
-            dgvReceipts.BackgroundColor = ThemeManager.CardBackground;
-            dgvReceipts.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvReceipts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionForeColor = ThemeManager.TextSecondary;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-
-            dgvReceipts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvReceipts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvReceipts.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvReceipts.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvReceipts.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            ThemeManager.ApplyDataGridViewStyle(dgvReceipts);
         }
     }
 }

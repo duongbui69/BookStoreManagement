@@ -38,14 +38,14 @@ namespace BookStoreManagement.Services
         public StoreBookInventory? GetByStoreAndBook(int storeId, int bookId)
         {
             int resolvedStoreId = ResolveStoreIdForWrite(storeId);
-            Require(bookId > 0, "Id sách không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
             return _repository.GetByStoreAndBook(resolvedStoreId, bookId);
         }
 
         public System.Threading.Tasks.Task<StoreBookInventory?> GetByStoreAndBookAsync(int storeId, int bookId)
         {
             int resolvedStoreId = ResolveStoreIdForWrite(storeId);
-            Require(bookId > 0, "Id sách không hợp lệ.");
+            Require(bookId > 0, "Invalid book ID.");
             return _repository.GetByStoreAndBookAsync(resolvedStoreId, bookId);
         }
 
@@ -90,7 +90,7 @@ namespace BookStoreManagement.Services
         public bool Update(StoreBookInventory inventory)
         {
             PermissionService.RequireAdmin();
-            Require(inventory.Id > 0, "Id tồn kho không hợp lệ.");
+            Require(inventory.Id > 0, "Invalid inventory ID.");
             Validate(inventory);
             return _repository.Update(inventory);
         }
@@ -98,7 +98,7 @@ namespace BookStoreManagement.Services
         public System.Threading.Tasks.Task<bool> UpdateAsync(StoreBookInventory inventory)
         {
             PermissionService.RequireAdmin();
-            Require(inventory.Id > 0, "Id tồn kho không hợp lệ.");
+            Require(inventory.Id > 0, "Invalid inventory ID.");
             Validate(inventory);
             return _repository.UpdateAsync(inventory);
         }
@@ -106,26 +106,26 @@ namespace BookStoreManagement.Services
         public bool SetActive(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id tồn kho không hợp lệ.");
+            Require(id > 0, "Invalid inventory ID.");
             return _repository.SetActive(id, isActive);
         }
 
         public System.Threading.Tasks.Task<bool> SetActiveAsync(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id tồn kho không hợp lệ.");
+            Require(id > 0, "Invalid inventory ID.");
             return _repository.SetActiveAsync(id, isActive);
         }
 
         private void Validate(StoreBookInventory inventory)
         {
-            Require(inventory != null, "Dữ liệu tồn kho không hợp lệ.");
-            Require(inventory.StoreId > 0, "Cửa hàng không hợp lệ.");
-            Require(inventory.BookId > 0, "Sách không hợp lệ.");
-            Require(inventory.Quantity >= 0, "Số lượng tồn không hợp lệ.");
-            Require(inventory.MinStock >= 0, "Tồn tối thiểu không hợp lệ.");
-            Require(inventory.SellingPrice >= 0, "Giá bán không hợp lệ.");
-            if (inventory.ImportPrice.HasValue) Require(inventory.ImportPrice.Value >= 0, "Giá nhập không hợp lệ.");
+            Require(inventory != null, "Invalid inventory data.");
+            Require(inventory.StoreId > 0, "Invalid store.");
+            Require(inventory.BookId > 0, "Invalid book.");
+            Require(inventory.Quantity >= 0, "Invalid stock quantity.");
+            Require(inventory.MinStock >= 0, "Invalid min stock.");
+            Require(inventory.SellingPrice >= 0, "Invalid selling price.");
+            if (inventory.ImportPrice.HasValue) Require(inventory.ImportPrice.Value >= 0, "Invalid import price.");
         }
     }
 }

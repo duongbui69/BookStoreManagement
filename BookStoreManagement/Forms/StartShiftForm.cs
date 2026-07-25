@@ -37,7 +37,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = "Bắt đầu ca làm việc";
+            this.Text = "Start shift";
             this.Size = new Size(400, 320);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -49,7 +49,7 @@ namespace BookStoreManagement.Forms
 
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Bắt đầu ca mới",
+                Text = "Start new shift",
                 Font = new Font("Inter", 16F, FontStyle.Bold),
                 Location = new Point(24, 24)
             };
@@ -57,7 +57,7 @@ namespace BookStoreManagement.Forms
 
             lblShiftName = new Guna2HtmlLabel
             {
-                Text = "Tên ca làm việc",
+                Text = "Shift name",
                 Font = new Font("Inter", 10F, FontStyle.Bold),
                 Location = new Point(24, 70)
             };
@@ -70,13 +70,13 @@ namespace BookStoreManagement.Forms
                 BorderRadius = 4,
                 Font = new Font("Inter", 10F)
             };
-            cboShiftName.Items.AddRange(new string[] { "Sáng", "Chiều", "Tối" });
+            cboShiftName.Items.AddRange(new string[] { "Morning", "Afternoon", "Night" });
             cboShiftName.SelectedIndex = 0;
             pnlMain.Controls.Add(cboShiftName);
 
             lblInitialCash = new Guna2HtmlLabel
             {
-                Text = "Tiền mặt đầu ca (VNĐ)",
+                Text = "Opening cash (VND)",
                 Font = new Font("Inter", 10F, FontStyle.Bold),
                 Location = new Point(24, 150)
             };
@@ -88,7 +88,7 @@ namespace BookStoreManagement.Forms
                 Size = new Size(330, 40),
                 BorderRadius = 4,
                 Font = new Font("Inter", 10F),
-                PlaceholderText = "Nhập số tiền..."
+                PlaceholderText = "Enter amount..."
             };
             txtInitialCash.KeyPress += (s, e) => {
                 if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar)) e.Handled = true;
@@ -97,7 +97,7 @@ namespace BookStoreManagement.Forms
 
             btnCancel = new Guna2Button
             {
-                Text = "Hủy",
+                Text = "Cancel",
                 Size = new Size(100, 40),
                 Location = new Point(144, 235),
                 BorderRadius = 4,
@@ -109,7 +109,7 @@ namespace BookStoreManagement.Forms
 
             btnStart = new Guna2Button
             {
-                Text = "Bắt đầu",
+                Text = "Start",
                 Size = new Size(100, 40),
                 Location = new Point(254, 235),
                 BorderRadius = 4,
@@ -123,25 +123,25 @@ namespace BookStoreManagement.Forms
         {
             if (string.IsNullOrWhiteSpace(cboShiftName.Text))
             {
-                MessageBox.Show("Vui lòng chọn ca làm việc.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a shift.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!decimal.TryParse(txtInitialCash.Text, out decimal initialCash) || initialCash < 0)
             {
-                MessageBox.Show("Số tiền mặt đầu ca không hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Invalid opening cash amount.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
                 _shiftService.OpenShift(cboShiftName.Text, initialCash);
-                MessageBox.Show("Bắt đầu ca thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Shift started successfully!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

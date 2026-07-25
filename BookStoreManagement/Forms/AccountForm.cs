@@ -38,7 +38,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = AccountModel == null ? "Thêm Mới Tài Khoản" : "Chỉnh Sửa Tài Khoản";
+            this.Text = AccountModel == null ? "Add New Account" : "Edit Account";
             this.Size = new Size(500, 650);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -48,31 +48,31 @@ namespace BookStoreManagement.Forms
             this.Controls.Add(lblTitle);
 
             int y = 70;
-            txtUsername = CreateInput("Tên đăng nhập", ref y);
+            txtUsername = CreateInput("Username", ref y);
             
-            Label lblPass = new Label { Text = "Mật khẩu (Bỏ trống nếu không đổi)", Location = new Point(20, y), AutoSize = true };
+            Label lblPass = new Label { Text = "Password (Leave blank if unchanged)", Location = new Point(20, y), AutoSize = true };
             this.Controls.Add(lblPass);
             txtPassword = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), PasswordChar = '*' };
             this.Controls.Add(txtPassword);
             y += 60;
 
-            txtFullName = CreateInput("Họ và tên", ref y);
-            txtPhone = CreateInput("Số điện thoại", ref y);
+            txtFullName = CreateInput("Full name", ref y);
+            txtPhone = CreateInput("Phone number", ref y);
             txtEmail = CreateInput("Email", ref y);
-            txtAddress = CreateInput("Địa chỉ", ref y);
+            txtAddress = CreateInput("Address", ref y);
 
-            Label lblRole = new Label { Text = "Vai trò", Location = new Point(20, y), AutoSize = true };
+            Label lblRole = new Label { Text = "Role", Location = new Point(20, y), AutoSize = true };
             cbRole = new ComboBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
             this.Controls.AddRange(new Control[] { lblRole, cbRole });
             y += 60;
 
-            chkIsActive = new CheckBox { Text = "Hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
+            chkIsActive = new CheckBox { Text = "Active", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
             y += 40;
 
-            btnSave = new Button { Text = "Lưu", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
+            btnSave = new Button { Text = "Save", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Hủy", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F) };
+            btnCancel = new Button { Text = "Cancel", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F) };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
@@ -134,23 +134,23 @@ namespace BookStoreManagement.Forms
             try {
                 if (AccountModel.Id == 0) {
                     if (string.IsNullOrEmpty(txtPassword.Text)) {
-                        MessageBox.Show("Vui lòng nhập mật khẩu cho tài khoản mới.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Please enter password for new account.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                     // Currently no async version of CreateUser in UserService
                     _userService.CreateUser(AccountModel, txtPassword.Text);
-                    MessageBox.Show("Tạo tài khoản thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Account created successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 } else {
                     _userService.Update(AccountModel);
                     if (!string.IsNullOrEmpty(txtPassword.Text)) {
                         _userService.ResetPassword(AccountModel.Id, txtPassword.Text);
                     }
-                    MessageBox.Show("Cập nhật tài khoản thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Account updated successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             } catch (Exception ex) {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

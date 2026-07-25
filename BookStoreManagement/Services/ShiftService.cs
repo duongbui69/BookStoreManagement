@@ -28,7 +28,7 @@ namespace BookStoreManagement.Services
             var activeShift = GetActiveShift();
             if (activeShift != null)
             {
-                throw new Exception("Bạn đang có một ca làm việc mở. Vui lòng chốt ca trước khi mở ca mới.");
+                throw new Exception("You have an open shift. Please close it before opening a new one.");
             }
 
             var shift = new Shift
@@ -48,7 +48,7 @@ namespace BookStoreManagement.Services
             var activeShift = GetActiveShift();
             if (activeShift == null || activeShift.Id != shiftId)
             {
-                throw new Exception("Ca làm việc không hợp lệ hoặc đã đóng.");
+                throw new Exception("Invalid or closed shift.");
             }
 
             // Calculate actual revenue and orders during this shift

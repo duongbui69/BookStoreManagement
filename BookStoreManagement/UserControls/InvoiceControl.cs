@@ -97,11 +97,11 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            lblTitle = new Label { Text = "Quản lý Hoá đơn", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Danh sách hoá đơn bán hàng từ khách hàng", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 5, 0, 0) };
+            lblTitle = new Label { Text = "Invoice Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Sales invoice list from customers", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 5, 0, 0) };
             
-            txtSearch = new TextBox { Width = 250, Font = new Font("Segoe UI", 10F), Margin = new Padding(0, 15, 10, 0), BorderStyle = BorderStyle.FixedSingle };
-            txtSearch.PlaceholderText = "Tìm kiếm hoá đơn...";
+            txtSearch = new TextBox { Width = 250, Font = new Font("Segoe UI", 11F), Margin = new Padding(0, 15, 10, 0), BorderStyle = BorderStyle.FixedSingle };
+            txtSearch.PlaceholderText = "Search invoice...";
             txtSearch.KeyDown += async (s, e) => {
                 if (e.KeyCode == Keys.Enter)
                 {
@@ -112,9 +112,9 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            btnFilter = new Button { Text = " Lọc", Size = new Size(100, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 10, 0) };
+            btnFilter = new Button { Text = " Filter", Size = new Size(100, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 10, 0) };
             
-            btnAdd = new Button { Text = "+ Tạo Hoá đơn", Size = new Size(160, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 0, 0) };
+            btnAdd = new Button { Text = "+ Create Invoice", Size = new Size(160, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -156,14 +156,14 @@ namespace BookStoreManagement.UserControls
             dgvInvoices.Columns.Add("Id", "Id");
             dgvInvoices.Columns["Id"].Visible = false;
 
-            dgvInvoices.Columns.Add("OrderCode", "Mã HĐ");
-            dgvInvoices.Columns.Add("OrderDate", "Ngày lập");
-            dgvInvoices.Columns.Add("CustomerName", "Khách hàng");
-            dgvInvoices.Columns.Add("SubTotal", "Tổng tiền (Chưa VAT)");
+            dgvInvoices.Columns.Add("OrderCode", "Invoice ID");
+            dgvInvoices.Columns.Add("OrderDate", "Creation date");
+            dgvInvoices.Columns.Add("CustomerName", "Customer");
+            dgvInvoices.Columns.Add("SubTotal", "Total amount (Excl. VAT)");
             dgvInvoices.Columns.Add("VAT", "VAT (8%)");
-            dgvInvoices.Columns.Add("TotalAmount", "Tổng thanh toán");
-            dgvInvoices.Columns.Add("OrderStatus", "Trạng thái");
-            dgvInvoices.Columns.Add("Actions", "Thao tác");
+            dgvInvoices.Columns.Add("TotalAmount", "Total payment");
+            dgvInvoices.Columns.Add("OrderStatus", "Status");
+            dgvInvoices.Columns.Add("Actions", "Action");
 
             foreach (DataGridViewColumn col in dgvInvoices.Columns)
             {
@@ -228,22 +228,7 @@ namespace BookStoreManagement.UserControls
 
             pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
-            dgvInvoices.BackgroundColor = ThemeManager.CardBackground;
-            dgvInvoices.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvInvoices.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvInvoices.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvInvoices.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dgvInvoices.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.Background;
-
-            dgvInvoices.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvInvoices.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvInvoices.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvInvoices.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvInvoices.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
-            
-            dgvInvoices.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvInvoices.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvInvoices);
         }
 
         private async System.Threading.Tasks.Task LoadDataAsync()
@@ -278,7 +263,7 @@ namespace BookStoreManagement.UserControls
                         ord.Id,
                         ord.OrderCode,
                         ord.OrderDate.ToString("dd/MM/yyyy HH:mm"),
-                        string.IsNullOrEmpty(ord.CustomerName) ? "Khách vãng lai" : ord.CustomerName,
+                        string.IsNullOrEmpty(ord.CustomerName) ? "Walk-in customer" : ord.CustomerName,
                         subTotal.ToString("N0") + " ₫",
                         vatAmount.ToString("N0") + " ₫",
                         totalAmount.ToString("N0") + " ₫",
@@ -291,7 +276,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+                MessageBox.Show("Error loading data: " + ex.Message);
             }
         }
 
@@ -369,17 +354,17 @@ namespace BookStoreManagement.UserControls
                 Color bgColor = Color.FromArgb(20, 100, 100, 100);
                 Color textColor = Color.Gray;
 
-                if (status.ToLower().Contains("hoàn thành") || status.ToLower() == "completed" || status.ToLower().Contains("đã thanh toán"))
+                if (status.ToLower().Contains("completed") || status.ToLower() == "completed" || status.ToLower().Contains("paid"))
                 {
                     bgColor = Color.FromArgb(20, 0, 42, 17); // tertiary color
                     textColor = Color.FromArgb(0, 42, 17);
                 }
-                else if (status.ToLower().Contains("đang giao") || status.ToLower() == "shipping" || status.ToLower().Contains("đang xử lý"))
+                else if (status.ToLower().Contains("delivering") || status.ToLower() == "shipping" || status.ToLower().Contains("processing"))
                 {
                     bgColor = Color.FromArgb(20, 90, 42, 156); // Purple
                     textColor = Color.FromArgb(90, 42, 156);
                 }
-                else if (status.ToLower().Contains("chờ xử lý") || status.ToLower() == "pending" || status.ToLower().Contains("chưa thanh toán"))
+                else if (status.ToLower().Contains("processing") || status.ToLower() == "pending" || status.ToLower().Contains("unpaid"))
                 {
                     bgColor = Color.FromArgb(20, 147, 0, 10); // Red error container
                     textColor = Color.FromArgb(147, 0, 10);

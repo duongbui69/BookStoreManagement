@@ -86,7 +86,7 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
             lblTitle = new Label { Text = "Employee Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Manage staff records, roles, and branch assignments.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblSubTitle = new Label { Text = "Manage staff records, roles, and branch assignments.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
             btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
@@ -264,7 +264,7 @@ namespace BookStoreManagement.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("Không tìm thấy nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Employee not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
@@ -470,22 +470,7 @@ namespace BookStoreManagement.UserControls
 
             // Grid
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
-            dgvEmployees.BackgroundColor = ThemeManager.CardBackground;
-            dgvEmployees.GridColor = ThemeManager.TextBoxBorder;
-            dgvEmployees.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvEmployees.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvEmployees.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvEmployees.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            
-            dgvEmployees.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvEmployees.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvEmployees.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvEmployees.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-
-            dgvEmployees.EnableHeadersVisualStyles = false;
-            dgvEmployees.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-            dgvEmployees.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvEmployees.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            ThemeManager.ApplyDataGridViewStyle(dgvEmployees);
         }
     
         protected override void Dispose(bool disposing)

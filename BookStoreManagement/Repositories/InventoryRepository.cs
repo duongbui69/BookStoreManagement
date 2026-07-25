@@ -93,7 +93,7 @@ namespace BookStoreManagement.Repositories
                 {
                     int qty = reader.GetInt32(4);
                     int minStock = reader.GetInt32(5);
-                    string status = qty == 0 ? "Hết hàng" : (qty <= minStock ? "Sắp hết" : "Đủ hàng");
+                    string status = qty == 0 ? "Out of stock" : (qty <= minStock ? "Low stock" : "In stock");
 
                     results.Add(new InventoryDisplayItem
                     {
@@ -169,7 +169,7 @@ namespace BookStoreManagement.Repositories
             var list = System.Linq.Enumerable.ToList(items);
             foreach (var item in list)
             {
-                item.Status = item.CurrentStock == 0 ? "Hết hàng" : (item.CurrentStock <= item.MinStock ? "Sắp hết" : "Đủ hàng");
+                item.Status = item.CurrentStock == 0 ? "Out of stock" : (item.CurrentStock <= item.MinStock ? "Low stock" : "In stock");
             }
 
             return (list, totalCount);
@@ -177,7 +177,7 @@ namespace BookStoreManagement.Repositories
 
         public bool UpdateStock(int bookId, string warehouse, int currentStock, int minStock)
         {
-            string column = warehouse == "Kho Tổng (Hà Nội)" ? "StockNorth" : (warehouse == "Kho Chi Nhánh (HCM)" ? "StockWest" : "StockCentral");
+            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
             string sql = $@"
                 UPDATE Books
                 SET {column} = @CurrentStock, MinStock = @MinStock, UpdatedAt = SYSDATETIME()
@@ -192,7 +192,7 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<bool> UpdateStockAsync(int bookId, string warehouse, int currentStock, int minStock)
         {
-            string column = warehouse == "Kho Tổng (Hà Nội)" ? "StockNorth" : (warehouse == "Kho Chi Nhánh (HCM)" ? "StockWest" : "StockCentral");
+            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
             string sql = $@"
                 UPDATE Books
                 SET {column} = @CurrentStock, MinStock = @MinStock, UpdatedAt = SYSDATETIME()
@@ -203,7 +203,7 @@ namespace BookStoreManagement.Repositories
 
         public bool DeleteStock(int bookId, string warehouse)
         {
-            string column = warehouse == "Kho Tổng (Hà Nội)" ? "StockNorth" : (warehouse == "Kho Chi Nhánh (HCM)" ? "StockWest" : "StockCentral");
+            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
             string sql = $@"
                 UPDATE Books
                 SET {column} = 0, UpdatedAt = SYSDATETIME()
@@ -214,7 +214,7 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<bool> DeleteStockAsync(int bookId, string warehouse)
         {
-            string column = warehouse == "Kho Tổng (Hà Nội)" ? "StockNorth" : (warehouse == "Kho Chi Nhánh (HCM)" ? "StockWest" : "StockCentral");
+            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
             string sql = $@"
                 UPDATE Books
                 SET {column} = 0, UpdatedAt = SYSDATETIME()

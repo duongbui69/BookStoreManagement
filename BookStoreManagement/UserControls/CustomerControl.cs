@@ -74,13 +74,13 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            lblTitle = new Label { Text = "Quản lý Khách hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Quản lý thông tin, điểm thưởng và trạng thái khách hàng.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Customer Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Manage customer info, reward points and status.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            btnDeleteMultiple = new Button { Text = "Delete selected", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Button { Text = "+ Thêm Khách hàng", Size = new Size(160, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Button { Text = "+ Add Customer", Size = new Size(160, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -126,14 +126,14 @@ namespace BookStoreManagement.UserControls
             dgvCustomers.Columns["Id"].Visible = false;
             dgvCustomers.Columns["Id"].ReadOnly = true;
 
-            dgvCustomers.Columns.Add("CustomerCode", "Mã KH");
-            dgvCustomers.Columns.Add("FullName", "Họ và Tên");
-            dgvCustomers.Columns.Add("Phone", "SĐT");
+            dgvCustomers.Columns.Add("CustomerCode", "Customer ID");
+            dgvCustomers.Columns.Add("FullName", "Full Name");
+            dgvCustomers.Columns.Add("Phone", "Phone");
             dgvCustomers.Columns.Add("Email", "Email");
-            dgvCustomers.Columns.Add("Address", "Địa chỉ");
-            dgvCustomers.Columns.Add("Points", "Điểm");
-            dgvCustomers.Columns.Add("Status", "Trạng thái");
-            dgvCustomers.Columns.Add("Actions", "Thao tác");
+            dgvCustomers.Columns.Add("Address", "Address");
+            dgvCustomers.Columns.Add("Points", "Points");
+            dgvCustomers.Columns.Add("Status", "Status");
+            dgvCustomers.Columns.Add("Actions", "Action");
 
             foreach (DataGridViewColumn col in dgvCustomers.Columns)
             {
@@ -158,11 +158,18 @@ namespace BookStoreManagement.UserControls
             pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
             pagination.PageChanged += async (s, args) => { _currentPage = args.NewPage; await LoadDataAsync(); };
 
+            Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+
             pnlGridContainer.Controls.Add(dgvCustomers);
             
             pnlContent.Controls.Add(pnlGridContainer);
+            pnlContent.Controls.Add(spacer1);
             pnlContent.Controls.Add(tlpHeader);
             pnlContent.Controls.Add(pagination);
+            
+            tlpHeader.BringToFront();
+            spacer1.BringToFront();
+            pnlGridContainer.BringToFront();
 
             this.Controls.Add(pnlContent);
             ApplyTheme();
@@ -195,23 +202,7 @@ namespace BookStoreManagement.UserControls
 
             pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
-            dgvCustomers.BackgroundColor = ThemeManager.CardBackground;
-            dgvCustomers.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvCustomers.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvCustomers.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvCustomers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dgvCustomers.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-
-            dgvCustomers.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvCustomers.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvCustomers.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground; // No selection color highlight
-            dgvCustomers.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvCustomers.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
-            
-            // Disable alternating colors explicitly to ensure 1 single background color
-            dgvCustomers.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvCustomers.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvCustomers);
         }
 
         private async System.Threading.Tasks.Task LoadDataAsync()
@@ -240,7 +231,7 @@ namespace BookStoreManagement.UserControls
                         cus.Email,
                         cus.Address,
                         cus.Points,
-                        cus.IsActive ? "Đang hoạt động" : "Ngừng hoạt động",
+                        cus.IsActive ? "Active" : "Inactive",
                         ""
                     );
                 }
@@ -250,7 +241,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+                MessageBox.Show("Error loading data: " + ex.Message);
             }
         }
 
@@ -308,18 +299,18 @@ namespace BookStoreManagement.UserControls
 
             if (selectedIds.Count > 0)
             {
-                var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa {selectedIds.Count} khách hàng đã chọn không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                var result = MessageBox.Show($"Are you sure you want to delete {selectedIds.Count} selected customers?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     try
                     {
                         await _service.DeleteMultipleAsync(selectedIds);
-                        MessageBox.Show("Xóa thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Deleted successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         await LoadDataAsync();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi xóa khách hàng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error deleting customer: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -354,8 +345,8 @@ namespace BookStoreManagement.UserControls
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 string status = e.Value.ToString() ?? "";
                 
-                Color bgColor = status == "Đang hoạt động" ? Color.FromArgb(20, 34, 197, 94) : Color.FromArgb(20, 239, 68, 68);
-                Color textColor = status == "Đang hoạt động" ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                Color bgColor = status == "Active" ? Color.FromArgb(20, 34, 197, 94) : Color.FromArgb(20, 239, 68, 68);
+                Color textColor = status == "Active" ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
                 
                 using (GraphicsPath path = new GraphicsPath())
                 {
@@ -448,7 +439,7 @@ namespace BookStoreManagement.UserControls
                 {
                     int id = Convert.ToInt32(dgvCustomers.Rows[e.RowIndex].Cells["Id"].Value);
                     string name = dgvCustomers.Rows[e.RowIndex].Cells["FullName"].Value.ToString();
-                    var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa khách hàng '{name}'?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa khách hàng '{name}'?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     
                     if (result == DialogResult.Yes)
                     {
@@ -459,7 +450,7 @@ namespace BookStoreManagement.UserControls
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Lỗi xóa: " + ex.Message);
+                            MessageBox.Show("Error deleting: " + ex.Message);
                         }
                     }
                 }

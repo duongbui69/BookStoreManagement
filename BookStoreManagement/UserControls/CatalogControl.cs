@@ -20,6 +20,7 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlContent;
         private Guna2Panel pnlPageHeader;
         private Label lblTitle;
+        private Label lblSubtitle;
 
         private TableLayoutPanel tlpStats;
         private Guna2Panel card1, card2, card3;
@@ -90,11 +91,13 @@ namespace BookStoreManagement.UserControls
             int gutter = 20;
             this.Padding = new Padding(0);
 
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = false };
 
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 40, Margin = new Padding(0,0,0,10) };
-            lblTitle = new Label { Text = "Quản lý Sách", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0,0) };
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0,0,0,10) };
+            lblTitle = new Label { Text = "Book Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubtitle = new Label { Text = "Manage books, inventory, and book information.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
             pnlPageHeader.Controls.Add(lblTitle);
+            pnlPageHeader.Controls.Add(lblSubtitle);
 
             tlpStats = new TableLayoutPanel 
             { 
@@ -104,9 +107,9 @@ namespace BookStoreManagement.UserControls
             };
             for(int i=0; i<3; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
             
-            card1 = CreateStatCard("TỔNG SỐ SÁCH", "0", "library_books", Color.FromArgb(41, 128, 185)); // Primary
-            card2 = CreateStatCard("SẮP HẾT / HẾT HÀNG", "0", "warning", Color.FromArgb(186, 26, 26)); // Error
-            card3 = CreateStatCard("SÁCH MỚI NHẬP", "0", "new_releases", Color.FromArgb(0, 186, 97)); // Tertiary
+            card1 = CreateStatCard("TOTAL BOOKS", "0", "library_books", Color.FromArgb(41, 128, 185)); // Primary
+            card2 = CreateStatCard("LOW STOCK / OUT OF STOCK", "0", "warning", Color.FromArgb(186, 26, 26)); // Error
+            card3 = CreateStatCard("NEWLY IMPORTED", "0", "new_releases", Color.FromArgb(0, 186, 97)); // Tertiary
             
             tlpStats.Controls.Add(card1, 0, 0);
             tlpStats.Controls.Add(card2, 1, 0);
@@ -114,11 +117,11 @@ namespace BookStoreManagement.UserControls
 
             pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,0,gutter), BorderRadius = 8 };
             
-            txtSearch = new Guna2TextBox { Size = new Size(240, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Tìm ISBN, Tên sách..." };
+            txtSearch = new Guna2TextBox { Size = new Size(240, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Search ISBN, Book title..." };
             txtSearch.TextChanged += async (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; await LoadDataAsync(); };
 
             cbCategory = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(280, 16), BorderRadius = 8, Cursor = Cursors.Hand };
-            cbCategory.Items.Add(new { Text = "Tất cả Thể loại", Value = (int?)null }); cbCategory.SelectedIndex = 0;
+            cbCategory.Items.Add(new { Text = "All Categories", Value = (int?)null }); cbCategory.SelectedIndex = 0;
             cbCategory.SelectedIndexChanged += async (s, e) => {
                 _categoryFilter = cbCategory.SelectedIndex > 0 ? (int?)((dynamic)cbCategory.SelectedItem).Value : null;
                 _currentPage = 1;
@@ -126,10 +129,10 @@ namespace BookStoreManagement.UserControls
             };
 
             cbStockStatus = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(460, 16), BorderRadius = 8, Cursor = Cursors.Hand };
-            cbStockStatus.Items.Add(new { Text = "Tất cả Trạng thái", Value = "" });
-            cbStockStatus.Items.Add(new { Text = "Còn hàng", Value = "instock" });
-            cbStockStatus.Items.Add(new { Text = "Hết hàng", Value = "outstock" });
-            cbStockStatus.Items.Add(new { Text = "Khóa", Value = "locked" });
+            cbStockStatus.Items.Add(new { Text = "All Statuses", Value = "" });
+            cbStockStatus.Items.Add(new { Text = "In stock", Value = "instock" });
+            cbStockStatus.Items.Add(new { Text = "Out of stock", Value = "outstock" });
+            cbStockStatus.Items.Add(new { Text = "Locked", Value = "locked" });
             cbStockStatus.DisplayMember = "Text";
             cbStockStatus.ValueMember = "Value";
             cbStockStatus.SelectedIndex = 0;
@@ -139,10 +142,10 @@ namespace BookStoreManagement.UserControls
                 await LoadDataAsync();
             };
 
-            btnExport = new Guna2Button { Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Text = "Export Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnExport.Click += BtnExport_Click;
 
-            btnAdd = new Guna2Button { Text = "+ Thêm mới", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd = new Guna2Button { Text = "+ Add New", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
             pnlFilters.Controls.AddRange(new Control[] { txtSearch, cbCategory, cbStockStatus, btnExport, btnAdd });
@@ -151,7 +154,7 @@ namespace BookStoreManagement.UserControls
                 btnExport.Location = new Point(pnlFilters.Width - 270, 16);
             };
 
-            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 400, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,0,gutter), BorderRadius = 8 };
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), BorderRadius = 8 };
             
             dgvBooks = new Guna2DataGridView
             {
@@ -172,11 +175,11 @@ namespace BookStoreManagement.UserControls
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 50 });
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Isbn13", HeaderText = "ISBN", Width = 150 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "TÊN SÁCH", Width = 250 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Author", HeaderText = "TÁC GIẢ", Width = 150 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "THỂ LOẠI", Width = 120 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Price", HeaderText = "ĐƠN GIÁ", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleRight } }, Width = 120 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "TRẠNG THÁI", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "BOOK TITLE", Width = 250 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Author", HeaderText = "AUTHOR", Width = 150 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "CATEGORY", Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Price", HeaderText = "UNIT PRICE", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleRight } }, Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "STATUS", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 120 });
             
             DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTION", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvBooks.Columns.Add(actionCol);
@@ -193,14 +196,24 @@ namespace BookStoreManagement.UserControls
             paginationControl.PageChanged += async (s, e) => { _currentPage = e.NewPage; await LoadDataAsync(); };
             pnlGridContainer.Controls.Add(paginationControl);
 
+            Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+            Panel spacer2 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+            Panel spacer3 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+
             pnlContent.Controls.Add(pnlGridContainer);
+            pnlContent.Controls.Add(spacer3);
             pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(spacer2);
             pnlContent.Controls.Add(tlpStats);
+            pnlContent.Controls.Add(spacer1);
             pnlContent.Controls.Add(pnlPageHeader);
             
             pnlPageHeader.BringToFront();
+            spacer1.BringToFront();
             tlpStats.BringToFront();
+            spacer2.BringToFront();
             pnlFilters.BringToFront();
+            spacer3.BringToFront();
             pnlGridContainer.BringToFront();
 
             this.Controls.Add(pnlContent);
@@ -214,7 +227,7 @@ namespace BookStoreManagement.UserControls
             
             // Icon
             var pnlIcon = new Guna2Panel { Size = new Size(48, 48), Location = new Point(20, 26), BorderRadius = 24, FillColor = Color.FromArgb(30, color) };
-            Label lblIcon = new Label { Text = iconText == "library_books" ? "📖" : (iconText == "warning" ? "⚠️" : "✨"), Font = new Font("Segoe UI Emoji", 16F), AutoSize = true, Location = new Point(10, 8), BackColor = Color.Transparent };
+            Label lblIcon = new Label { Text = iconText == "library_books" ? "📖" : (iconText == "warning" ? "⚠️" : "✨"), Font = new Font("Segoe UI Emoji", 16F), AutoSize = false, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
             pnlIcon.Controls.Add(lblIcon);
             
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 26) };
@@ -238,7 +251,7 @@ namespace BookStoreManagement.UserControls
         {
             var cats = await _categoryService.GetAllAsync();
             cbCategory.Items.Clear();
-            cbCategory.Items.Add(new { Text = "Tất cả Thể loại", Value = (int?)null });
+            cbCategory.Items.Add(new { Text = "All Categories", Value = (int?)null });
             foreach (var c in cats)
             {
                 if (c.IsActive)
@@ -267,12 +280,12 @@ namespace BookStoreManagement.UserControls
                     try
                     {
                         var excelService = new ExcelExportService();
-                        excelService.ExportDataGridView(dgvBooks, sfd.FileName, "Sách");
-                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        excelService.ExportDataGridView(dgvBooks, sfd.FileName, "Book");
+                        MessageBox.Show("Excel file exported successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error exporting Excel: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -379,23 +392,23 @@ namespace BookStoreManagement.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("Không tìm thấy sách.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Book not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
                 {
                     // Delete
-                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa sách này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("Are you sure you want to delete this book?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         try
                         {
                             await _bookService.SetActiveAsync(bookId, false);
-                            MessageBox.Show("Xóa sách thành công!");
+                            MessageBox.Show("Book deleted successfully!");
                             await LoadDataAsync();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -453,6 +466,7 @@ namespace BookStoreManagement.UserControls
             pnlContent.BackColor = ThemeManager.Background;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
+            lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
             btnAdd.FillColor = ThemeManager.ButtonFill;
             btnAdd.ForeColor = ThemeManager.ButtonText;
@@ -485,16 +499,7 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
             pnlGridContainer.FillColor = ThemeManager.CardBackground;
 
-            dgvBooks.BackgroundColor = ThemeManager.CardBackground;
-            dgvBooks.GridColor = ThemeManager.TextBoxBorder;
-            dgvBooks.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.TextBoxBackground;
-            dgvBooks.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvBooks.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.TextBoxBackground;
-            dgvBooks.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvBooks.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvBooks.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvBooks.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvBooks.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground; // Disable alternating color by forcing same color
+            ThemeManager.ApplyDataGridViewStyle(dgvBooks);
         }
 
         private void ApplyThemeToCard(Guna2Panel card)

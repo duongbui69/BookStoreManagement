@@ -9,7 +9,7 @@ namespace BookStoreManagement.Services
         {
             if (!CurrentSession.IsLoggedIn)
             {
-                throw new Exception("Bạn chưa đăng nhập.");
+                throw new Exception("You are not logged in.");
             }
         }
 
@@ -19,7 +19,7 @@ namespace BookStoreManagement.Services
 
             if (!CurrentSession.IsAdmin)
             {
-                throw new Exception("Chức năng này chỉ dành cho Admin.");
+                throw new Exception("This function is for Admin only.");
             }
         }
 
@@ -29,7 +29,7 @@ namespace BookStoreManagement.Services
 
             if (!CurrentSession.IsAdmin && !CurrentSession.IsStaff)
             {
-                throw new Exception("Bạn không có quyền sử dụng chức năng này.");
+                throw new Exception("You do not have permission to use this function.");
             }
         }
 
@@ -44,7 +44,7 @@ namespace BookStoreManagement.Services
 
             if (!CurrentSession.StoreId.HasValue || CurrentSession.StoreId.Value != storeId)
             {
-                throw new Exception("Bạn chỉ được thao tác với dữ liệu của cửa hàng mình.");
+                throw new Exception("You can only manipulate data from your store.");
             }
         }
 
@@ -54,7 +54,7 @@ namespace BookStoreManagement.Services
 
             if (!CurrentSession.IsAdmin && CurrentSession.UserId != userId)
             {
-                throw new Exception("Bạn không có quyền xem hoặc sửa thông tin này.");
+                throw new Exception("You do not have permission to view or edit this information.");
             }
         }
     }

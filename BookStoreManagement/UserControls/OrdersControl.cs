@@ -81,13 +81,13 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            lblTitle = new Label { Text = "Quản lý Đơn hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Danh sách tất cả các đơn hàng từ khách hàng.", Font = new Font("Segoe UI", 10F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Order Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "List of all orders from customers.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnDeleteMultiple = new Button { Text = "Xóa đã chọn", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            btnDeleteMultiple = new Button { Text = "Delete selected", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Button { Text = "+ TẠO ĐƠN HÀNG MỚI", Size = new Size(200, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Button { Text = "+ CREATE NEW ORDER", Size = new Size(200, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += BtnAdd_Click;
 
             tlpHeader.Controls.Add(lblTitle, 0, 0);
@@ -101,18 +101,18 @@ namespace BookStoreManagement.UserControls
             // 2. Filters Bar
             pnlFilters = new Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(15, 10, 15, 10) };
             
-            Label lblStatus = new Label { Text = "Trạng thái:", AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblStatus = new Label { Text = "Status:", AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cbStatus = new ComboBox { Location = new Point(95, 15), Width = 140, Font = new Font("Segoe UI", 9F), DropDownStyle = ComboBoxStyle.DropDownList };
-            cbStatus.Items.AddRange(new object[] { "Tất cả", "Pending", "Completed", "Cancelled" });
+            cbStatus.Items.AddRange(new object[] { "All", "Pending", "Completed", "Cancelled" });
             cbStatus.SelectedIndex = 0;
             cbStatus.SelectedIndexChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
-            Label lblTime = new Label { Text = "Thời gian:", AutoSize = true, Location = new Point(255, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblTime = new Label { Text = "Time:", AutoSize = true, Location = new Point(255, 20), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             dtpFrom = new DateTimePicker { Location = new Point(330, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
             dtpFrom.Value = DateTime.Now.AddDays(-30);
             dtpFrom.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
             
-            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(455, 18), Font = new Font("Segoe UI", 10F) };
+            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(455, 18), Font = new Font("Segoe UI", 11F) };
             dtpTo = new DateTimePicker { Location = new Point(475, 15), Width = 120, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
             dtpTo.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
@@ -153,13 +153,13 @@ namespace BookStoreManagement.UserControls
             dgvOrders.Columns["Id"].Visible = false;
             dgvOrders.Columns["Id"].ReadOnly = true;
 
-            dgvOrders.Columns.Add("OrderCode", "Mã Đơn");
-            dgvOrders.Columns.Add("OrderDate", "Ngày Tạo");
-            dgvOrders.Columns.Add("CustomerName", "Khách Hàng");
-            dgvOrders.Columns.Add("TotalAmount", "Tổng Tiền (VNĐ)");
-            dgvOrders.Columns.Add("PaymentMethod", "Thanh Toán");
-            dgvOrders.Columns.Add("OrderStatus", "Trạng Thái");
-            dgvOrders.Columns.Add("Actions", "Thao Tác");
+            dgvOrders.Columns.Add("OrderCode", "Order ID");
+            dgvOrders.Columns.Add("OrderDate", "Date Created");
+            dgvOrders.Columns.Add("CustomerName", "Customers");
+            dgvOrders.Columns.Add("TotalAmount", "Total Amount (VND)");
+            dgvOrders.Columns.Add("PaymentMethod", "Pay");
+            dgvOrders.Columns.Add("OrderStatus", "Status");
+            dgvOrders.Columns.Add("Actions", "Action");
 
             foreach (DataGridViewColumn col in dgvOrders.Columns)
             {
@@ -247,22 +247,7 @@ namespace BookStoreManagement.UserControls
 
             pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
-            dgvOrders.BackgroundColor = ThemeManager.CardBackground;
-            dgvOrders.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvOrders.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvOrders.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvOrders.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dgvOrders.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-
-            dgvOrders.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvOrders.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvOrders.DefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvOrders.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvOrders.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
-            
-            dgvOrders.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvOrders.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvOrders);
         }
 
         private async System.Threading.Tasks.Task LoadDataAsync()
@@ -271,8 +256,8 @@ namespace BookStoreManagement.UserControls
             {
                 var orders = await _service.GetByDateRangeAsync(dtpFrom.Value.Date, dtpTo.Value.Date.AddDays(1).AddTicks(-1), null);
                 
-                string statusFilter = cbStatus.SelectedItem?.ToString() ?? "Tất cả";
-                if (statusFilter != "Tất cả")
+                string statusFilter = cbStatus.SelectedItem?.ToString() ?? "All";
+                if (statusFilter != "All")
                 {
                     orders = orders.Where(o => o.OrderStatus == statusFilter).ToList();
                 }
@@ -299,7 +284,7 @@ namespace BookStoreManagement.UserControls
                         ord.Id,
                         ord.OrderCode,
                         ord.OrderDate.ToString("dd/MM/yyyy HH:mm"),
-                        string.IsNullOrEmpty(ord.CustomerName) ? "Khách vãng lai" : ord.CustomerName,
+                        string.IsNullOrEmpty(ord.CustomerName) ? "Walk-in customer" : ord.CustomerName,
                         ord.TotalAmount.ToString("N0") + " ₫",
                         ord.PaymentMethod,
                         ord.OrderStatus,
@@ -312,7 +297,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message);
+                MessageBox.Show("Error loading data: " + ex.Message);
             }
         }
 
@@ -370,7 +355,7 @@ namespace BookStoreManagement.UserControls
 
             if (selectedIds.Count > 0)
             {
-                var result = MessageBox.Show($"Bạn có chắc chắn muốn hủy {selectedIds.Count} đơn hàng đã chọn không?", "Xác nhận hủy", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                var result = MessageBox.Show($"Are you sure you want to cancel {selectedIds.Count} selected orders?", "Confirm cancel", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     try
@@ -379,12 +364,12 @@ namespace BookStoreManagement.UserControls
                         {
                             await _service.CancelOrderAsync(id);
                         }
-                        MessageBox.Show("Hủy đơn hàng thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Order cancelled successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         await LoadDataAsync();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi hủy đơn hàng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Order cancellation error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -396,7 +381,7 @@ namespace BookStoreManagement.UserControls
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
-                string name = e.Value.ToString() ?? "Khách vãng lai";
+                string name = e.Value.ToString() ?? "Walk-in customer";
                 string initial = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
                 
                 if (name.Contains(" "))
@@ -444,9 +429,9 @@ namespace BookStoreManagement.UserControls
                 string payment = e.Value.ToString() ?? "";
                 
                 string icon = "\uE8A5"; // default document
-                if (payment.ToLower().Contains("tiền mặt") || payment.ToLower().Contains("cash")) icon = "\uE8CB"; // payments
-                else if (payment.ToLower().Contains("chuyển khoản") || payment.ToLower().Contains("bank")) icon = "\uE8C7"; // account_balance
-                else if (payment.ToLower().Contains("thẻ") || payment.ToLower().Contains("card") || payment.ToLower().Contains("momo")) icon = "\uE8C9"; // credit_card
+                if (payment.ToLower().Contains("cash") || payment.ToLower().Contains("cash")) icon = "\uE8CB"; // payments
+                else if (payment.ToLower().Contains("transfer") || payment.ToLower().Contains("bank")) icon = "\uE8C7"; // account_balance
+                else if (payment.ToLower().Contains("card") || payment.ToLower().Contains("card") || payment.ToLower().Contains("momo")) icon = "\uE8C9"; // credit_card
 
                 int iconSize = 20;
                 int iconX = e.CellBounds.Left + 10;
@@ -490,22 +475,22 @@ namespace BookStoreManagement.UserControls
                 Color bgColor = Color.FromArgb(20, 100, 100, 100);
                 Color textColor = Color.Gray;
 
-                if (status.ToLower().Contains("hoàn thành") || status.ToLower() == "completed")
+                if (status.ToLower().Contains("completed") || status.ToLower() == "completed")
                 {
                     bgColor = Color.FromArgb(20, 34, 197, 94);
                     textColor = Color.FromArgb(34, 197, 94);
                 }
-                else if (status.ToLower().Contains("đang giao") || status.ToLower() == "shipping")
+                else if (status.ToLower().Contains("delivering") || status.ToLower() == "shipping")
                 {
                     bgColor = Color.FromArgb(20, 59, 130, 246); // Blue
                     textColor = Color.FromArgb(59, 130, 246);
                 }
-                else if (status.ToLower().Contains("chờ xử lý") || status.ToLower() == "pending")
+                else if (status.ToLower().Contains("processing") || status.ToLower() == "pending")
                 {
                     bgColor = Color.FromArgb(20, 245, 158, 11); // Orange
                     textColor = Color.FromArgb(245, 158, 11);
                 }
-                else if (status.ToLower().Contains("hủy") || status.ToLower() == "cancelled")
+                else if (status.ToLower().Contains("cancelled") || status.ToLower() == "cancelled")
                 {
                     bgColor = Color.FromArgb(20, 239, 68, 68); // Red
                     textColor = Color.FromArgb(239, 68, 68);
@@ -612,7 +597,7 @@ namespace BookStoreManagement.UserControls
                 {
                     int id = Convert.ToInt32(dgvOrders.Rows[e.RowIndex].Cells["Id"].Value);
                     string code = dgvOrders.Rows[e.RowIndex].Cells["OrderCode"].Value.ToString();
-                    var result = MessageBox.Show($"Bạn có chắc chắn muốn hủy đơn hàng '{code}'?", "Xác nhận hủy", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var result = MessageBox.Show($"Bạn có chắc chắn muốn hủy đơn hàng '{code}'?", "Confirm cancel", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     
                     if (result == DialogResult.Yes)
                     {
@@ -623,7 +608,7 @@ namespace BookStoreManagement.UserControls
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Lỗi hủy: " + ex.Message);
+                            MessageBox.Show("Cancellation error: " + ex.Message);
                         }
                     }
                 }

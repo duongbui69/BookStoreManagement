@@ -61,7 +61,7 @@ namespace BookStoreManagement.Repositories
                 while (reader.Read())
                 {
                     bool isActive = reader.GetBoolean(5);
-                    string status = isActive ? "Hoạt động" : "Khóa";
+                    string status = isActive ? "Active" : "Locked";
 
                     results.Add(new CategoryItem
                     {

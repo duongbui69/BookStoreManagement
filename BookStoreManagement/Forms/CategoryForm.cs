@@ -37,7 +37,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = CategoryModel == null ? "Thêm Mới Danh Mục" : "Chỉnh Sửa Danh Mục";
+            this.Text = CategoryModel == null ? "Add New Category" : "Edit Category";
             this.Size = new Size(450, 350);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -51,29 +51,29 @@ namespace BookStoreManagement.Forms
             int spacing = 60;
 
             // Category Name
-            Label lblName = new Label { Text = "Tên Danh Mục *", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblName = new Label { Text = "Category Name *", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtCategoryName = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 390, Height = 36, BorderRadius = 4 };
             this.Controls.Add(lblName);
             this.Controls.Add(txtCategoryName);
             yPos += spacing;
 
             // Description
-            Label lblDesc = new Label { Text = "Mô Tả", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Label lblDesc = new Label { Text = "Description", Location = new Point(20, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             txtDescription = new Guna2TextBox { Location = new Point(20, yPos + 20), Width = 390, Height = 36, BorderRadius = 4 };
             this.Controls.Add(lblDesc);
             this.Controls.Add(txtDescription);
             yPos += spacing;
 
             // Status
-            chkIsActive = new Guna2CheckBox { Text = "Trạng thái Hoạt Động", Location = new Point(20, yPos + 10), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            chkIsActive = new Guna2CheckBox { Text = "Active Status", Location = new Point(20, yPos + 10), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             this.Controls.Add(chkIsActive);
             yPos += spacing;
 
             // Buttons
-            btnCancel = new Guna2Button { Text = "Hủy Bỏ", Location = new Point(190, yPos), Width = 100, Height = 40, BorderRadius = 4, FillColor = Color.Transparent, BorderThickness = 1, ForeColor = Color.Black, Cursor = Cursors.Hand };
+            btnCancel = new Guna2Button { Text = "Cancel", Location = new Point(190, yPos), Width = 100, Height = 40, BorderRadius = 4, FillColor = Color.Transparent, BorderThickness = 1, ForeColor = Color.Black, Cursor = Cursors.Hand };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
             
-            btnSave = new Guna2Button { Text = "Lưu Thay Đổi", Location = new Point(310, yPos), Width = 100, Height = 40, BorderRadius = 4, Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "Save Changes", Location = new Point(310, yPos), Width = 100, Height = 40, BorderRadius = 4, Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
 
             this.Controls.Add(btnCancel);
@@ -96,7 +96,7 @@ namespace BookStoreManagement.Forms
             {
                 if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
                 {
-                    MessageBox.Show("Tên danh mục không được để trống.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Category name cannot be empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -110,7 +110,7 @@ namespace BookStoreManagement.Forms
                         CreatedAt = DateTime.Now
                     };
                     _service.Add(newCategory);
-                    MessageBox.Show("Thêm mới danh mục thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Category added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace BookStoreManagement.Forms
                     CategoryModel.UpdatedAt = DateTime.Now;
                     
                     _service.Update(CategoryModel);
-                    MessageBox.Show("Cập nhật danh mục thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Category updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
                 this.DialogResult = DialogResult.OK;
@@ -128,7 +128,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

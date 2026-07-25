@@ -24,6 +24,7 @@ namespace BookStoreManagement.UserControls
         // Header & Actions
         private Guna2Panel pnlHeader;
         private Label lblTitle;
+        private Label lblSubtitle;
         private Guna2Button btnExportExcel;
 
         // KPI Cards
@@ -66,25 +67,31 @@ namespace BookStoreManagement.UserControls
 
             pnlContent = new Guna2Panel { Dock = DockStyle.Top, Padding = new Padding(gutter), AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
 
-            // 1. Page Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, gutter) };
-            lblTitle = new Label { Text = "Thống kê tổng hợp", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            // 1. Header
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
+            
+            lblTitle = new Label { Text = "General statistics", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubtitle = new Label { Text = "Overview of revenue, orders and low stock warnings.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
             
             btnExportExcel = new Guna2Button { 
-                Text = "Xuất Excel", 
+                Text = "Export Excel", 
                 Size = new Size(130, 36), 
                 BorderRadius = 4, 
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold)
+                BorderThickness = 1, 
+                FillColor = Color.Transparent, 
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold), 
+                Cursor = Cursors.Hand 
             };
-            
-            pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnExportExcel });
-            pnlHeader.Resize += (s, e) => { btnExportExcel.Location = new Point(pnlHeader.Width - 130, 10); };
+            btnExportExcel.Click += (s, e) => MessageBox.Show("Feature under development!");
+
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, btnExportExcel });
+            pnlHeader.Resize += (s, e) => { btnExportExcel.Location = new Point(pnlHeader.Width - 130, 22); };
 
             // 2. Metric Cards
             pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 130, Margin = new Padding(0, 0, 0, gutter) };
-            cardRevenue = CreateMetricCard("Tổng Doanh Thu", "1,245,000,000 đ", "+12.5% so với tháng trước", true);
-            cardOrders = CreateMetricCard("Tổng Đơn Hàng", "4,521", "-2.1% so với tháng trước", false);
-            cardLowStock = CreateMetricCard("Sản Phẩm Sắp Hết", "34", "Cần nhập hàng khẩn cấp", false, true);
+            cardRevenue = CreateMetricCard("Total Revenue", "1,245,000,000 VND", "+12.5% vs last month", true);
+            cardOrders = CreateMetricCard("Total Orders", "4,521", "-2.1% vs last month", false);
+            cardLowStock = CreateMetricCard("Low Stock Products", "34", "Urgent restock needed", false, true);
             
             pnlMetrics.Controls.AddRange(new Control[] { cardRevenue, cardOrders, cardLowStock });
             pnlMetrics.Resize += (s, e) => 
@@ -106,27 +113,27 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1,
                 Margin = new Padding(0, 0, 0, gutter)
             };
-            var lblChartTitle = new Label { Text = "Biểu đồ doanh thu 12 tháng gần nhất", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), Name = "ChartTitle" };
+            var lblChartTitle = new Label { Text = "Revenue chart for the last 12 months", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), Name = "ChartTitle" };
             pnlChart.Controls.Add(lblChartTitle);
             pnlChart.Paint += PnlChart_Paint;
 
             // 4. Tables Container
             pnlTables = new Guna2Panel { Dock = DockStyle.Top, Height = 400, Margin = new Padding(0, 0, 0, gutter) };
             
-            pnlTopSelling = CreateTableContainer("Top 5 Sách bán chạy", out dgvTopSelling);
-            pnlWarnings = CreateTableContainer("Cảnh báo tồn kho", out dgvWarnings);
+            pnlTopSelling = CreateTableContainer("Top 5 Best-selling Books", out dgvTopSelling);
+            pnlWarnings = CreateTableContainer("Inventory warning", out dgvWarnings);
 
             // Configure Top Selling Grid
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Rank", HeaderText = "Hạng", Width = 60, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QuantitySold", HeaderText = "Số lượng bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Rank", HeaderText = "Rank", Width = 60, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Book title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QuantitySold", HeaderText = "Sales quantity", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
             dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Revenue", HeaderText = "Doanh thu", Width = 150, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N0" } });
             
             // Configure Warnings Grid
             dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Sku", HeaderText = "ISBN", Width = 120 });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Tồn hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Trạng thái", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Book title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Current stock", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Status", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
 
             dgvWarnings.CellPainting += DgvWarnings_CellPainting;
 
@@ -160,8 +167,8 @@ namespace BookStoreManagement.UserControls
         {
             var pnl = new Guna2Panel { Dock = DockStyle.Left, BorderRadius = 4, BorderThickness = 1 };
             
-            var pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 50, CustomBorderThickness = new Padding(0,0,0,1) };
-            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 12) };
+            var pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, CustomBorderThickness = new Padding(0,0,0,1) };
+            var lblTitle = new Label { Name = "TableTitle", Text = title, Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
             pnlHeader.Controls.Add(lblTitle);
 
             grid = new DataGridView
@@ -207,23 +214,39 @@ namespace BookStoreManagement.UserControls
             return card;
         }
 
+        private void UpdateMetricCard(Guna2Panel card, string valueText, string badgeText, bool isPositive, bool isError = false)
+        {
+            if (card == null) return;
+            var valLbl = card.Controls.Find("ValueLabel", true).FirstOrDefault() as Label;
+            if (valLbl != null) valLbl.Text = valueText;
+            
+            var badgeLbl = card.Controls.Find("BadgeLabel", true).FirstOrDefault() as Label;
+            if (badgeLbl != null && badgeText != null) badgeLbl.Text = badgeText;
+            
+            card.Tag = new Tuple<bool, bool>(isPositive, isError);
+        }
+
         private async System.Threading.Tasks.Task LoadDataAsync()
         {
             _stats = await _service.GetFinancialReportsAsync();
             if (_stats == null) return;
             
-            cardRevenue.Controls["ValueLabel"].Text = $"{_stats.TotalRevenue:N0} đ";
-            
             string revGrowthSign = _stats.RevenueGrowth >= 0 ? "+" : "";
-            (cardRevenue.Controls["BadgePanel"].Controls["BadgeLabel"] as Label).Text = $"{revGrowthSign}{_stats.RevenueGrowth:N1}% so với tháng trước";
-            cardRevenue.Tag = new Tuple<bool, bool>(_stats.RevenueGrowth >= 0, false);
+            UpdateMetricCard(cardRevenue, 
+                $"{_stats.TotalRevenue:N0} đ", 
+                $"{revGrowthSign}{_stats.RevenueGrowth:N1}% so với tháng trước", 
+                _stats.RevenueGrowth >= 0);
 
-            cardOrders.Controls["ValueLabel"].Text = $"{_stats.TotalOrders:N0}";
             string ordGrowthSign = _stats.OrdersGrowth >= 0 ? "+" : "";
-            (cardOrders.Controls["BadgePanel"].Controls["BadgeLabel"] as Label).Text = $"{ordGrowthSign}{_stats.OrdersGrowth:N1}% so với tháng trước";
-            cardOrders.Tag = new Tuple<bool, bool>(_stats.OrdersGrowth >= 0, false);
+            UpdateMetricCard(cardOrders, 
+                $"{_stats.TotalOrders:N0}", 
+                $"{ordGrowthSign}{_stats.OrdersGrowth:N1}% so với tháng trước", 
+                _stats.OrdersGrowth >= 0);
 
-            cardLowStock.Controls["ValueLabel"].Text = $"{_stats.LowStockCount}";
+            UpdateMetricCard(cardLowStock, 
+                $"{_stats.LowStockCount}", 
+                null, 
+                false, true);
             
             UpdateGrids();
             ApplyTheme(); // re-apply colors based on updated tags
@@ -388,8 +411,9 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
-
+            
             lblTitle.ForeColor = ThemeManager.TextPrimary;
+            lblSubtitle.ForeColor = ThemeManager.TextSecondary;
 
             btnExportExcel.FillColor = ThemeManager.ButtonFill;
             btnExportExcel.ForeColor = ThemeManager.ButtonText;
@@ -398,23 +422,30 @@ namespace BookStoreManagement.UserControls
             var cards = new[] { cardRevenue, cardOrders, cardLowStock };
             foreach (var card in cards)
             {
+                if (card == null) continue;
+                
                 card.FillColor = ThemeManager.CardBackground;
                 card.CustomBorderColor = ThemeManager.TextBoxBorder;
-                if (card.Controls["TitleLabel"] is Label lTitle) lTitle.ForeColor = ThemeManager.TextSecondary;
+                
+                var lTitle = card.Controls.Find("TitleLabel", true).FirstOrDefault() as Label;
+                if (lTitle != null) lTitle.ForeColor = ThemeManager.TextSecondary;
                 
                 var tag = card.Tag as Tuple<bool, bool>;
                 bool isPositive = tag?.Item1 ?? true;
                 bool isError = tag?.Item2 ?? false;
 
-                if (card.Controls["ValueLabel"] is Label lVal) 
+                var lVal = card.Controls.Find("ValueLabel", true).FirstOrDefault() as Label;
+                if (lVal != null) 
                 {
                     if (isError) lVal.ForeColor = Color.FromArgb(186, 26, 26); // error color
                     else lVal.ForeColor = ThemeManager.ButtonFill; // primary color
                 }
                 
-                if (card.Controls["BadgePanel"] is Guna2Panel bPnl)
+                var bPnl = card.Controls.Find("BadgePanel", true).FirstOrDefault() as Guna2Panel;
+                if (bPnl != null)
                 {
-                    if (bPnl.Controls["BadgeLabel"] is Label bLbl)
+                    var bLbl = bPnl.Controls.Find("BadgeLabel", true).FirstOrDefault() as Label;
+                    if (bLbl != null)
                     {
                         if (isError)
                         {
@@ -455,21 +486,7 @@ namespace BookStoreManagement.UserControls
 
             foreach (var grid in new[] { dgvTopSelling, dgvWarnings })
             {
-                grid.BackgroundColor = ThemeManager.CardBackground;
-                grid.GridColor = ThemeManager.TextBoxBorder;
-                grid.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-                grid.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-                grid.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-                grid.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-
-                grid.AlternatingRowsDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-                grid.AlternatingRowsDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-                grid.AlternatingRowsDefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-                grid.AlternatingRowsDefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-
-                grid.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.Background;
-                grid.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-                grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+                ThemeManager.ApplyDataGridViewStyle(grid);
             }
         }
     

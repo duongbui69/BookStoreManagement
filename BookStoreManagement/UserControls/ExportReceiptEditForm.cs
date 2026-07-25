@@ -61,7 +61,7 @@ namespace BookStoreManagement.UserControls
             pnlHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 60,
+                Height = 80,
                 BorderThickness = 1,
                 BorderRadius = 8,
                 CustomizableEdges = new Guna.UI2.WinForms.Suite.CustomizableEdges(true, true, false, false)
@@ -69,10 +69,10 @@ namespace BookStoreManagement.UserControls
             
             lblTitle = new Label
             {
-                Text = "Chi tiết Phiếu xuất",
+                Text = "Export Receipt Details",
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(20, 18)
+                Location = new Point(0, 0)
             };
             
             btnClose = new Guna2Button
@@ -94,19 +94,19 @@ namespace BookStoreManagement.UserControls
                 Padding = new Padding(24)
             };
 
-            lblReceiptCode = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            lblCustomer = new Label { Location = new Point(24, 50), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            lblReason = new Label { Location = new Point(400, 20), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            lblDate = new Label { Location = new Point(400, 50), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblReceiptCode = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Segoe UI", 11F) };
+            lblCustomer = new Label { Location = new Point(24, 50), AutoSize = true, Font = new Font("Segoe UI", 11F) };
+            lblReason = new Label { Location = new Point(400, 20), AutoSize = true, Font = new Font("Segoe UI", 11F) };
+            lblDate = new Label { Location = new Point(400, 50), AutoSize = true, Font = new Font("Segoe UI", 11F) };
 
-            lblStatus = new Label { Text = "Trạng thái:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            lblStatus = new Label { Text = "Status:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             cbStatus = new Guna2ComboBox
             {
                 Location = new Point(120, 85),
                 Size = new Size(200, 36),
                 BorderRadius = 4
             };
-            cbStatus.Items.AddRange(new string[] { "Chờ duyệt", "Đang giao", "Hoàn thành", "Đã hủy" });
+            cbStatus.Items.AddRange(new string[] { "Pending", "Delivering", "Completed", "Cancelled" });
 
             dgvDetails = new DataGridView
             {
@@ -121,10 +121,10 @@ namespace BookStoreManagement.UserControls
                 RowTemplate = { Height = 40 }
             };
             dgvDetails.SetDoubleBuffered(true);
-            dgvDetails.Columns.Add("BookName", "SẢN PHẨM");
-            dgvDetails.Columns.Add("Quantity", "SỐ LƯỢNG");
-            dgvDetails.Columns.Add("Price", "ĐƠN GIÁ");
-            dgvDetails.Columns.Add("LineTotal", "THÀNH TIỀN");
+            dgvDetails.Columns.Add("BookName", "PRODUCT");
+            dgvDetails.Columns.Add("Quantity", "QUANTITY");
+            dgvDetails.Columns.Add("Price", "UNIT PRICE");
+            dgvDetails.Columns.Add("LineTotal", "TOTAL");
 
             pnlContent.Controls.AddRange(new Control[] { lblReceiptCode, lblCustomer, lblReason, lblDate, lblStatus, cbStatus, dgvDetails });
 
@@ -140,7 +140,7 @@ namespace BookStoreManagement.UserControls
 
             btnCancel = new Guna2Button
             {
-                Text = "Hủy bỏ",
+                Text = "Cancel",
                 Size = new Size(100, 40),
                 Location = new Point(this.Width - 250, 15),
                 BorderRadius = 4,
@@ -150,7 +150,7 @@ namespace BookStoreManagement.UserControls
 
             btnSave = new Guna2Button
             {
-                Text = "Lưu thay đổi",
+                Text = "Save changes",
                 Size = new Size(120, 40),
                 Location = new Point(this.Width - 140, 15),
                 BorderRadius = 4,
@@ -195,7 +195,7 @@ namespace BookStoreManagement.UserControls
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Hoàn thành";
+            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Completed";
             _receiptService.UpdateStatus(_receiptId, newStatus);
             this.DialogResult = DialogResult.OK;
         }
@@ -220,12 +220,7 @@ namespace BookStoreManagement.UserControls
             cbStatus.ForeColor = ThemeManager.TextPrimary;
             cbStatus.BorderColor = ThemeManager.TextBoxBorder;
 
-            dgvDetails.BackgroundColor = ThemeManager.CardBackground;
-            dgvDetails.GridColor = ThemeManager.TextBoxBorder;
-            dgvDetails.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvDetails.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvDetails.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvDetails.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvDetails);
 
             pnlFooter.BackColor = ThemeManager.CardBackground;
             pnlFooter.CustomBorderColor = ThemeManager.TextBoxBorder;

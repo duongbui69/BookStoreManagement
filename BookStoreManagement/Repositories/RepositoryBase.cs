@@ -120,14 +120,28 @@ namespace BookStoreManagement.Repositories
 
         protected string GetString(SqlDataReader reader, string columnName)
         {
-            int index = reader.GetOrdinal(columnName);
-            return reader.IsDBNull(index) ? string.Empty : reader.GetString(index);
+            try
+            {
+                int index = reader.GetOrdinal(columnName);
+                return reader.IsDBNull(index) ? string.Empty : reader.GetString(index);
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new InvalidCastException($"Error casting column '{columnName}'. Expected string, but got {reader.GetFieldType(reader.GetOrdinal(columnName))}", ex);
+            }
         }
 
         protected string? GetNullableString(SqlDataReader reader, string columnName)
         {
-            int index = reader.GetOrdinal(columnName);
-            return reader.IsDBNull(index) ? null : reader.GetString(index);
+            try
+            {
+                int index = reader.GetOrdinal(columnName);
+                return reader.IsDBNull(index) ? null : reader.GetString(index);
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new InvalidCastException($"Error casting column '{columnName}'. Expected string, but got {reader.GetFieldType(reader.GetOrdinal(columnName))}", ex);
+            }
         }
 
         protected int GetInt(SqlDataReader reader, string columnName)

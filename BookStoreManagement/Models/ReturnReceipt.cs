@@ -13,6 +13,6 @@ namespace BookStoreManagement.Models
         public DateTime ReturnDate { get; set; }
         public decimal TotalRefundAmount { get; set; }
         public string? Note { get; set; }
-        public string ReturnStatus { get; set; } = "Chờ xử lý";
+        public string ReturnStatus { get; set; } = "Processing";
     }
 }

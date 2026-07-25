@@ -68,26 +68,26 @@ namespace BookStoreManagement.UserControls
             this.AutoScroll = true;
 
             // Header
-            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.Transparent };
+            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.Transparent };
             
             lblTitle = new Label
             {
-                Text = "Nhập kho (Goods Inward)",
+                Text = "Import (Goods Inward)",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(0, 20)
+                Location = new Point(0, 0)
             };
             lblSubTitle = new Label
             {
-                Text = "Inventory Management > Nhập kho",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                Text = "Manage purchase receipts and goods imported from suppliers.",
+                Font = new Font("Segoe UI", 11F),
                 AutoSize = true,
-                Location = new Point(0, 0)
+                Location = new Point(0, 45)
             };
 
             btnExport = new Guna2Button
             {
-                Text = "Xuất Excel",
+                Text = "Export Excel",
                 Size = new Size(120, 36),
                 BorderRadius = 4,
                 BorderThickness = 1,
@@ -97,7 +97,7 @@ namespace BookStoreManagement.UserControls
             };
             btnAdd = new Guna2Button
             {
-                Text = "+ Lập phiếu nhập",
+                Text = "+ Create Import Receipt",
                 Size = new Size(140, 36),
                 BorderRadius = 4,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -105,7 +105,7 @@ namespace BookStoreManagement.UserControls
                 Cursor = Cursors.Hand
             };
 
-            pnlHeader.Controls.AddRange(new Control[] { lblSubTitle, lblTitle, btnExport, btnAdd });
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnExport, btnAdd });
 
             // Stat Cards Container
             TableLayoutPanel pnlStats = new TableLayoutPanel
@@ -121,9 +121,9 @@ namespace BookStoreManagement.UserControls
             pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            cardTotalReceipts = CreateStatCard("TỔNG PHIẾU NHẬP", out lblTotalReceiptsValue);
-            cardTotalValue = CreateStatCard("TỔNG GIÁ TRỊ (Đã nhập)", out lblTotalValueAmount);
-            cardPending = CreateStatCard("CHỜ DUYỆT", out lblPendingValue);
+            cardTotalReceipts = CreateStatCard("TOTAL IMPORT RECEIPTS", out lblTotalReceiptsValue);
+            cardTotalValue = CreateStatCard("TOTAL VALUE (Imported)", out lblTotalValueAmount);
+            cardPending = CreateStatCard("PENDING", out lblPendingValue);
 
             pnlStats.Controls.Add(cardTotalReceipts, 0, 0);
             pnlStats.Controls.Add(cardTotalValue, 1, 0);
@@ -142,7 +142,7 @@ namespace BookStoreManagement.UserControls
 
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Tìm mã phiếu...",
+                PlaceholderText = "Search receipt ID...",
                 Size = new Size(200, 36),
                 Location = new Point(12, 12),
                 BorderRadius = 4
@@ -154,7 +154,7 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(220, 12),
                 BorderRadius = 4
             };
-            cbStatus.Items.AddRange(new object[] { "Tất cả Trạng thái", "Đã nhập", "Chờ duyệt", "Đã hủy" });
+            cbStatus.Items.AddRange(new object[] { "All Statuses", "Imported", "Pending", "Cancelled" });
             cbStatus.SelectedIndex = 0;
 
             cbSupplier = new Guna2ComboBox
@@ -166,7 +166,7 @@ namespace BookStoreManagement.UserControls
 
             btnFilter = new Guna2Button
             {
-                Text = "Lọc",
+                Text = "Filter",
                 Size = new Size(60, 36),
                 Location = new Point(580, 12),
                 BorderRadius = 4,
@@ -176,7 +176,7 @@ namespace BookStoreManagement.UserControls
 
             btnRefresh = new Guna2Button
             {
-                Text = "Tải lại",
+                Text = "Reload",
                 Size = new Size(80, 36),
                 Location = new Point(650, 12),
                 BorderRadius = 4,
@@ -213,16 +213,16 @@ namespace BookStoreManagement.UserControls
             dgvReceipts.SetDoubleBuffered(true);
 
             // Columns
-            dgvReceipts.Columns.Add("ReceiptCode", "Mã phiếu");
-            dgvReceipts.Columns.Add("SupplierName", "Nhà cung cấp");
-            dgvReceipts.Columns.Add("ImportDate", "Ngày nhập");
-            dgvReceipts.Columns.Add("TotalAmount", "Tổng tiền (đ)");
-            dgvReceipts.Columns.Add("Status", "Trạng thái");
+            dgvReceipts.Columns.Add("ReceiptCode", "Receipt Code");
+            dgvReceipts.Columns.Add("SupplierName", "Supplier");
+            dgvReceipts.Columns.Add("ImportDate", "Import date");
+            dgvReceipts.Columns.Add("TotalAmount", "Total amount (VND)");
+            dgvReceipts.Columns.Add("Status", "Status");
             
             var actionCol = new DataGridViewTextBoxColumn
             {
                 Name = "Action",
-                HeaderText = "Thao tác",
+                HeaderText = "Action",
                 Width = 100,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.None
             };
@@ -277,7 +277,7 @@ namespace BookStoreManagement.UserControls
                 Text = title,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(16, 16)
+                Location = new Point(0, 0)
             };
 
             lblValue = new Label
@@ -296,7 +296,7 @@ namespace BookStoreManagement.UserControls
         private void LoadFilterData()
         {
             var suppliers = _supplierService.GetAll();
-            suppliers.Insert(0, new Supplier { Id = 0, SupplierName = "Tất cả Nhà cung cấp" });
+            suppliers.Insert(0, new Supplier { Id = 0, SupplierName = "All Suppliers" });
             cbSupplier.DataSource = suppliers;
             cbSupplier.DisplayMember = "SupplierName";
             cbSupplier.ValueMember = "Id";
@@ -488,12 +488,12 @@ namespace BookStoreManagement.UserControls
 
         private void DeleteReceipt(PurchaseReceiptListViewModel item)
         {
-            var result = MessageBox.Show($"Bạn có chắc muốn xóa phiếu nhập '{item.ReceiptCode}' không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var result = MessageBox.Show($"Are you sure you want to delete import receipt '{item.ReceiptCode}'?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
                 // Soft delete or actual delete here.
-                // Assuming we can update status to "Đã hủy" instead of actual delete to preserve history
-                _receiptService.UpdateStatus(item.Id, "Đã hủy");
+                // Assuming we can update status to "Cancelled" instead of actual delete to preserve history
+                _receiptService.UpdateStatus(item.Id, "Cancelled");
                 LoadData();
             }
         }
@@ -560,20 +560,7 @@ namespace BookStoreManagement.UserControls
         {
             if (dgvReceipts == null) return;
             
-            dgvReceipts.BackgroundColor = ThemeManager.CardBackground;
-            dgvReceipts.GridColor = ThemeManager.TextBoxBorder;
-            
-            dgvReceipts.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionBackColor = ThemeManager.CardBackground;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.SelectionForeColor = ThemeManager.TextSecondary;
-            dgvReceipts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-
-            dgvReceipts.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvReceipts.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvReceipts.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvReceipts.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
-            dgvReceipts.DefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            ThemeManager.ApplyDataGridViewStyle(dgvReceipts);
         }
     }
 }

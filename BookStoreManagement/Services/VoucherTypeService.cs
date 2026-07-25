@@ -17,8 +17,8 @@ namespace BookStoreManagement.Services
 
         public void Save(VoucherType vt)
         {
-            Require(!string.IsNullOrWhiteSpace(vt.Code), "Mã loại không được để trống.");
-            Require(!string.IsNullOrWhiteSpace(vt.Name), "Tên loại không được để trống.");
+            Require(!string.IsNullOrWhiteSpace(vt.Code), "Type code cannot be empty.");
+            Require(!string.IsNullOrWhiteSpace(vt.Name), "Type name cannot be empty.");
 
             if (vt.Id == 0)
                 _repository.Insert(vt);
@@ -28,7 +28,7 @@ namespace BookStoreManagement.Services
 
         public void Delete(int id)
         {
-            Require(id > 0, "Id không hợp lệ.");
+            Require(id > 0, "Invalid ID.");
             _repository.Delete(id);
         }
 
@@ -38,8 +38,8 @@ namespace BookStoreManagement.Services
 
         public async System.Threading.Tasks.Task SaveAsync(VoucherType vt)
         {
-            Require(!string.IsNullOrWhiteSpace(vt.Code), "Mã loại không được để trống.");
-            Require(!string.IsNullOrWhiteSpace(vt.Name), "Tên loại không được để trống.");
+            Require(!string.IsNullOrWhiteSpace(vt.Code), "Type code cannot be empty.");
+            Require(!string.IsNullOrWhiteSpace(vt.Name), "Type name cannot be empty.");
 
             if (vt.Id == 0)
                 await _repository.InsertAsync(vt);
@@ -49,7 +49,7 @@ namespace BookStoreManagement.Services
 
         public async System.Threading.Tasks.Task DeleteAsync(int id)
         {
-            Require(id > 0, "Id không hợp lệ.");
+            Require(id > 0, "Invalid ID.");
             await _repository.DeleteAsync(id);
         }
     }

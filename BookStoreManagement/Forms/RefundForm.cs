@@ -62,7 +62,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponents()
         {
-            this.Text = _refundId == 0 ? "Tạo Phiếu Trả Hàng" : "Chi tiết Phiếu Trả Hàng";
+            this.Text = _refundId == 0 ? "Create Return Receipt" : "Return Receipt Details";
             this.Size = new Size(900, 650);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.None;
@@ -93,17 +93,17 @@ namespace BookStoreManagement.Forms
             // Top Section (Order Search / Info)
             Panel pnlTop = new Panel { Dock = DockStyle.Top, Height = 100 };
             
-            Label lblOrder = new Label { Text = "Mã Đơn Hàng (*):", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
+            Label lblOrder = new Label { Text = "Order ID (*):", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
             txtOrderCode = new TextBox { Font = new Font("Segoe UI", 12F), Width = 200, Location = new Point(140, 5) };
             
-            btnSearchOrder = new Button { Text = "Tìm Đơn", Font = new Font("Segoe UI", 10F), Size = new Size(100, 30), Location = new Point(350, 5), FlatStyle = FlatStyle.Flat };
+            btnSearchOrder = new Button { Text = "Search Order", Font = new Font("Segoe UI", 10F), Size = new Size(100, 30), Location = new Point(350, 5), FlatStyle = FlatStyle.Flat };
             btnSearchOrder.Click += BtnSearchOrder_Click;
 
             lblCustomerInfo = new Label { Text = "Khách hàng: -", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 45) };
 
-            Label lblStatus = new Label { Text = "Trạng thái:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(550, 10) };
+            Label lblStatus = new Label { Text = "Status:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(550, 10) };
             cboStatus = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 12F), Width = 150, Location = new Point(650, 5) };
-            cboStatus.Items.AddRange(new object[] { "Chờ xử lý", "Đã duyệt", "Đã hoàn tiền", "Từ chối" });
+            cboStatus.Items.AddRange(new object[] { "Processing", "Approved", "Refunded", "Rejected" });
             cboStatus.SelectedIndex = 0;
             
             pnlTop.Controls.Add(lblOrder);
@@ -131,21 +131,21 @@ namespace BookStoreManagement.Forms
             if (_refundId == 0)
             {
                 // Add mode
-                dgvDetails.Columns.Add(new DataGridViewCheckBoxColumn { Name = "colSelect", HeaderText = "Chọn", Width = 50 });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTitle", HeaderText = "Tên sách", DataPropertyName = "Title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colPrice", HeaderText = "Đơn giá", DataPropertyName = "UnitPrice", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewCheckBoxColumn { Name = "colSelect", HeaderText = "Select", Width = 50 });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTitle", HeaderText = "Book title", DataPropertyName = "Title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colPrice", HeaderText = "Unit price", DataPropertyName = "UnitPrice", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
                 dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colMaxQty", HeaderText = "SL Mua", DataPropertyName = "Quantity", Width = 80, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnQty", HeaderText = "SL Trả", Width = 80 });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "Lý do (Chi tiết)", Width = 200 });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnQty", HeaderText = "Return Qty", Width = 80 });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "Reason (Details)", Width = 200 });
             }
             else
             {
                 // View mode
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTitle", HeaderText = "Tên sách", DataPropertyName = "Title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colPrice", HeaderText = "Đơn giá", DataPropertyName = "UnitPrice", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnQty", HeaderText = "SL Trả", DataPropertyName = "Quantity", Width = 80, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTotal", HeaderText = "Thành tiền", DataPropertyName = "RefundAmount", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
-                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "Lý do", DataPropertyName = "ReturnReason", Width = 200, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTitle", HeaderText = "Book title", DataPropertyName = "Title", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colPrice", HeaderText = "Unit price", DataPropertyName = "UnitPrice", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnQty", HeaderText = "Return Qty", DataPropertyName = "Quantity", Width = 80, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colTotal", HeaderText = "Total amount", DataPropertyName = "RefundAmount", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" }, ReadOnly = true });
+                dgvDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "Reason", DataPropertyName = "ReturnReason", Width = 200, ReadOnly = true });
             }
 
             dgvDetails.CellValueChanged += DgvDetails_CellValueChanged;
@@ -154,12 +154,12 @@ namespace BookStoreManagement.Forms
             // Bottom Section
             Panel pnlBottom = new Panel { Dock = DockStyle.Bottom, Height = 140, Padding = new Padding(0, 10, 0, 0) };
             
-            Label lblNote = new Label { Text = "Ghi chú phiếu:", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 10) };
+            Label lblNote = new Label { Text = "Receipt note:", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 10) };
             txtNote = new TextBox { Font = new Font("Segoe UI", 10F), Multiline = true, Width = 400, Height = 70, Location = new Point(0, 30) };
             
-            lblTotalRefund = new Label { Text = "TỔNG HOÀN TIỀN: 0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = true, Location = new Point(450, 30) };
+            lblTotalRefund = new Label { Text = "TOTAL REFUND: 0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = true, Location = new Point(450, 30) };
 
-            btnSave = new Button { Text = _refundId == 0 ? "Tạo Phiếu" : "Cập Nhật", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), FlatStyle = FlatStyle.Flat };
+            btnSave = new Button { Text = _refundId == 0 ? "Create Receipt" : "Update", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), FlatStyle = FlatStyle.Flat };
             btnSave.Click += BtnSave_Click;
 
             pnlBottom.Controls.Add(lblNote);
@@ -218,7 +218,7 @@ namespace BookStoreManagement.Forms
                 {
                     txtOrderCode.Text = receipt.SalesOrderId?.ToString() ?? "";
                     txtNote.Text = receipt.Note;
-                    cboStatus.SelectedItem = receipt.ReturnStatus ?? "Chờ xử lý";
+                    cboStatus.SelectedItem = receipt.ReturnStatus ?? "Processing";
                     lblTotalRefund.Text = $"TỔNG HOÀN TIỀN: {receipt.TotalRefundAmount:N0} ₫";
                     
                     _returnDetails = await _returnRepo.GetDetailsAsync(_refundId);
@@ -249,16 +249,16 @@ namespace BookStoreManagement.Forms
                     dgvDetails.DataSource = _orderDetails;
                     
                     _currentOrder = await _orderService.GetByIdAsync(orderId);
-                    lblCustomerInfo.Text = _currentOrder != null ? $"Khách hàng ID: {_currentOrder.CustomerId}" : "Không tìm thấy";
+                    lblCustomerInfo.Text = _currentOrder != null ? $"Khách hàng ID: {_currentOrder.CustomerId}" : "Not found";
                 }
                 else
                 {
-                    MessageBox.Show("Không tìm thấy đơn hàng này hoặc đơn hàng trống!");
+                    MessageBox.Show("Order not found or empty!");
                 }
             }
             else
             {
-                MessageBox.Show("Vui lòng nhập ID đơn hàng bằng số!");
+                MessageBox.Show("Please enter a numeric Order ID!");
             }
         }
 
@@ -324,7 +324,7 @@ namespace BookStoreManagement.Forms
         {
             if (_currentOrder == null)
             {
-                MessageBox.Show("Vui lòng tìm và chọn đơn hàng hợp lệ.");
+                MessageBox.Show("Please find and select a valid order.");
                 return;
             }
 
@@ -337,7 +337,7 @@ namespace BookStoreManagement.Forms
                 UserId = BookStoreManagement.Helpers.CurrentSession.UserId,
                 ReturnDate = DateTime.Now,
                 Note = txtNote.Text,
-                ReturnStatus = cboStatus.SelectedItem.ToString() ?? "Chờ xử lý"
+                ReturnStatus = cboStatus.SelectedItem.ToString() ?? "Processing"
             };
 
             var details = new List<ReturnReceiptDetail>();
@@ -375,7 +375,7 @@ namespace BookStoreManagement.Forms
 
             if (details.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn ít nhất 1 sản phẩm để trả và nhập số lượng > 0.");
+                MessageBox.Show("Please select at least 1 product to return and enter quantity > 0.");
                 return;
             }
 
@@ -384,13 +384,13 @@ namespace BookStoreManagement.Forms
             try
             {
                 _returnRepo.CreateReturn(receipt, details);
-                MessageBox.Show("Tạo phiếu trả hàng thành công!");
+                MessageBox.Show("Return receipt created successfully!");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tạo phiếu: " + ex.Message);
+                MessageBox.Show("Error creating receipt: " + ex.Message);
             }
         }
 
@@ -399,7 +399,7 @@ namespace BookStoreManagement.Forms
             try
             {
                 // In a real app we'd have UpdateAsync. For now, we simulate or execute raw SQL.
-                string status = cboStatus.SelectedItem.ToString() ?? "Chờ xử lý";
+                string status = cboStatus.SelectedItem.ToString() ?? "Processing";
                 string note = txtNote.Text;
                 
                 string sql = "UPDATE ReturnReceipts SET ReturnStatus = @Status, Note = @Note WHERE Id = @Id";
@@ -411,13 +411,13 @@ namespace BookStoreManagement.Forms
                 cmd.Parameters.AddWithValue("@Id", _refundId);
                 cmd.ExecuteNonQuery();
                 
-                MessageBox.Show("Cập nhật thành công!");
+                MessageBox.Show("Update successful!");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi cập nhật: " + ex.Message);
+                MessageBox.Show("Update error: " + ex.Message);
             }
         }
     }

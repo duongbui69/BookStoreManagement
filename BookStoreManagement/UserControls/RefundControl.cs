@@ -84,11 +84,11 @@ namespace BookStoreManagement.UserControls
             this.Padding = new Padding(30);
 
             // 1. HEADER
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60 };
+            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 100 };
             
             lblTitle = new Label 
             { 
-                Text = "Quản lý Hoàn tiền", 
+                Text = "Refund Management", 
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 AutoSize = true, 
                 Location = new Point(0, 0) 
@@ -96,10 +96,10 @@ namespace BookStoreManagement.UserControls
             
             lblSubtitle = new Label 
             { 
-                Text = "Quản lý danh sách phiếu trả hàng và yêu cầu hoàn tiền từ khách hàng.", 
-                Font = new Font("Segoe UI", 10F), 
+                Text = "Manage return receipts and refund requests.", 
+                Font = new Font("Segoe UI", 11F), 
                 AutoSize = true, 
-                Location = new Point(0, 40) 
+                Location = new Point(0, 45) 
             };
             
             FlowLayoutPanel flpActions = new FlowLayoutPanel
@@ -113,7 +113,7 @@ namespace BookStoreManagement.UserControls
 
             btnAdd = new Button 
             { 
-                Text = "+ Tạo Phiếu Trả Hàng", 
+                Text = "+ Create Return Receipt", 
                 Size = new Size(180, 40), 
                 FlatStyle = FlatStyle.Flat, 
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
@@ -125,7 +125,7 @@ namespace BookStoreManagement.UserControls
 
             btnPrint = new Button 
             { 
-                Text = "In danh sách", 
+                Text = "Print List", 
                 Size = new Size(120, 40), 
                 FlatStyle = FlatStyle.Flat, 
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
@@ -156,9 +156,9 @@ namespace BookStoreManagement.UserControls
             tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
 
-            statTotal = CreateStatPanel("Tổng yêu cầu", out lblTotalValue, "assignment_return");
-            statPending = CreateStatPanel("Đang xử lý", out lblPendingValue, "pending_actions");
-            statCompleted = CreateStatPanel("Đã hoàn tiền", out lblCompletedValue, "payments");
+            statTotal = CreateStatPanel("Total requests", out lblTotalValue, "assignment_return");
+            statPending = CreateStatPanel("Processing", out lblPendingValue, "pending_actions");
+            statCompleted = CreateStatPanel("Refunded", out lblCompletedValue, "payments");
             
             // Filter panel inside bento grid
             statFilter = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5) };
@@ -166,18 +166,18 @@ namespace BookStoreManagement.UserControls
             cboStatusFilter = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Segoe UI", 10F),
+                Font = new Font("Segoe UI", 11F),
                 Width = 200,
                 Location = new Point(15, 15)
             };
-            cboStatusFilter.Items.AddRange(new object[] { "Tất cả trạng thái", "Chờ xử lý", "Đã duyệt", "Đã hoàn tiền", "Từ chối" });
+            cboStatusFilter.Items.AddRange(new object[] { "All statuses", "Processing", "Approved", "Refunded", "Rejected" });
             cboStatusFilter.SelectedIndex = 0;
             cboStatusFilter.SelectedIndexChanged += Filter_Changed;
 
             dtpFilter = new DateTimePicker
             {
                 Format = DateTimePickerFormat.Short,
-                Font = new Font("Segoe UI", 10F),
+                Font = new Font("Segoe UI", 11F),
                 Width = 200,
                 Location = new Point(15, 50)
             };
@@ -199,7 +199,7 @@ namespace BookStoreManagement.UserControls
             pnlGridHeader = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(15, 0, 15, 0) };
             lblGridTitle = new Label 
             { 
-                Text = "Danh sách Phiếu trả hàng", 
+                Text = "Return Receipt List", 
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold), 
                 AutoSize = true,
                 Location = new Point(15, 15)
@@ -230,7 +230,7 @@ namespace BookStoreManagement.UserControls
             dgvRefunds.CellMouseLeave += DgvRefunds_CellMouseLeave;
 
             pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(15, 0, 15, 0) };
-            lblPageInfo = new Label { AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 10F) };
+            lblPageInfo = new Label { AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 11F) };
             flpPagination = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true, Location = new Point(0, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right };
             pnlPagination.Controls.Add(lblPageInfo);
             pnlPagination.Controls.Add(flpPagination);
@@ -250,7 +250,7 @@ namespace BookStoreManagement.UserControls
         {
             Panel pnl = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5) };
             
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(15, 15) };
+            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(15, 15) };
             lblValue = new Label { Text = "0", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 40) };
             
             pnl.Controls.Add(lblTitle);
@@ -261,14 +261,14 @@ namespace BookStoreManagement.UserControls
         private void SetupColumns()
         {
             dgvRefunds.Columns.Add(new DataGridViewCheckBoxColumn { Name = "colCheck", HeaderText = "", Width = 50 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnCode", HeaderText = "MÃ PHIẾU TRẢ", DataPropertyName = "ReturnCode", Width = 130 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colOrderCode", HeaderText = "MÃ ĐƠN GỐC", DataPropertyName = "OrderCode", Width = 130 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colDate", HeaderText = "NGÀY YÊU CẦU", DataPropertyName = "ReturnDate", Width = 120 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCustomer", HeaderText = "KHÁCH HÀNG", DataPropertyName = "CustomerName", Width = 150 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAmount", HeaderText = "SỐ TIỀN HOÀN", DataPropertyName = "TotalRefundAmount", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" } });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "LÝ DO", DataPropertyName = "Note", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "TRẠNG THÁI", DataPropertyName = "ReturnStatus", Width = 120 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "THAO TÁC", Width = 100 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnCode", HeaderText = "RETURN ID", DataPropertyName = "ReturnCode", Width = 130 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colOrderCode", HeaderText = "ORIGINAL ORDER ID", DataPropertyName = "OrderCode", Width = 130 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colDate", HeaderText = "REQUEST DATE", DataPropertyName = "ReturnDate", Width = 120 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCustomer", HeaderText = "CUSTOMER", DataPropertyName = "CustomerName", Width = 150 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAmount", HeaderText = "REFUND AMOUNT", DataPropertyName = "TotalRefundAmount", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" } });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "REASON", DataPropertyName = "Note", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "STATUS", DataPropertyName = "ReturnStatus", Width = 120 });
+            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "ACTION", Width = 100 });
             
             foreach (DataGridViewColumn col in dgvRefunds.Columns)
             {
@@ -324,16 +324,7 @@ namespace BookStoreManagement.UserControls
             dtpFilter.BackColor = ThemeManager.Background;
             dtpFilter.ForeColor = ThemeManager.TextPrimary;
 
-            dgvRefunds.BackgroundColor = ThemeManager.CardBackground;
-            dgvRefunds.GridColor = ThemeManager.TextBoxBorder;
-            dgvRefunds.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvRefunds.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvRefunds.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            dgvRefunds.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvRefunds.DefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvRefunds.DefaultCellStyle.Font = new Font("Segoe UI", 10F);
-            dgvRefunds.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvRefunds.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvRefunds);
         }
 
         private async void RefundControl_Load(object sender, EventArgs e)
@@ -354,7 +345,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -398,8 +389,8 @@ namespace BookStoreManagement.UserControls
         private void UpdateStats()
         {
             int total = _allRefunds.Count;
-            int pending = _allRefunds.Count(r => r.ReturnStatus == "Chờ xử lý");
-            int completed = _allRefunds.Count(r => r.ReturnStatus == "Đã hoàn tiền");
+            int pending = _allRefunds.Count(r => r.ReturnStatus == "Processing");
+            int completed = _allRefunds.Count(r => r.ReturnStatus == "Refunded");
 
             lblTotalValue.Text = total.ToString("N0");
             lblPendingValue.Text = pending.ToString("N0");
@@ -533,10 +524,10 @@ namespace BookStoreManagement.UserControls
                 Color bgColor = Color.LightGray;
                 Color txtColor = Color.DarkGray;
 
-                if (status == "Chờ xử lý") { bgColor = Color.FromArgb(255, 243, 224); txtColor = Color.FromArgb(230, 81, 0); }
-                else if (status == "Đã hoàn tiền") { bgColor = Color.FromArgb(232, 245, 233); txtColor = Color.FromArgb(46, 125, 50); }
-                else if (status == "Đã duyệt") { bgColor = Color.FromArgb(227, 242, 253); txtColor = Color.FromArgb(21, 101, 192); }
-                else if (status == "Từ chối") { bgColor = Color.FromArgb(255, 218, 214); txtColor = Color.FromArgb(186, 26, 26); }
+                if (status == "Processing") { bgColor = Color.FromArgb(255, 243, 224); txtColor = Color.FromArgb(230, 81, 0); }
+                else if (status == "Refunded") { bgColor = Color.FromArgb(232, 245, 233); txtColor = Color.FromArgb(46, 125, 50); }
+                else if (status == "Approved") { bgColor = Color.FromArgb(227, 242, 253); txtColor = Color.FromArgb(21, 101, 192); }
+                else if (status == "Rejected") { bgColor = Color.FromArgb(255, 218, 214); txtColor = Color.FromArgb(186, 26, 26); }
 
                 Rectangle badgeRect = new Rectangle(e.CellBounds.X + 10, e.CellBounds.Y + 12, e.CellBounds.Width - 20, e.CellBounds.Height - 24);
                 
@@ -602,10 +593,10 @@ namespace BookStoreManagement.UserControls
                 else if (deleteRect.Contains(mousePos))
                 {
                     // Delete
-                    if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phiếu trả hàng {rowData.ReturnCode}?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phiếu trả hàng {rowData.ReturnCode}?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         await _returnRepo.DeleteAsync(rowData.Id);
-                        MessageBox.Show("Xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Deleted successfully!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         await LoadData();
                     }
                 }

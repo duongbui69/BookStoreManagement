@@ -51,11 +51,11 @@ namespace BookStoreManagement.UserControls
             this.AutoScroll = true;
 
             // Header Region
-            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 70, BackColor = Color.Transparent };
+            Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.Transparent };
             
             lblTitle = new Label
             {
-                Text = "Loại phiếu",
+                Text = "Receipt type",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
@@ -89,7 +89,7 @@ namespace BookStoreManagement.UserControls
             
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Tìm loại phiếu...",
+                PlaceholderText = "Search receipt type...",
                 Size = new Size(250, 36),
                 Location = new Point(24, 12),
                 BorderRadius = 8
@@ -98,7 +98,7 @@ namespace BookStoreManagement.UserControls
 
             btnExport = new Guna2Button
             {
-                Text = "Xuất Excel",
+                Text = "Export Excel",
                 Size = new Size(120, 36),
                 BorderRadius = 8,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -107,7 +107,7 @@ namespace BookStoreManagement.UserControls
             
             btnAdd = new Guna2Button
             {
-                Text = "+ Thêm mới",
+                Text = "+ Add New",
                 Size = new Size(120, 36),
                 BorderRadius = 8,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -148,12 +148,12 @@ namespace BookStoreManagement.UserControls
             };
             dgvData.SetDoubleBuffered(true);
 
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Code", HeaderText = "Mã loại", Width = 100 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Tên loại phiếu", Width = 200 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Description", HeaderText = "Mô tả", Width = 300 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "GroupType", HeaderText = "Nhóm", Width = 120 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Trạng thái", Width = 120 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Action", HeaderText = "Thao tác", Width = 100, AutoSizeMode = DataGridViewAutoSizeColumnMode.None });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Code", HeaderText = "Type code", Width = 100 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Receipt type name", Width = 200 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Description", HeaderText = "Description", Width = 300 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "GroupType", HeaderText = "Group", Width = 120 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 120 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Action", HeaderText = "Action", Width = 100, AutoSizeMode = DataGridViewAutoSizeColumnMode.None });
 
             foreach (DataGridViewColumn col in dgvData.Columns)
             {
@@ -261,8 +261,8 @@ namespace BookStoreManagement.UserControls
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 string text = e.Value?.ToString() ?? "";
-                Color tagBg = text == "Nhập" ? Color.FromArgb(208, 228, 255) : (text == "Xuất" ? Color.FromArgb(237, 220, 255) : Color.FromArgb(231, 232, 234));
-                Color tagText = text == "Nhập" ? Color.FromArgb(0, 29, 53) : (text == "Xuất" ? Color.FromArgb(40, 0, 86) : Color.FromArgb(25, 28, 30));
+                Color tagBg = text == "Import" ? Color.FromArgb(208, 228, 255) : (text == "Export" ? Color.FromArgb(237, 220, 255) : Color.FromArgb(231, 232, 234));
+                Color tagText = text == "Import" ? Color.FromArgb(0, 29, 53) : (text == "Export" ? Color.FromArgb(40, 0, 86) : Color.FromArgb(25, 28, 30));
 
                 DrawPillTag(e.Graphics, e.CellBounds, text, tagBg, tagText);
                 e.Handled = true;
@@ -271,8 +271,8 @@ namespace BookStoreManagement.UserControls
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 string text = e.Value?.ToString() ?? "";
-                Color tagBg = text == "Hoạt động" ? Color.FromArgb(107, 254, 156) : Color.FromArgb(217, 218, 220);
-                Color tagText = text == "Hoạt động" ? Color.FromArgb(0, 33, 12) : Color.FromArgb(67, 71, 77);
+                Color tagBg = text == "Active" ? Color.FromArgb(107, 254, 156) : Color.FromArgb(217, 218, 220);
+                Color tagText = text == "Active" ? Color.FromArgb(0, 33, 12) : Color.FromArgb(67, 71, 77);
 
                 DrawPillTag(e.Graphics, e.CellBounds, text, tagBg, tagText);
                 e.Handled = true;
@@ -330,7 +330,7 @@ namespace BookStoreManagement.UserControls
 
         private void DeleteItem(VoucherType vt)
         {
-            var res = MessageBox.Show($"Xác nhận xóa loại phiếu '{vt.Name}'?", "Cảnh báo", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var res = MessageBox.Show($"Xác nhận xóa loại phiếu '{vt.Name}'?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (res == DialogResult.Yes)
             {
                 _service.Delete(vt.Id);
@@ -367,14 +367,7 @@ namespace BookStoreManagement.UserControls
             btnAdd.FillColor = ThemeManager.ButtonFill;
             btnAdd.ForeColor = ThemeManager.ButtonText;
 
-            dgvData.BackgroundColor = ThemeManager.CardBackground;
-            dgvData.GridColor = ThemeManager.TextBoxBorder;
-            dgvData.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvData.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
-            dgvData.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
-            dgvData.DefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
-            dgvData.DefaultCellStyle.SelectionBackColor = ThemeManager.HoverColor;
-            dgvData.DefaultCellStyle.SelectionForeColor = ThemeManager.TextPrimary;
+            ThemeManager.ApplyDataGridViewStyle(dgvData);
         }
     }
 }

@@ -30,8 +30,8 @@ namespace BookStoreManagement.Services
         public List<Category> GetActive() { PermissionService.RequireStaffOrAdmin(); return _repository.GetActive(); }
         public async System.Threading.Tasks.Task<List<Category>> GetActiveAsync() { PermissionService.RequireStaffOrAdmin(); return await _repository.GetActiveAsync(); }
         
-        public Category? GetById(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id danh mục không hợp lệ."); return _repository.GetById(id); }
-        public async System.Threading.Tasks.Task<Category?> GetByIdAsync(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Id danh mục không hợp lệ."); return await _repository.GetByIdAsync(id); }
+        public Category? GetById(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Invalid category ID."); return _repository.GetById(id); }
+        public async System.Threading.Tasks.Task<Category?> GetByIdAsync(int id) { PermissionService.RequireStaffOrAdmin(); Require(id > 0, "Invalid category ID."); return await _repository.GetByIdAsync(id); }
         
         public List<Category> Search(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? _repository.GetAll() : _repository.Search(keyword); }
         public async System.Threading.Tasks.Task<List<Category>> SearchAsync(string keyword) { PermissionService.RequireStaffOrAdmin(); keyword = Trim(keyword); return string.IsNullOrWhiteSpace(keyword) ? await _repository.GetAllAsync() : await _repository.SearchAsync(keyword); }
@@ -43,7 +43,7 @@ namespace BookStoreManagement.Services
             category.CategoryName = Trim(category.CategoryName);
             category.Description = TrimNullable(category.Description);
             category.IsActive = true;
-            if (_repository.IsNameExists(category.CategoryName)) throw new Exception("Tên danh mục đã tồn tại.");
+            if (_repository.IsNameExists(category.CategoryName)) throw new Exception("Category name already exists.");
             return _repository.Add(category);
         }
 
@@ -54,51 +54,51 @@ namespace BookStoreManagement.Services
             category.CategoryName = Trim(category.CategoryName);
             category.Description = TrimNullable(category.Description);
             category.IsActive = true;
-            if (await _repository.IsNameExistsAsync(category.CategoryName)) throw new Exception("Tên danh mục đã tồn tại.");
+            if (await _repository.IsNameExistsAsync(category.CategoryName)) throw new Exception("Category name already exists.");
             return await _repository.AddAsync(category);
         }
 
         public bool Update(Category category)
         {
             PermissionService.RequireAdmin();
-            Require(category.Id > 0, "Id danh mục không hợp lệ.");
+            Require(category.Id > 0, "Invalid category ID.");
             Validate(category);
             category.CategoryName = Trim(category.CategoryName);
             category.Description = TrimNullable(category.Description);
-            if (_repository.IsNameExists(category.CategoryName, category.Id)) throw new Exception("Tên danh mục đã tồn tại.");
+            if (_repository.IsNameExists(category.CategoryName, category.Id)) throw new Exception("Category name already exists.");
             return _repository.Update(category);
         }
 
         public async System.Threading.Tasks.Task<bool> UpdateAsync(Category category)
         {
             PermissionService.RequireAdmin();
-            Require(category.Id > 0, "Id danh mục không hợp lệ.");
+            Require(category.Id > 0, "Invalid category ID.");
             Validate(category);
             category.CategoryName = Trim(category.CategoryName);
             category.Description = TrimNullable(category.Description);
-            if (await _repository.IsNameExistsAsync(category.CategoryName, category.Id)) throw new Exception("Tên danh mục đã tồn tại.");
+            if (await _repository.IsNameExistsAsync(category.CategoryName, category.Id)) throw new Exception("Category name already exists.");
             return await _repository.UpdateAsync(category);
         }
 
         public bool SetActive(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id danh mục không hợp lệ.");
+            Require(id > 0, "Invalid category ID.");
             return _repository.SetActive(id, isActive);
         }
 
         public async System.Threading.Tasks.Task<bool> SetActiveAsync(int id, bool isActive)
         {
             PermissionService.RequireAdmin();
-            Require(id > 0, "Id danh mục không hợp lệ.");
+            Require(id > 0, "Invalid category ID.");
             return await _repository.SetActiveAsync(id, isActive);
         }
 
         private void Validate(Category category)
         {
-            Require(category != null, "Dữ liệu danh mục không hợp lệ.");
-            Require(!string.IsNullOrWhiteSpace(category.CategoryName), "Tên danh mục không được để trống.");
-            Require(category.CategoryName.Length <= 100, "Tên danh mục không được vượt quá 100 ký tự.");
+            Require(category != null, "Invalid category data.");
+            Require(!string.IsNullOrWhiteSpace(category.CategoryName), "Category name cannot be empty.");
+            Require(category.CategoryName.Length <= 100, "Category name cannot exceed 100 chars.");
         }
     }
 }
