@@ -39,6 +39,9 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
             LoadData();
             ThemeManager.ThemeChanged += (s, e) => ApplyTheme();
+
+            dtpFrom.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
+            dtpTo.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
         }
 
         private void InitializeComponent()
@@ -92,7 +95,6 @@ namespace BookStoreManagement.UserControls
                 Format = DateTimePickerFormat.Short,
                 Value = DateTime.Now.AddDays(-30)
             };
-            dtpFrom.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
 
             dtpTo = new Guna2DateTimePicker
             {
@@ -102,7 +104,6 @@ namespace BookStoreManagement.UserControls
                 Format = DateTimePickerFormat.Short,
                 Value = DateTime.Now
             };
-            dtpTo.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
 
             btnExport = new Guna2Button
             {
