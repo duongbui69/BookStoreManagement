@@ -89,26 +89,25 @@ namespace BookStoreManagement.UserControls
             {
                 Text = "Xuất Excel",
                 Size = new Size(120, 36),
-                BorderRadius = 4,
+                BorderRadius = 8,
                 BorderThickness = 1,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(this.Width - 300, 20),
+                FillColor = Color.Transparent,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btnAdd = new Guna2Button
             {
                 Text = "+ Tạo Phiếu Nhập",
                 Size = new Size(140, 36),
-                BorderRadius = 4,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(this.Width - 140, 20),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
 
             btnAdd.Click += BtnAdd_Click;
             btnExport.Click += BtnExport_Click;
 
-            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, btnExport, btnAdd });
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
             // Stat Cards Container
             TableLayoutPanel pnlStats = new TableLayoutPanel
@@ -187,7 +186,11 @@ namespace BookStoreManagement.UserControls
             };
             btnRefresh.Click += (s, e) => LoadData();
 
-            pnlFilterBar.Controls.AddRange(new Control[] { txtSearch, cbStatus, cbSupplier, btnFilter, btnRefresh });
+            pnlFilterBar.Controls.AddRange(new Control[] { txtSearch, cbStatus, cbSupplier, btnFilter, btnRefresh, btnExport, btnAdd });
+            pnlFilterBar.Resize += (s, e) => {
+                btnAdd.Location = new Point(pnlFilterBar.Width - 150, 12);
+                btnExport.Location = new Point(pnlFilterBar.Width - 280, 12);
+            };
 
             // Grid Container
             pnlGridContainer = new Guna2Panel
