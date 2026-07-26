@@ -218,14 +218,16 @@ namespace BookStoreManagement.Forms
                 {
                     btn.CustomBorderThickness = new Padding(3, 0, 0, 0);
                     btn.CustomBorderColor = Themes.ThemeManager.ButtonFill;
-                    btn.FillColor = Themes.ThemeManager.HoverColor;
-                    btn.ForeColor = Themes.ThemeManager.ButtonFill;
+                    btn.FillColor = Themes.ThemeManager.ButtonFill;
+                    btn.ForeColor = Themes.ThemeManager.ButtonText;
+                    btn.Font = new Font(btn.Font, FontStyle.Bold);
                 }
                 else
                 {
                     btn.CustomBorderThickness = new Padding(0);
                     btn.FillColor = Color.Transparent;
                     btn.ForeColor = Themes.ThemeManager.TextSecondary;
+                    btn.Font = new Font(btn.Font, FontStyle.Regular);
                 }
             }
         }
