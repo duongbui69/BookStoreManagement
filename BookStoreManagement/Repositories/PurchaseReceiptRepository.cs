@@ -36,7 +36,7 @@ namespace BookStoreManagement.Repositories
                 BookId = GetInt(reader, "BookId"),
                 Quantity = GetInt(reader, "Quantity"),
                 ImportPrice = GetDecimal(reader, "ImportPrice"),
-                SellingPrice = GetNullableDecimal(reader, "SellingPrice"),
+                
                 LineTotal = GetDecimal(reader, "LineTotal")
             };
         }
@@ -65,9 +65,9 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertReceiptSql = @"
-                    INSERT INTO PurchaseReceipts (ReceiptCode, StoreId, SupplierId, UserId, Note)
+                    INSERT INTO PurchaseReceipts (ReceiptCode, StoreId, SupplierId, UserId, Note, TotalAmount)
                     OUTPUT INSERTED.Id
-                    VALUES (@ReceiptCode, @StoreId, @SupplierId, @UserId, @Note);
+                    VALUES (@ReceiptCode, @StoreId, @SupplierId, @UserId, @Note, @TotalAmount);
                 ";
 
                 using var receiptCommand = new SqlCommand(insertReceiptSql, connection, transaction);
@@ -76,12 +76,13 @@ namespace BookStoreManagement.Repositories
                 AddParameter(receiptCommand, "@SupplierId", receipt.SupplierId);
                 AddParameter(receiptCommand, "@UserId", receipt.UserId);
                 AddParameter(receiptCommand, "@Note", receipt.Note);
+                AddParameter(receiptCommand, "@TotalAmount", receipt.TotalAmount);
 
                 int receiptId = Convert.ToInt32(receiptCommand.ExecuteScalar());
 
                 const string insertDetailSql = @"
-                    INSERT INTO PurchaseReceiptDetails (PurchaseReceiptId, BookId, Quantity, ImportPrice, SellingPrice)
-                    VALUES (@PurchaseReceiptId, @BookId, @Quantity, @ImportPrice, @SellingPrice);
+                    INSERT INTO PurchaseReceiptDetails (PurchaseReceiptId, BookId, Quantity, ImportPrice)
+                    VALUES (@PurchaseReceiptId, @BookId, @Quantity, @ImportPrice);
                 ";
                 
                 const string updateBookQtySql = @"
@@ -138,15 +139,15 @@ namespace BookStoreManagement.Repositories
             await ExecuteTransactionAsync(async (connection, transaction) =>
             {
                 const string insertReceiptSql = @"
-                    INSERT INTO PurchaseReceipts (ReceiptCode, StoreId, SupplierId, UserId, Note)
+                    INSERT INTO PurchaseReceipts (ReceiptCode, StoreId, SupplierId, UserId, Note, TotalAmount)
                     OUTPUT INSERTED.Id
-                    VALUES (@ReceiptCode, @StoreId, @SupplierId, @UserId, @Note);
+                    VALUES (@ReceiptCode, @StoreId, @SupplierId, @UserId, @Note, @TotalAmount);
                 ";
                 receiptId = await connection.ExecuteScalarAsync<int>(insertReceiptSql, receipt, transaction);
 
                 const string insertDetailSql = @"
-                    INSERT INTO PurchaseReceiptDetails (PurchaseReceiptId, BookId, Quantity, ImportPrice, SellingPrice)
-                    VALUES (@PurchaseReceiptId, @BookId, @Quantity, @ImportPrice, @SellingPrice);
+                    INSERT INTO PurchaseReceiptDetails (PurchaseReceiptId, BookId, Quantity, ImportPrice)
+                    VALUES (@PurchaseReceiptId, @BookId, @Quantity, @ImportPrice);
                 ";
 
                 const string updateBookQtySql = @"
@@ -221,7 +222,7 @@ namespace BookStoreManagement.Repositories
         public PurchaseReceipt? GetById(int id)
         {
             const string sql = @"
-                SELECT Id, ReceiptCode, SupplierId, UserId, ImportDate, TotalAmount, Note, Status
+                SELECT Id, ReceiptCode, StoreId, SupplierId, UserId, ImportDate, TotalAmount, Note, Status
                 FROM PurchaseReceipts
                 WHERE Id = @Id;
             ";
@@ -235,7 +236,7 @@ namespace BookStoreManagement.Repositories
         public async Task<PurchaseReceipt?> GetByIdAsync(int id)
         {
             const string sql = @"
-                SELECT Id, ReceiptCode, SupplierId, UserId, ImportDate, TotalAmount, Note, Status
+                SELECT Id, ReceiptCode, StoreId, SupplierId, UserId, ImportDate, TotalAmount, Note, Status
                 FROM PurchaseReceipts
                 WHERE Id = @Id;
             ";
@@ -273,7 +274,7 @@ namespace BookStoreManagement.Repositories
         {
             var details = new List<PurchaseReceiptDetail>();
             const string sql = @"
-                SELECT Id, PurchaseReceiptId, BookId, Quantity, ImportPrice, SellingPrice, LineTotal
+                SELECT Id, PurchaseReceiptId, BookId, Quantity, ImportPrice, LineTotal
                 FROM PurchaseReceiptDetails
                 WHERE PurchaseReceiptId = @ReceiptId;
             ";
@@ -288,7 +289,7 @@ namespace BookStoreManagement.Repositories
         public async Task<List<PurchaseReceiptDetail>> GetDetailsAsync(int receiptId)
         {
             const string sql = @"
-                SELECT Id, PurchaseReceiptId, BookId, Quantity, ImportPrice, SellingPrice, LineTotal
+                SELECT Id, PurchaseReceiptId, BookId, Quantity, ImportPrice, LineTotal
                 FROM PurchaseReceiptDetails
                 WHERE PurchaseReceiptId = @ReceiptId;
             ";

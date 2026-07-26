@@ -32,7 +32,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = CustomerModel == null ? "Add New Customer" : "Edit Customer";
+            this.Text = CustomerModel == null ? "Thêm Mới Khách Hàng" : "Chỉnh Sửa Khách Hàng";
             this.Size = new Size(500, 750);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -42,27 +42,27 @@ namespace BookStoreManagement.Forms
             this.Controls.Add(lblTitle);
 
             int y = 70;
-            txtCustomerCode = CreateInput("Customer Code (Leave blank to auto-generate)", ref y);
+            txtCustomerCode = CreateInput("Mã khách hàng (Bỏ trống sẽ tự tạo)", ref y);
             if (CustomerModel != null) txtCustomerCode.ReadOnly = true;
             
-            txtFullName = CreateInput("Full name *", ref y);
+            txtFullName = CreateInput("Họ và tên *", ref y);
             txtIdentityNumber = CreateInput("CMND/CCCD", ref y);
-            txtPhone = CreateInput("Phone number", ref y);
+            txtPhone = CreateInput("Số điện thoại", ref y);
             txtEmail = CreateInput("Email", ref y);
-            txtAddress = CreateInput("Address", ref y);
+            txtAddress = CreateInput("Địa chỉ", ref y);
 
-            Label lblPoints = new Label { Text = "Reward points", Location = new Point(20, y), AutoSize = true, Font = new Font("Segoe UI", 9.5F) };
+            Label lblPoints = new Label { Text = "Điểm thưởng", Location = new Point(20, y), AutoSize = true, Font = new Font("Segoe UI", 9.5F) };
             numPoints = new NumericUpDown { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), Maximum = 99999999, Minimum = 0 };
             this.Controls.AddRange(new Control[] { lblPoints, numPoints });
             y += 60;
 
-            chkIsActive = new CheckBox { Text = "Active", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
+            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
             y += 40;
 
-            btnSave = new Button { Text = "Save", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
+            btnSave = new Button { Text = "Lưu (Save)", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Cancel", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F) };
+            btnCancel = new Button { Text = "Hủy bỏ", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F) };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
@@ -101,7 +101,7 @@ namespace BookStoreManagement.Forms
         {
             if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
-                MessageBox.Show("Please enter customer's full name.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập họ tên khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -119,16 +119,16 @@ namespace BookStoreManagement.Forms
             try {
                 if (CustomerModel.Id == 0) {
                     await _service.AddAsync(CustomerModel);
-                    MessageBox.Show("Customer added successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Đã thêm khách hàng thành công.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 } else {
                     await _service.UpdateAsync(CustomerModel);
-                    MessageBox.Show("Customer updated successfully.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Cập nhật khách hàng thành công.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex) {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using Guna.UI2.WinForms;
 using BookStoreManagement.Forms;
 using BookStoreManagement.Interfaces;
 using BookStoreManagement.Models;
@@ -16,9 +17,11 @@ namespace BookStoreManagement.UserControls
     {
         private Label lblTitle;
         private Label lblSubtitle;
-        private Button btnExport;
-        private Button btnAdd;
+        private Guna2Button btnExport;
+        private Guna2Button btnAdd;
         private Panel pnlHeader;
+        private Guna2Panel pnlFilters;
+        private Guna2TextBox txtSearch;
         
         private DataGridView dgvData;
         private Panel pnlPagination;
@@ -64,7 +67,7 @@ namespace BookStoreManagement.UserControls
             
             lblTitle = new Label 
             { 
-                Text = "Author management", 
+                Text = "Quản lý tác giả", 
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 Location = new Point(0, 0), 
                 AutoSize = true 
@@ -72,36 +75,50 @@ namespace BookStoreManagement.UserControls
             
             lblSubtitle = new Label 
             { 
-                Text = "Manage authors' info and works.", 
+                Text = "Quản lý danh sách, thông tin và tác phẩm của các tác giả.", 
                 Font = new Font("Segoe UI", 11F), 
                 Location = new Point(0, 45), 
                 AutoSize = true 
             };
 
-            btnAdd = new Button 
-            { 
-                Text = "\ue145 Thêm mới", 
-                Font = new Font("Material Symbols Outlined", 11, FontStyle.Regular), 
-                Size = new Size(130, 40), 
-                FlatStyle = FlatStyle.Flat 
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
+
+            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, 20), BorderRadius = 8 };
+            
+            txtSearch = new Guna2TextBox { Size = new Size(240, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Tìm theo tên, mã..." };
+            txtSearch.TextChanged += (s, e) => {
+                currentSearch = txtSearch.Text;
+                currentPage = 1;
+                LoadData();
             };
-            btnAdd.FlatAppearance.BorderSize = 0;
+
+            btnAdd = new Guna2Button 
+            { 
+                Text = "+ Thêm mới", 
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold), 
+                Size = new Size(120, 36), 
+                BorderRadius = 8,
+                Cursor = Cursors.Hand
+            };
             btnAdd.Click += BtnAdd_Click;
 
-            btnExport = new Button 
+            btnExport = new Guna2Button 
             { 
-                Text = "\ue2c4 Xuất Excel", 
-                Font = new Font("Material Symbols Outlined", 11, FontStyle.Regular), 
-                Size = new Size(130, 40), 
-                FlatStyle = FlatStyle.Flat 
+                Text = "Xuất Excel", 
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold), 
+                Size = new Size(120, 36), 
+                BorderRadius = 8,
+                BorderThickness = 1,
+                FillColor = Color.Transparent,
+                Cursor = Cursors.Hand
             };
-            btnExport.Click += (s, e) => MessageBox.Show("Feature under development!");
+            btnExport.Click += (s, e) => MessageBox.Show("Tính năng đang phát triển!");
 
-            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, btnAdd, btnExport });
-            pnlHeader.Resize += (s, e) => 
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnExport, btnAdd });
+            pnlFilters.Resize += (s, e) => 
             {
-                btnAdd.Location = new Point(pnlHeader.Width - btnAdd.Width, 22);
-                btnExport.Location = new Point(btnAdd.Left - btnExport.Width - 10, 22);
+                btnAdd.Location = new Point(pnlFilters.Width - 140, 16);
+                btnExport.Location = new Point(pnlFilters.Width - 270, 16);
             };
 
             // DataGridView Section
@@ -159,6 +176,7 @@ namespace BookStoreManagement.UserControls
             this.Controls.Add(dgvData);
             this.Controls.Add(pnlPagination);
             this.Controls.Add(spacer1);
+            this.Controls.Add(pnlFilters);
             this.Controls.Add(pnlHeader);
         }
 
@@ -166,12 +184,12 @@ namespace BookStoreManagement.UserControls
         {
             dgvData.Columns.Clear();
             dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colIndex", HeaderText = "#", Width = 50, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCode", HeaderText = "AUTHOR ID", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colName", HeaderText = "AUTHOR NAME", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colNationality", HeaderText = "NATIONALITY", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colBookCount", HeaderText = "RETURN QTY", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "STATUS", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "ACTION", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCode", HeaderText = "MÃ TÁC GIẢ", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colName", HeaderText = "TÊN TÁC GIẢ", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colNationality", HeaderText = "QUỐC TỊCH", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colBookCount", HeaderText = "SỐ LƯỢNG TP", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "TRẠNG THÁI", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "THAO TÁC", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } });
 
             foreach (DataGridViewColumn col in dgvData.Columns)
             {
@@ -182,16 +200,25 @@ namespace BookStoreManagement.UserControls
 
         private void ApplyTheme()
         {
+
             this.BackColor = ThemeManager.Background;
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
-            btnAdd.BackColor = ThemeManager.ButtonFill;
+            pnlFilters.BackColor = ThemeManager.CardBackground;
+            pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+            pnlFilters.FillColor = ThemeManager.CardBackground;
+            
+            txtSearch.FillColor = ThemeManager.TextBoxBackground;
+            txtSearch.ForeColor = ThemeManager.TextPrimary;
+            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+
+            btnAdd.FillColor = ThemeManager.ButtonFill;
             btnAdd.ForeColor = ThemeManager.ButtonText;
             
-            btnExport.BackColor = ThemeManager.CardBackground;
+            btnExport.FillColor = ThemeManager.CardBackground;
             btnExport.ForeColor = ThemeManager.TextPrimary;
-            btnExport.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            btnExport.BorderColor = ThemeManager.TextBoxBorder;
             
             ThemeManager.ApplyDataGridViewStyle(dgvData);
             
@@ -231,7 +258,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -242,7 +269,7 @@ namespace BookStoreManagement.UserControls
             
             if (totalRecords == 0)
             {
-                lblPaginationInfo.Text = "No data";
+                lblPaginationInfo.Text = "Không có dữ liệu";
             }
             else
             {
@@ -327,7 +354,7 @@ namespace BookStoreManagement.UserControls
                     e.PaintBackground(e.CellBounds, true);
                     bool isActive = currentAuthors[e.RowIndex].IsActive;
                     
-                    string text = isActive ? "Active" : "Inactive";
+                    string text = isActive ? "Đang hoạt động" : "Ngừng hoạt động";
                     Color bgColor = isActive ? Color.FromArgb(220, 252, 231) : Color.FromArgb(254, 226, 226);
                     Color fgColor = isActive ? Color.FromArgb(22, 163, 74) : Color.FromArgb(220, 38, 38);
 
@@ -459,7 +486,7 @@ namespace BookStoreManagement.UserControls
                 else if (hoveredAction == 2) // Delete
                 {
                     var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa tác giả '{author.AuthorName}'?", 
-                        "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                        "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     
                     if (result == DialogResult.Yes)
                     {
@@ -471,12 +498,12 @@ namespace BookStoreManagement.UserControls
                             }
                             else
                             {
-                                MessageBox.Show("Cannot delete this author. Data might be in use elsewhere.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Không thể xóa tác giả này. Có thể dữ liệu đang được sử dụng ở nơi khác.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Error deleting: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Lỗi xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }

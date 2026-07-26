@@ -72,7 +72,7 @@ namespace BookStoreManagement.UserControls
 
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Invoice history",
+                Text = "Lịch sử hóa đơn",
                 Font = new Font("Inter", 18F, FontStyle.Bold),
                 Location = new Point(0, 10)
             };
@@ -80,7 +80,7 @@ namespace BookStoreManagement.UserControls
 
             lblSubtitle = new Guna2HtmlLabel
             {
-                Text = $"Current shift: Today ({DateTime.Today:dd/MM/yyyy})",
+                Text = $"Ca làm việc hiện tại: Hôm nay ({DateTime.Today:dd/MM/yyyy})",
                 Font = new Font("Inter", 10F),
                 Location = new Point(0, 55)
             };
@@ -88,7 +88,7 @@ namespace BookStoreManagement.UserControls
 
             btnFilter = new Guna2Button
             {
-                Text = "Filter",
+                Text = "Lọc",
                 BorderRadius = 4,
                 BorderThickness = 1,
                 Font = new Font("Inter", 9F, FontStyle.Bold),
@@ -101,7 +101,7 @@ namespace BookStoreManagement.UserControls
 
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Search invoice ID...",
+                PlaceholderText = "Tìm theo mã hóa đơn...",
                 BorderRadius = 4,
                 Size = new Size(250, 40),
                 Location = new Point(pnlHeader.Width - 360, 16),
@@ -124,9 +124,9 @@ namespace BookStoreManagement.UserControls
             };
             this.Controls.Add(pnlCards);
 
-            cardTotal = new SummaryCard("Total Invoices", "0", "receipt", Color.FromArgb(43, 73, 103)); 
-            cardRevenue = new SummaryCard("Doanh thu ca", "0 VND", "payments", Color.FromArgb(0, 186, 97)); 
-            cardTransfer = new SummaryCard("Bank transfer", "0 VND", "credit_card", Color.FromArgb(115, 69, 182)); 
+            cardTotal = new SummaryCard("Tổng số HĐ", "0", "receipt", Color.FromArgb(43, 73, 103)); 
+            cardRevenue = new SummaryCard("Doanh thu ca", "0 đ", "payments", Color.FromArgb(0, 186, 97)); 
+            cardTransfer = new SummaryCard("Chuyển khoản", "0 đ", "credit_card", Color.FromArgb(115, 69, 182)); 
 
             pnlCards.Controls.Add(cardTotal);
             pnlCards.Controls.Add(cardRevenue);
@@ -183,26 +183,26 @@ namespace BookStoreManagement.UserControls
             dgvInvoices.Columns.Add("Id", "Id"); // Hidden
             dgvInvoices.Columns["Id"].Visible = false;
 
-            dgvInvoices.Columns.Add("OrderCode", "Invoice ID");
+            dgvInvoices.Columns.Add("OrderCode", "Mã HĐ");
             dgvInvoices.Columns["OrderCode"].Width = 120;
 
-            dgvInvoices.Columns.Add("OrderDate", "Time");
+            dgvInvoices.Columns.Add("OrderDate", "Thời gian");
             dgvInvoices.Columns["OrderDate"].Width = 150;
 
-            dgvInvoices.Columns.Add("CustomerName", "Customer");
+            dgvInvoices.Columns.Add("CustomerName", "Khách hàng");
             
-            dgvInvoices.Columns.Add("TotalAmount", "Total amount");
+            dgvInvoices.Columns.Add("TotalAmount", "Tổng tiền");
             dgvInvoices.Columns["TotalAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInvoices.Columns["TotalAmount"].Width = 120;
 
-            dgvInvoices.Columns.Add("PaymentMethod", "Payment");
+            dgvInvoices.Columns.Add("PaymentMethod", "Thanh toán");
             dgvInvoices.Columns["PaymentMethod"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvInvoices.Columns["PaymentMethod"].Width = 120;
 
             var actionCol = new DataGridViewTextBoxColumn
             {
-                Name = "Action",
-                HeaderText = "Action",
+                Name = "Thao tác",
+                HeaderText = "Thao tác",
                 Width = 100,
                 DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
@@ -313,7 +313,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -349,10 +349,10 @@ namespace BookStoreManagement.UserControls
                     item.Id,
                     item.OrderCode,
                     timeStr,
-                    item.CustomerName ?? "Retail customer",
+                    item.CustomerName ?? "Khách lẻ",
                     item.TotalAmount.ToString("N0") + " ₫",
                     paymentStr,
-                    "Details"
+                    "Chi tiết"
                 );
 
                 var row = dgvInvoices.Rows[rowIndex];
@@ -369,9 +369,9 @@ namespace BookStoreManagement.UserControls
         {
             switch (pm)
             {
-                case AppConstants.PaymentMethods.Cash: return "Cash";
-                case AppConstants.PaymentMethods.Banking: return "Bank transfer";
-                case AppConstants.PaymentMethods.Card: return "Swipe card";
+                case AppConstants.PaymentMethods.Cash: return "Tiền mặt";
+                case AppConstants.PaymentMethods.Banking: return "Chuyển khoản";
+                case AppConstants.PaymentMethods.Card: return "Quẹt thẻ";
                 default: return pm;
             }
         }
@@ -388,12 +388,12 @@ namespace BookStoreManagement.UserControls
 
                 Color bgColor, textColor;
 
-                if (method == "Cash")
+                if (method == "Tiền mặt")
                 {
                     bgColor = Color.FromArgb(40, Color.ForestGreen);
                     textColor = Color.ForestGreen;
                 }
-                else if (method == "Bank transfer")
+                else if (method == "Chuyển khoản")
                 {
                     bgColor = Color.FromArgb(40, Color.DarkOrchid);
                     textColor = Color.DarkOrchid;
@@ -432,7 +432,7 @@ namespace BookStoreManagement.UserControls
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
                 );
             }
-            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["Action"].Index)
+            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["Thao tác"].Index)
             {
                 e.PaintBackground(e.CellBounds, true);
                 
@@ -459,7 +459,7 @@ namespace BookStoreManagement.UserControls
 
                 TextRenderer.DrawText(
                     e.Graphics,
-                    "DETAILS",
+                    "CHI TIẾT",
                     new Font("Inter", 8F, FontStyle.Bold),
                     btnRect,
                     ThemeManager.TextSecondary,
@@ -472,7 +472,7 @@ namespace BookStoreManagement.UserControls
 
         private void DgvInvoices_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["Action"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvInvoices.Columns["Thao tác"].Index)
             {
                 int orderId = Convert.ToInt32(dgvInvoices.Rows[e.RowIndex].Cells["Id"].Value);
                 using (var form = new InvoiceForm(orderId))

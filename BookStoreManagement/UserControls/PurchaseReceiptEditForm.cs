@@ -35,7 +35,7 @@ namespace BookStoreManagement.UserControls
 
         private void InitializeComponent()
         {
-            this.Text = "Import Receipt Details";
+            this.Text = "Chi tiết phiếu nhập";
             this.Size = new Size(700, 550);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -43,19 +43,19 @@ namespace BookStoreManagement.UserControls
             this.MinimizeBox = false;
 
             var pnlTop = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(20) };
-            var lblStatus = new Label { Text = "Receipt status:", AutoSize = true, Location = new Point(20, 30) };
+            var lblStatus = new Label { Text = "Trạng thái phiếu:", AutoSize = true, Location = new Point(20, 30) };
             cbStatus = new Guna2ComboBox
             {
                 Location = new Point(150, 20),
                 Size = new Size(200, 36),
                 BorderRadius = 4
             };
-            cbStatus.Items.AddRange(new object[] { "Imported", "Pending", "Cancelled" });
+            cbStatus.Items.AddRange(new object[] { "Đã nhập", "Chờ duyệt", "Đã hủy" });
 
             pnlTop.Controls.Add(lblStatus);
             pnlTop.Controls.Add(cbStatus);
 
-            var lblDetails = new Label { Text = "Product details:", AutoSize = true, Location = new Point(20, 80) };
+            var lblDetails = new Label { Text = "Chi tiết sản phẩm:", AutoSize = true, Location = new Point(20, 80) };
             pnlTop.Controls.Add(lblDetails);
 
             dgvDetails = new DataGridView
@@ -70,10 +70,10 @@ namespace BookStoreManagement.UserControls
                 BorderStyle = BorderStyle.None
             };
             dgvDetails.SetDoubleBuffered(true);
-            dgvDetails.Columns.Add("BookName", "Book title");
-            dgvDetails.Columns.Add("Quantity", "Quantity");
-            dgvDetails.Columns.Add("ImportPrice", "Import price");
-            dgvDetails.Columns.Add("LineTotal", "Total amount");
+            dgvDetails.Columns.Add("BookName", "Tên sách");
+            dgvDetails.Columns.Add("Số lượng", "Số lượng");
+            dgvDetails.Columns.Add("ImportPrice", "Giá nhập");
+            dgvDetails.Columns.Add("LineTotal", "Tổng tiền");
 
             var pnlGrid = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(20, 0, 20, 20) };
             pnlGrid.Controls.Add(dgvDetails);
@@ -81,7 +81,7 @@ namespace BookStoreManagement.UserControls
             var pnlBottom = new Guna2Panel { Dock = DockStyle.Bottom, Height = 70, Padding = new Padding(20) };
             btnSave = new Guna2Button
             {
-                Text = "Save changes",
+                Text = "Lưu thay đổi",
                 Size = new Size(120, 36),
                 BorderRadius = 4,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -92,7 +92,7 @@ namespace BookStoreManagement.UserControls
 
             btnCancel = new Guna2Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 Size = new Size(100, 36),
                 BorderRadius = 4,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -114,7 +114,7 @@ namespace BookStoreManagement.UserControls
             _receipt = _receiptService.GetById(_receiptId);
             if (_receipt == null) return;
 
-            this.Text = $"Import Receipt Details - {_receipt.ReceiptCode}";
+            this.Text = $"Chi tiết Phiếu Nhập - {_receipt.ReceiptCode}";
             cbStatus.SelectedItem = _receipt.Status;
 
             var details = _receiptService.GetDetails(_receiptId);
@@ -129,7 +129,7 @@ namespace BookStoreManagement.UserControls
         private void BtnSave_Click(object? sender, EventArgs e)
         {
             if (_receipt == null) return;
-            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Pending";
+            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Chờ duyệt";
             if (_receipt.Status != newStatus)
             {
                 _receiptService.UpdateStatus(_receiptId, newStatus);

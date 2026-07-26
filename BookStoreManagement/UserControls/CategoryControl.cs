@@ -20,6 +20,8 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubtitle;
+        private TableLayoutPanel tlpStats;
+        private Guna2Panel card1, card2, card3;
         private Guna2Button btnExport;
         private Guna2Button btnAdd;
 
@@ -65,37 +67,49 @@ namespace BookStoreManagement.UserControls
             int gutter = 20;
             this.Padding = new Padding(0);
 
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = false };
 
             // Page Header
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
             
-            lblTitle = new Label { Text = "Book Categories", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubtitle = new Label { Text = "Manage and classify books in the system.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
+            lblTitle = new Label { Text = "Danh mục sách", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubtitle = new Label { Text = "Quản lý và phân loại các đầu sách trong hệ thống.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
             
-            btnExport = new Guna2Button { Text = "Export Excel", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnExport.Click += BtnExport_Click;
 
-            btnAdd = new Guna2Button { Text = "+ Add New", Size = new Size(120, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd = new Guna2Button { Text = "+ Thêm mới", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, btnExport, btnAdd });
-            pnlPageHeader.Resize += (s, e) => {
-                btnAdd.Location = new Point(pnlPageHeader.Width - 120, 22);
-                btnExport.Location = new Point(pnlPageHeader.Width - 250, 22);
-            };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
 
-            // Filter Bar
-            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 90, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 8 };
             
-            lblSearchTitle = new Label { Text = "Category Name", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 10) };
-            txtSearch = new Guna2TextBox { Size = new Size(300, 36), Location = new Point(20, 35), BorderRadius = 4, PlaceholderText = "Enter category name to search..." };
+
+            tlpStats = new TableLayoutPanel 
+            { 
+                Dock = DockStyle.Top, Height = 100, 
+                ColumnCount = 3, RowCount = 1,
+                Margin = new Padding(0,0,0,gutter)
+            };
+            for(int i=0; i<3; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
             
-            lblStatusTitle = new Label { Text = "Status", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(340, 10) };
-            cbStatus = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(340, 35), BorderRadius = 4, Cursor = Cursors.Hand };
-            cbStatus.Items.Add(new { Text = "All statuses", Value = "" });
-            cbStatus.Items.Add(new { Text = "Active", Value = "active" });
-            cbStatus.Items.Add(new { Text = "Locked", Value = "locked" });
+            card1 = CreateStatCard("TỔNG SỐ DANH MỤC", "0", "category", Color.FromArgb(41, 128, 185)); // Primary
+            card2 = CreateStatCard("ĐANG HOẠT ĐỘNG", "0", "active", Color.FromArgb(0, 186, 97)); // Tertiary
+            card3 = CreateStatCard("ĐÃ KHÓA", "0", "locked", Color.FromArgb(186, 26, 26)); // Error
+            
+            tlpStats.Controls.Add(card1, 0, 0);
+            tlpStats.Controls.Add(card2, 1, 0);
+            tlpStats.Controls.Add(card3, 2, 0);
+
+// Filter Bar
+            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 8 };
+            
+            txtSearch = new Guna2TextBox { Size = new Size(300, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Nhập tên danh mục để tìm kiếm..." };
+            
+            cbStatus = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(340, 16), BorderRadius = 8, Cursor = Cursors.Hand };
+            cbStatus.Items.Add(new { Text = "Tất cả trạng thái", Value = "" });
+            cbStatus.Items.Add(new { Text = "Đang hoạt động", Value = "active" });
+            cbStatus.Items.Add(new { Text = "Tạm khóa", Value = "locked" });
             cbStatus.DisplayMember = "Text";
             cbStatus.ValueMember = "Value";
             cbStatus.SelectedIndex = 0;
@@ -114,10 +128,14 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            pnlFilters.Controls.AddRange(new Control[] { lblSearchTitle, txtSearch, lblStatusTitle, cbStatus });
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, cbStatus, btnExport, btnAdd });
+            pnlFilters.Resize += (s, e) => {
+                btnAdd.Location = new Point(pnlFilters.Width - 140, 16);
+                btnExport.Location = new Point(pnlFilters.Width - 270, 16);
+            };
 
             // DataGrid Container
-            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 400, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 8 };
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 8 };
             
             dgvCategories = new Guna2DataGridView
             {
@@ -125,6 +143,7 @@ namespace BookStoreManagement.UserControls
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
+                ScrollBars = ScrollBars.None,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false,
@@ -136,13 +155,13 @@ namespace BookStoreManagement.UserControls
             
             dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 50 });
-            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CategoryCode", HeaderText = "Category Code", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CategoryName", HeaderText = "Category Name", Width = 200, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCount", HeaderText = "Book quantity", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Description", HeaderText = "Description", Width = 250, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Status", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CategoryCode", HeaderText = "MÃ DANH MỤC", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CategoryName", HeaderText = "TÊN DANH MỤC", Width = 200, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCount", HeaderText = "SỐ LƯỢNG SÁCH", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Description", HeaderText = "MÔ TẢ", Width = 250, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "TRẠNG THÁI", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             
-            var actionCol = new DataGridViewTextBoxColumn { Name = "Action", HeaderText = "Action", Width = 100, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            var actionCol = new DataGridViewTextBoxColumn { Name = "Thao tác", HeaderText = "THAO TÁC", Width = 100, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvCategories.Columns.Add(actionCol);
 
             dgvCategories.CellPainting += DgvCategories_CellPainting;
@@ -160,20 +179,25 @@ namespace BookStoreManagement.UserControls
 
             Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
             Panel spacer2 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
+            Panel spacer3 = new Panel { Dock = DockStyle.Top, Height = gutter, BackColor = Color.Transparent };
 
             pnlContent.Controls.Add(paginationControl);
             pnlContent.Controls.Add(pnlGridContainer);
             pnlContent.Controls.Add(spacer2);
             pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(spacer3);
+            pnlContent.Controls.Add(tlpStats);
             pnlContent.Controls.Add(spacer1);
             pnlContent.Controls.Add(pnlPageHeader);
             
             pnlPageHeader.BringToFront();
             spacer1.BringToFront();
+            tlpStats.BringToFront();
+            spacer3.BringToFront();
             pnlFilters.BringToFront();
             spacer2.BringToFront();
-            pnlGridContainer.BringToFront();
             paginationControl.BringToFront();
+            pnlGridContainer.BringToFront();
 
             this.Controls.Add(pnlContent);
             
@@ -192,6 +216,15 @@ namespace BookStoreManagement.UserControls
             try
             {
                 var (items, totalCount) = _categoryService.GetPagedCategories(_currentPage, _pageSize, _currentSearchTerm, _statusFilter);
+                
+                var all = _categoryService.GetAll();
+                int total = all.Count;
+                int active = 0, locked = 0;
+                foreach(var x in all) { if(x.IsActive) active++; else locked++; }
+                foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = total.ToString("N0");
+                foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = active.ToString("N0");
+                foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = locked.ToString("N0");
+
                 dgvCategories.DataSource = null;
                 if (this.IsDisposed) return;
                 dgvCategories.Rows.Clear();
@@ -214,7 +247,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -227,12 +260,12 @@ namespace BookStoreManagement.UserControls
                     try
                     {
                         var excelService = new ExcelExportService();
-                        excelService.ExportDataGridView(dgvCategories, sfd.FileName, "Categories");
-                        MessageBox.Show("Excel file exported successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        excelService.ExportDataGridView(dgvCategories, sfd.FileName, "Thể Loại");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error exporting Excel: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -249,7 +282,7 @@ namespace BookStoreManagement.UserControls
 
         private void DgvCategories_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Action"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Thao tác"].Index)
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 
@@ -286,7 +319,7 @@ namespace BookStoreManagement.UserControls
 
         private void DgvCategories_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Action"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Thao tác"].Index)
             {
                 int action = (e.X < dgvCategories.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
                 
@@ -308,7 +341,7 @@ namespace BookStoreManagement.UserControls
                     int oldRow = _hoveredRowIndex;
                     _hoveredRowIndex = -1;
                     _hoveredAction = 0;
-                    if (e.ColumnIndex >= 0) dgvCategories.InvalidateCell(dgvCategories.Columns["Action"].Index, oldRow);
+                    if (e.ColumnIndex >= 0) dgvCategories.InvalidateCell(dgvCategories.Columns["Thao tác"].Index, oldRow);
                 }
                 dgvCategories.Cursor = Cursors.Default;
             }
@@ -321,14 +354,14 @@ namespace BookStoreManagement.UserControls
                 int oldRow = _hoveredRowIndex;
                 _hoveredRowIndex = -1;
                 _hoveredAction = 0;
-                dgvCategories.InvalidateCell(dgvCategories.Columns["Action"].Index, oldRow);
+                dgvCategories.InvalidateCell(dgvCategories.Columns["Thao tác"].Index, oldRow);
             }
             dgvCategories.Cursor = Cursors.Default;
         }
 
         private void DgvCategories_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["Action"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCategories.Columns["THAO TÁC"].Index)
             {
                 int id = Convert.ToInt32(dgvCategories.Rows[e.RowIndex].Cells[0].Value);
                 if (e.X < dgvCategories.Columns[e.ColumnIndex].Width / 2)
@@ -341,17 +374,17 @@ namespace BookStoreManagement.UserControls
                 }
                 else
                 {
-                    if (MessageBox.Show("Are you sure you want to delete this category?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa danh mục này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         try
                         {
                             _categoryService.SetActive(id, false);
-                            MessageBox.Show("Category deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Xóa danh mục thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadData();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Error deleting: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Lỗi xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -360,14 +393,14 @@ namespace BookStoreManagement.UserControls
 
         private void DgvCategories_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex >= 0 && dgvCategories.Columns[e.ColumnIndex].Name == "Status")
+            if (e.RowIndex >= 0 && dgvCategories.Columns[e.ColumnIndex].Name == "TRẠNG THÁI")
             {
                 string? status = e.Value?.ToString();
-                if (status == "Locked")
+                if (status == "Tạm khóa")
                 {
                     e.CellStyle.ForeColor = Color.Red;
                 }
-                else if (status == "Active")
+                else if (status == "Đang hoạt động")
                 {
                     e.CellStyle.ForeColor = Color.Green;
                 }
@@ -384,7 +417,27 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
-        private void ApplyTheme()
+        
+        private Guna2Panel CreateStatCard(string title, string value, string iconText, Color color)
+        {
+            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,20,0), BorderRadius = 12 };
+            
+            // Icon
+            var pnlIcon = new Guna2Panel { Size = new Size(48, 48), Location = new Point(20, 26), BorderRadius = 24, FillColor = Color.FromArgb(30, color) };
+            Label lblIcon = new Label { Text = iconText == "category" ? "📑" : (iconText == "active" ? "✨" : "⚠️"), Font = new Font("Segoe UI Emoji", 16F), AutoSize = false, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
+            pnlIcon.Controls.Add(lblIcon);
+            
+            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 26) };
+            lblTitle.Tag = "CardTitle";
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 45), ForeColor = color };
+            lblValue.Tag = "CardValue";
+
+            pnl.Controls.Add(pnlIcon);
+            pnl.Controls.Add(lblTitle);
+            pnl.Controls.Add(lblValue);
+            return pnl;
+        }
+private void ApplyTheme()
         {
             bool isDark = ThemeManager.IsDarkMode;
             
@@ -397,8 +450,9 @@ namespace BookStoreManagement.UserControls
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubtitle.ForeColor = ThemeManager.TextSecondary;
-            lblSearchTitle.ForeColor = ThemeManager.TextSecondary;
-            lblStatusTitle.ForeColor = ThemeManager.TextSecondary;
+            ApplyThemeToCard(card1);
+            ApplyThemeToCard(card2);
+            ApplyThemeToCard(card3);
 
             txtSearch.FillColor = isDark ? Color.FromArgb(40, 40, 40) : Color.White;
             txtSearch.ForeColor = ThemeManager.TextPrimary;
@@ -415,6 +469,18 @@ namespace BookStoreManagement.UserControls
 
             // DGV
             ThemeManager.ApplyDataGridViewStyle(dgvCategories);
+        }
+
+        
+        private void ApplyThemeToCard(Guna2Panel card)
+        {
+            card.BackColor = ThemeManager.CardBackground;
+            card.CustomBorderColor = ThemeManager.TextBoxBorder;
+            card.FillColor = ThemeManager.CardBackground;
+            foreach (Control c in card.Controls)
+            {
+                if (c.Tag?.ToString() == "CardTitle") c.ForeColor = ThemeManager.TextSecondary;
+            }
         }
 
         protected override void Dispose(bool disposing)

@@ -56,10 +56,10 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            lblTitle = new Label { Text = "Store Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Manage bookstore locations, personnel, and operational status.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Quản lý Chi nhánh", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Quản lý chi nhánh, nhân sự, và trạng thái.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Add Store", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Thêm Chi nhánh", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
                 var frm = new StoreForm(null);
                 if (frm.ShowDialog() == DialogResult.OK)
@@ -93,14 +93,14 @@ namespace BookStoreManagement.UserControls
             
             // Define Columns
             dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StoreCode", Name = "StoreCode", HeaderText = "STORE ID", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StoreName", Name = "StoreName", HeaderText = "STORE NAME", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Address", Name = "Address", HeaderText = "ADDRESS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Phone", Name = "Phone", HeaderText = "PHONE", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "ManagerName", Name = "ManagerName", HeaderText = "MANAGER", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 180 });
-            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "IsActive", Name = "Status", HeaderText = "STATUS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StoreCode", Name = "StoreCode", HeaderText = "MÃ CHI NHÁNH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StoreName", Name = "StoreName", HeaderText = "TÊN CHI NHÁNH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Address", Name = "Địa chỉ", HeaderText = "ĐỊA CHỈ", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Phone", Name = "SĐT", HeaderText = "ĐIỆN THOẠI", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "ManagerName", Name = "ManagerName", HeaderText = "NGƯỜI QUẢN LÝ", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 180 });
+            dgvStores.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "IsActive", Name = "Trạng thái", HeaderText = "TRẠNG THÁI", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTION", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "THAO TÁC", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvStores.Columns.Add(actionCol);
 
             dgvStores.CellPainting += DgvStores_CellPainting;
@@ -192,7 +192,7 @@ namespace BookStoreManagement.UserControls
 
             bool isHoveredRow = (e.RowIndex == _hoveredRow);
 
-            if (e.ColumnIndex == dgvStores.Columns["Status"].Index)
+            if (e.ColumnIndex == dgvStores.Columns["Trạng thái"].Index)
             {
                 e.PaintBackground(e.CellBounds, true);
                 if (isHoveredRow)
@@ -204,7 +204,7 @@ namespace BookStoreManagement.UserControls
                 }
 
                 bool isActive = (bool)e.Value;
-                string statusText = isActive ? "Active" : "Locked";
+                string statusText = isActive ? "Đang hoạt động" : "Đã khóa";
                 
                 Color badgeBg = isActive ? Color.FromArgb(20, Color.FromArgb(0, 186, 97)) : Color.FromArgb(20, ThemeManager.TextSecondary);
                 Color badgeText = isActive ? Color.FromArgb(0, 186, 97) : ThemeManager.TextSecondary;
@@ -364,7 +364,7 @@ namespace BookStoreManagement.UserControls
             }
             else if (deleteRect.Contains(e.Location))
             {
-                if (MessageBox.Show($"Bạn có chắc muốn xoá cửa hàng '{store.StoreName}'?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                if (MessageBox.Show($"Bạn có chắc muốn xoá cửa hàng '{store.StoreName}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     await _repository.SetActiveAsync(storeId, false);
                     await LoadDataAsync();

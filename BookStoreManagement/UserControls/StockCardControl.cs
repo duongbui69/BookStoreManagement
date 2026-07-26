@@ -217,12 +217,12 @@ namespace BookStoreManagement.UserControls
             dgvTransactions.SetDoubleBuffered(true);
 
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Ngày", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Ngày", HeaderText = "Ngày", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Voucher", HeaderText = "Số chứng từ", Width = 120, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Product", HeaderText = "Tên sản phẩm", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Desc", HeaderText = "Diễn giải", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Import", HeaderText = "Nhập", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
-            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Export", HeaderText = "Xuất", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sản phẩm", HeaderText = "Tên sản phẩm", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Desc", HeaderText = "Mô tả", Width = 200, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nhập kho", HeaderText = "Nhập kho", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
+            dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Xuất kho", HeaderText = "Xuất kho", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
             dgvTransactions.Columns.Add(new DataGridViewTextBoxColumn { Name = "Balance", HeaderText = "Tồn", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) } });
             DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Thao tác", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvTransactions.Columns.Add(actionCol);
@@ -274,7 +274,7 @@ namespace BookStoreManagement.UserControls
             var books = await _bookService.GetAllAsync();
             books.Insert(0, new BookStoreManagement.ViewModels.BookListViewModel { Id = 0, Title = "Tất cả sản phẩm" });
             cbBookFilter.DataSource = books;
-            cbBookFilter.DisplayMember = "Title";
+            cbBookFilter.DisplayMember = "Tiêu đề";
             cbBookFilter.ValueMember = "Id";
 
             var stores = await _storeService.GetAllAsync();
@@ -362,10 +362,12 @@ namespace BookStoreManagement.UserControls
             else if (dgvTransactions.Columns[e.ColumnIndex].Name == "Voucher")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                TextRenderer.DrawText(e.Graphics, e.FormattedValue?.ToString(), e.CellStyle.Font, e.CellBounds, ThemeManager.ButtonFill, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                bool isSelected = (e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected;
+                Color textColor = isSelected ? e.CellStyle.SelectionForeColor : ThemeManager.ButtonFill;
+                TextRenderer.DrawText(e.Graphics, e.FormattedValue?.ToString(), e.CellStyle.Font, e.CellBounds, textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 e.Handled = true;
             }
-            else if (dgvTransactions.Columns[e.ColumnIndex].Name == "Import")
+            else if (dgvTransactions.Columns[e.ColumnIndex].Name == "Nhập kho")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 var valStr = e.FormattedValue?.ToString();
@@ -373,7 +375,7 @@ namespace BookStoreManagement.UserControls
                 TextRenderer.DrawText(e.Graphics, valStr, e.CellStyle.Font, e.CellBounds, color, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 e.Handled = true;
             }
-            else if (dgvTransactions.Columns[e.ColumnIndex].Name == "Export")
+            else if (dgvTransactions.Columns[e.ColumnIndex].Name == "Xuất kho")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 var valStr = e.FormattedValue?.ToString();

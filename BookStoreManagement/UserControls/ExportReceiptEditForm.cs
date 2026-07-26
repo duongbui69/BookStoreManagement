@@ -69,7 +69,7 @@ namespace BookStoreManagement.UserControls
             
             lblTitle = new Label
             {
-                Text = "Export Receipt Details",
+                Text = "Chi tiết phiếu xuất",
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
@@ -99,14 +99,14 @@ namespace BookStoreManagement.UserControls
             lblReason = new Label { Location = new Point(400, 20), AutoSize = true, Font = new Font("Segoe UI", 11F) };
             lblDate = new Label { Location = new Point(400, 50), AutoSize = true, Font = new Font("Segoe UI", 11F) };
 
-            lblStatus = new Label { Text = "Status:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            lblStatus = new Label { Text = "Trạng thái:", Location = new Point(24, 90), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
             cbStatus = new Guna2ComboBox
             {
                 Location = new Point(120, 85),
                 Size = new Size(200, 36),
                 BorderRadius = 4
             };
-            cbStatus.Items.AddRange(new string[] { "Pending", "Delivering", "Completed", "Cancelled" });
+            cbStatus.Items.AddRange(new string[] { "Chờ duyệt", "Đang giao", "Hoàn thành", "Đã hủy" });
 
             dgvDetails = new DataGridView
             {
@@ -121,10 +121,10 @@ namespace BookStoreManagement.UserControls
                 RowTemplate = { Height = 40 }
             };
             dgvDetails.SetDoubleBuffered(true);
-            dgvDetails.Columns.Add("BookName", "PRODUCT");
-            dgvDetails.Columns.Add("Quantity", "QUANTITY");
-            dgvDetails.Columns.Add("Price", "UNIT PRICE");
-            dgvDetails.Columns.Add("LineTotal", "TOTAL");
+            dgvDetails.Columns.Add("BookName", "SẢN PHẨM");
+            dgvDetails.Columns.Add("Số lượng", "SỐ LƯỢNG");
+            dgvDetails.Columns.Add("Price", "ĐƠN GIÁ");
+            dgvDetails.Columns.Add("LineTotal", "THÀNH TIỀN");
 
             pnlContent.Controls.AddRange(new Control[] { lblReceiptCode, lblCustomer, lblReason, lblDate, lblStatus, cbStatus, dgvDetails });
 
@@ -140,7 +140,7 @@ namespace BookStoreManagement.UserControls
 
             btnCancel = new Guna2Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 Size = new Size(100, 40),
                 Location = new Point(this.Width - 250, 15),
                 BorderRadius = 4,
@@ -150,7 +150,7 @@ namespace BookStoreManagement.UserControls
 
             btnSave = new Guna2Button
             {
-                Text = "Save changes",
+                Text = "Lưu thay đổi",
                 Size = new Size(120, 40),
                 Location = new Point(this.Width - 140, 15),
                 BorderRadius = 4,
@@ -195,7 +195,7 @@ namespace BookStoreManagement.UserControls
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Completed";
+            string newStatus = cbStatus.SelectedItem?.ToString() ?? "Hoàn thành";
             _receiptService.UpdateStatus(_receiptId, newStatus);
             this.DialogResult = DialogResult.OK;
         }

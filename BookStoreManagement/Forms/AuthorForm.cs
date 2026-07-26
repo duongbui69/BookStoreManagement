@@ -27,21 +27,21 @@ namespace BookStoreManagement.Forms
 
             if (authorId.HasValue)
             {
-                lblTitle.Text = "Edit Author";
+                lblTitle.Text = "Sửa Tác giả";
                 LoadAuthorData(authorId.Value);
             }
             else
             {
-                lblTitle.Text = "Add New Author";
+                lblTitle.Text = "Thêm mới Tác giả";
                 _currentAuthor = new Author();
                 chkIsActive.Checked = true;
-                txtId.Text = "Auto-generate";
+                txtId.Text = "Tạo tự động";
             }
         }
 
         private void InitializeComponentLayout()
         {
-            this.Text = "Update Author";
+            this.Text = "Cập nhật Tác giả";
             this.Size = new Size(500, 550);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -54,33 +54,33 @@ namespace BookStoreManagement.Forms
             int startY = 80;
             int padding = 20;
 
-            lblId = new Label { Text = "Author Code", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblId = new Label { Text = "Mã tác giả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
             txtId = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10), ReadOnly = true, Enabled = false };
             this.Controls.AddRange(new Control[] { lblId, txtId });
             startY += 70;
 
-            lblName = new Label { Text = "Author name (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblName = new Label { Text = "Tên Tác giả (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
             txtName = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblName, txtName });
             startY += 70;
 
-            lblNationality = new Label { Text = "Nationality", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblNationality = new Label { Text = "Quốc tịch", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
             txtNationality = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblNationality, txtNationality });
             startY += 70;
 
-            lblDescription = new Label { Text = "Description", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblDescription = new Label { Text = "Mô tả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
             txtDescription = new TextBox { Location = new Point(24, startY + 25), Width = 436, Height = 60, Multiline = true, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblDescription, txtDescription });
             startY += 100;
 
-            lblStatus = new Label { Text = "Status", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            chkIsActive = new CheckBox { Text = "Active", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            lblStatus = new Label { Text = "Trạng thái", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Segoe UI", 10) };
             this.Controls.AddRange(new Control[] { lblStatus, chkIsActive });
 
             btnCancel = new Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 Size = new Size(100, 36),
                 Location = new Point(this.Width - 250, this.Height - 80),
                 FlatStyle = FlatStyle.Flat,
@@ -90,7 +90,7 @@ namespace BookStoreManagement.Forms
 
             btnSave = new Button
             {
-                Text = "Save changes",
+                Text = "Lưu thay đổi",
                 Size = new Size(120, 36),
                 Location = new Point(this.Width - 140, this.Height - 80),
                 FlatStyle = FlatStyle.Flat,
@@ -151,13 +151,13 @@ namespace BookStoreManagement.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Author data not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Không tìm thấy dữ liệu Tác giả!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -166,14 +166,14 @@ namespace BookStoreManagement.Forms
             string name = txtName.Text.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("Please enter author name!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập tên tác giả!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtName.Focus();
                 return;
             }
 
             if (await _authorRepository.IsNameExistsAsync(name, _currentAuthor?.Id > 0 ? _currentAuthor.Id : null))
             {
-                MessageBox.Show("Author name already exists!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Tên tác giả đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtName.Focus();
                 return;
             }
@@ -199,7 +199,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi lưu dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

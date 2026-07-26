@@ -36,6 +36,16 @@ namespace BookStoreManagement.Forms
             LoadDropdowns();
             
             if (BookModel != null) BindData();
+            
+            // Fix: Reset author and publisher when category is manually changed by the user
+            cbCategory.SelectedIndexChanged += (s, e) => {
+                if (cbCategory.Focused || cbCategory.ContainsFocus)
+                {
+                    if (cbAuthor.Items.Count > 0) cbAuthor.SelectedIndex = 0;
+                    if (cbPublisher.Items.Count > 0) cbPublisher.SelectedIndex = 0;
+                }
+            };
+
             ApplyTheme();
         }
 
@@ -51,25 +61,25 @@ namespace BookStoreManagement.Forms
 
             // Left Col
             int y = 70;
-            txtBookCode = CreateInput("Book Code", 20, ref y);
+            txtBookCode = CreateInput("Mã Sách", 20, ref y);
             txtISBN = CreateInput("ISBN", 20, ref y);
-            txtTitle = CreateInput("Title", 20, ref y);
+            txtTitle = CreateInput("Tiêu đề", 20, ref y);
             txtPublishYear = CreateInput("Publish Year", 20, ref y);
             txtPageCount = CreateInput("Page Count", 20, ref y);
             
-            Label lblCat = new Label { Text = "Category", Location = new Point(20, y), AutoSize = true };
+            Label lblCat = new Label { Text = "Danh mục", Location = new Point(20, y), AutoSize = true };
             cbCategory = new ComboBox { Location = new Point(20, y + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
             this.Controls.AddRange(new Control[] { lblCat, cbCategory });
             y += 60;
 
-            Label lblAuth = new Label { Text = "Author", Location = new Point(20, y), AutoSize = true };
+            Label lblAuth = new Label { Text = "Tác giả", Location = new Point(20, y), AutoSize = true };
             cbAuthor = new ComboBox { Location = new Point(20, y + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
             this.Controls.AddRange(new Control[] { lblAuth, cbAuthor });
             y += 60;
 
             // Right Col
             int yRight = 70;
-            Label lblPub = new Label { Text = "Publisher", Location = new Point(350, yRight), AutoSize = true };
+            Label lblPub = new Label { Text = "Nhà xuất bản", Location = new Point(350, yRight), AutoSize = true };
             cbPublisher = new ComboBox { Location = new Point(350, yRight + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
             this.Controls.AddRange(new Control[] { lblPub, cbPublisher });
             yRight += 60;
@@ -77,22 +87,22 @@ namespace BookStoreManagement.Forms
             txtSellingPrice = CreateInput("Selling Price", 350, ref yRight);
             txtQuantity = CreateInput("Initial Quantity (Global)", 350, ref yRight);
             txtMinStock = CreateInput("Min Stock", 350, ref yRight);
-            txtDescription = CreateInput("Description", 350, ref yRight);
+            txtDescription = CreateInput("Mô tả", 350, ref yRight);
 
-            chkIsActive = new CheckBox { Text = "Is Active", Location = new Point(350, yRight), AutoSize = true, Checked = true };
+            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(350, yRight), AutoSize = true, Checked = true };
             this.Controls.Add(chkIsActive);
             yRight += 40;
 
             // Image Upload
             pbImage = new PictureBox { Location = new Point(670, 70), Width = 100, Height = 130, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.Zoom };
-            btnBrowseImg = new Button { Text = "Browse...", Location = new Point(670, 210), Width = 100, Height = 30, FlatStyle = FlatStyle.Flat };
+            btnBrowseImg = new Button { Text = "Duyệt...", Location = new Point(670, 210), Width = 100, Height = 30, FlatStyle = FlatStyle.Flat };
             btnBrowseImg.Click += BtnBrowseImg_Click;
             this.Controls.AddRange(new Control[] { pbImage, btnBrowseImg });
 
             // Buttons
-            btnSave = new Button { Text = "Save", Location = new Point(280, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnSave = new Button { Text = "Lưu (Save)", Location = new Point(280, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Cancel", Location = new Point(400, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnCancel = new Button { Text = "Hủy bỏ", Location = new Point(400, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
             btnCancel.Click += (s, e) => this.Close();
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }
@@ -194,7 +204,7 @@ namespace BookStoreManagement.Forms
                 
                 if (cbCategory.SelectedValue != null) BookModel.CategoryId = (int)cbCategory.SelectedValue;
                 
-                int authId = (int)cbCategory.SelectedValue;
+                int authId = (int)cbAuthor.SelectedValue;
                 BookModel.AuthorId = authId > 0 ? authId : (int?)null;
                 
                 int pubId = (int)cbPublisher.SelectedValue;
@@ -203,15 +213,15 @@ namespace BookStoreManagement.Forms
                 BookService _bookService = new BookService(); // Missing instance
                 if (BookModel.Id == 0) {
                     _bookService.Add(BookModel);
-                    MessageBox.Show("Book added.");
+                    MessageBox.Show("Đã thêm sách.");
                 } else {
                     _bookService.Update(BookModel);
-                    MessageBox.Show("Book updated.");
+                    MessageBox.Show("Đã cập nhật sách.");
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             } catch (Exception ex) {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message);
             }
         }
 

@@ -45,7 +45,7 @@ namespace BookStoreManagement.UserControls
 
             // Header
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BorderThickness = 1 };
-            lblTitle = new Label { Text = _vt.Id == 0 ? "Add Receipt Type" : "Edit Receipt Type", Font = new Font("Segoe UI", 14, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblTitle = new Label { Text = _vt.Id == 0 ? "Thêm Loại phiếu" : "Sửa Loại phiếu", Font = new Font("Segoe UI", 14, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
             btnClose = new Guna2Button { Text = "X", Size = new Size(40, 40), Location = new Point(this.Width - 50, 10), FillColor = Color.Transparent, Cursor = Cursors.Hand };
             btnClose.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnClose });
@@ -53,19 +53,19 @@ namespace BookStoreManagement.UserControls
             // Content
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(24) };
 
-            txtCode = CreateInput("Type code", 20);
-            txtName = CreateInput("Type name", 90);
-            txtDesc = CreateInput("Description", 160);
+            txtCode = CreateInput("Mã loại", 20);
+            txtName = CreateInput("Tên loại", 90);
+            txtDesc = CreateInput("Mô tả", 160);
             
-            cbGroup = CreateDropdown("Group", 230, new[] { "Import", "Export", "Other" });
-            cbStatus = CreateDropdown("Status", 300, new[] { "Active", "Locked" });
+            cbGroup = CreateDropdown("Nhóm", 230, new[] { "Nhập kho", "Xuất kho", "Khác" });
+            cbStatus = CreateDropdown("Trạng thái", 300, new[] { "Đang hoạt động", "Đã khóa" });
 
             // Footer
             pnlFooter = new Guna2Panel { Dock = DockStyle.Bottom, Height = 70, BorderThickness = 1 };
-            btnCancel = new Guna2Button { Text = "Cancel", Size = new Size(100, 40), Location = new Point(this.Width - 250, 15), BorderRadius = 4, Cursor = Cursors.Hand };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Size = new Size(100, 40), Location = new Point(this.Width - 250, 15), BorderRadius = 4, Cursor = Cursors.Hand };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
-            btnSave = new Guna2Button { Text = "Save", Size = new Size(120, 40), Location = new Point(this.Width - 140, 15), BorderRadius = 4, Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "Lưu (Save)", Size = new Size(120, 40), Location = new Point(this.Width - 140, 15), BorderRadius = 4, Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
 
             pnlFooter.Controls.AddRange(new Control[] { btnCancel, btnSave });
@@ -116,15 +116,15 @@ namespace BookStoreManagement.UserControls
                 _vt.Code = txtCode.Text;
                 _vt.Name = txtName.Text;
                 _vt.Description = txtDesc.Text;
-                _vt.GroupType = cbGroup.SelectedItem?.ToString() ?? "Other";
-                _vt.Status = cbStatus.SelectedItem?.ToString() ?? "Active";
+                _vt.GroupType = cbGroup.SelectedItem?.ToString() ?? "Khác";
+                _vt.Status = cbStatus.SelectedItem?.ToString() ?? "Đang hoạt động";
 
                 await _service.SaveAsync(_vt);
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

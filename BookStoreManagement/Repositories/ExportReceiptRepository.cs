@@ -3,11 +3,144 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using BookStoreManagement.Models;
 using BookStoreManagement.ViewModels;
+using Dapper;
 
 namespace BookStoreManagement.Repositories
 {
     public class ExportReceiptRepository : RepositoryBase
     {
+        public ExportReceiptRepository()
+        {
+        }
+
+        public int CreateReceipt(ExportReceipt receipt, List<ExportReceiptDetail> details)
+        {
+            return ExecuteTransaction((connection, transaction) =>
+            {
+                const string insertReceiptSql = @"
+                    INSERT INTO ExportReceipts (ReceiptCode, StoreId, UserId, Reason, CustomerName, ExportDate, TotalAmount, Status, Note)
+                    OUTPUT INSERTED.Id
+                    VALUES (@ReceiptCode, @StoreId, @UserId, @Reason, @CustomerName, @ExportDate, @TotalAmount, @Status, @Note);
+                ";
+
+                int receiptId = connection.ExecuteScalar<int>(insertReceiptSql, receipt, transaction);
+
+                const string insertDetailSql = @"
+                    INSERT INTO ExportReceiptDetails (ReceiptId, BookId, Quantity, Price)
+                    VALUES (@ReceiptId, @BookId, @Quantity, @Price);
+                ";
+
+                const string updateBookQtySql = @"
+                    UPDATE Books 
+                    SET Quantity = Quantity - @Quantity 
+                    WHERE Id = @BookId;
+
+                    UPDATE StoreBookInventories 
+                    SET Quantity = Quantity - @Quantity 
+                    WHERE StoreId = @StoreId AND BookId = @BookId;
+                ";
+
+                const string insertInvTransSql = @"
+                    INSERT INTO InventoryTransactions (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                    VALUES (@StoreId, @BookId, @UserId, 'EXPORT', -@Quantity, 'ExportReceipt', @ReferenceId, @Note, SYSDATETIME());
+                ";
+
+                foreach (var detail in details)
+                {
+                    connection.Execute(insertDetailSql, new 
+                    {
+                        ReceiptId = receiptId,
+                        detail.BookId,
+                        detail.Quantity,
+                        detail.Price
+                    }, transaction);
+
+                    connection.Execute(updateBookQtySql, new 
+                    {
+                        receipt.StoreId,
+                        detail.BookId,
+                        detail.Quantity
+                    }, transaction);
+
+                    connection.Execute(insertInvTransSql, new 
+                    {
+                        receipt.StoreId,
+                        detail.BookId,
+                        receipt.UserId,
+                        detail.Quantity,
+                        ReferenceId = receiptId,
+                        Note = $"Xuất kho: {receipt.Reason}"
+                    }, transaction);
+                }
+
+                return receiptId;
+            });
+        }
+
+        public async System.Threading.Tasks.Task<int> CreateReceiptAsync(ExportReceipt receipt, List<ExportReceiptDetail> details)
+        {
+            int receiptId = 0;
+            await ExecuteTransactionAsync(async (connection, transaction) =>
+            {
+                const string insertReceiptSql = @"
+                    INSERT INTO ExportReceipts (ReceiptCode, StoreId, UserId, Reason, CustomerName, ExportDate, TotalAmount, Status, Note)
+                    OUTPUT INSERTED.Id
+                    VALUES (@ReceiptCode, @StoreId, @UserId, @Reason, @CustomerName, @ExportDate, @TotalAmount, @Status, @Note);
+                ";
+
+                receiptId = await connection.ExecuteScalarAsync<int>(insertReceiptSql, receipt, transaction);
+
+                const string insertDetailSql = @"
+                    INSERT INTO ExportReceiptDetails (ReceiptId, BookId, Quantity, Price)
+                    VALUES (@ReceiptId, @BookId, @Quantity, @Price);
+                ";
+
+                const string updateBookQtySql = @"
+                    UPDATE Books 
+                    SET Quantity = Quantity - @Quantity 
+                    WHERE Id = @BookId;
+
+                    UPDATE StoreBookInventories 
+                    SET Quantity = Quantity - @Quantity 
+                    WHERE StoreId = @StoreId AND BookId = @BookId;
+                ";
+
+                const string insertInvTransSql = @"
+                    INSERT INTO InventoryTransactions (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                    VALUES (@StoreId, @BookId, @UserId, 'EXPORT', -@Quantity, 'ExportReceipt', @ReferenceId, @Note, SYSDATETIME());
+                ";
+
+                foreach (var detail in details)
+                {
+                    await connection.ExecuteAsync(insertDetailSql, new 
+                    {
+                        ReceiptId = receiptId,
+                        detail.BookId,
+                        detail.Quantity,
+                        detail.Price
+                    }, transaction);
+
+                    await connection.ExecuteAsync(updateBookQtySql, new 
+                    {
+                        receipt.StoreId,
+                        detail.BookId,
+                        detail.Quantity
+                    }, transaction);
+
+                    await connection.ExecuteAsync(insertInvTransSql, new 
+                    {
+                        receipt.StoreId,
+                        detail.BookId,
+                        receipt.UserId,
+                        detail.Quantity,
+                        ReferenceId = receiptId,
+                        Note = $"Xuất kho: {receipt.Reason}"
+                    }, transaction);
+                }
+            });
+            return receiptId;
+        }
+
         public List<ExportReceiptListViewModel> GetAll()
         {
             const string sql = @"

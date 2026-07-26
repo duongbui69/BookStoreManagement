@@ -65,7 +65,7 @@ namespace BookStoreManagement.UserControls
 
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Lookup inventory",
+                Text = "Tra cứu kho",
                 Font = new Font("Inter", 18F, FontStyle.Bold),
                 Location = new Point(0, 10)
             };
@@ -73,7 +73,7 @@ namespace BookStoreManagement.UserControls
 
             lblSubtitle = new Guna2HtmlLabel
             {
-                Text = "View book status at store.",
+                Text = "Xem trạng thái sách tại chi nhánh.",
                 Font = new Font("Inter", 10F),
                 Location = new Point(0, 55)
             };
@@ -81,7 +81,7 @@ namespace BookStoreManagement.UserControls
 
             btnFilter = new Guna2Button
             {
-                Text = "Filter",
+                Text = "Lọc",
                 BorderRadius = 4,
                 BorderThickness = 1,
                 Font = new Font("Inter", 9F, FontStyle.Bold),
@@ -94,7 +94,7 @@ namespace BookStoreManagement.UserControls
 
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Search by code, title, author...",
+                PlaceholderText = "Tìm theo mã, tên, tác giả...",
                 BorderRadius = 4,
                 Size = new Size(300, 40),
                 Location = new Point(pnlHeader.Width - 410, 16),
@@ -148,23 +148,23 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            dgvInventory.Columns.Add("BookCode", "Book Code");
+            dgvInventory.Columns.Add("BookCode", "Mã Sách");
             dgvInventory.Columns["BookCode"].Width = 100;
 
-            dgvInventory.Columns.Add("Title", "Book Title");
-            dgvInventory.Columns["Title"].FillWeight = 200;
+            dgvInventory.Columns.Add("Tiêu đề", "Tên Sách");
+            dgvInventory.Columns["Tiêu đề"].FillWeight = 200;
 
-            dgvInventory.Columns.Add("Author", "Authors");
-            dgvInventory.Columns.Add("Category", "Categories");
-            dgvInventory.Columns.Add("Shelf", "Shelf Location");
+            dgvInventory.Columns.Add("Tác giả", "Tác giả");
+            dgvInventory.Columns.Add("Danh mục", "Danh mục");
+            dgvInventory.Columns.Add("Shelf", "Vị Trí Kệ");
             
-            dgvInventory.Columns.Add("Stock", "Inventory");
-            dgvInventory.Columns["Stock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dgvInventory.Columns["Stock"].Width = 100;
+            dgvInventory.Columns.Add("Tồn kho", "Tồn Kho");
+            dgvInventory.Columns["Tồn kho"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvInventory.Columns["Tồn kho"].Width = 100;
 
-            dgvInventory.Columns.Add("Status", "Status");
-            dgvInventory.Columns["Status"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvInventory.Columns["Status"].Width = 120;
+            dgvInventory.Columns.Add("Trạng thái", "Trạng thái");
+            dgvInventory.Columns["Trạng thái"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvInventory.Columns["Trạng thái"].Width = 120;
 
             dgvInventory.CellPainting += DgvInventory_CellPainting;
             dgvInventory.Resize += DgvInventory_Resize;
@@ -252,7 +252,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -275,7 +275,7 @@ namespace BookStoreManagement.UserControls
                     item.Title,
                     item.AuthorName ?? "Unknown",
                     item.CategoryName,
-                    item.ShelfLocation ?? "Not shelved",
+                    item.ShelfLocation ?? "Chưa xếp kệ",
                     item.Quantity,
                     GetStatusText(item.Quantity, item.MinStock)
                 );
@@ -285,8 +285,8 @@ namespace BookStoreManagement.UserControls
                 
                 if (item.Quantity == 0)
                 {
-                    row.Cells["Stock"].Style.ForeColor = Color.Firebrick;
-                    row.Cells["Stock"].Style.Font = new Font(dgvInventory.Font, FontStyle.Bold);
+                    row.Cells["Tồn kho"].Style.ForeColor = Color.Firebrick;
+                    row.Cells["Tồn kho"].Style.Font = new Font(dgvInventory.Font, FontStyle.Bold);
                 }
             }
 
@@ -297,14 +297,14 @@ namespace BookStoreManagement.UserControls
 
         private string GetStatusText(int qty, int minStock)
         {
-            if (qty <= 0) return "Out of Stock";
-            if (qty <= minStock) return "Low Stock";
-            return "In Stock";
+            if (qty <= 0) return "Hết Hàng";
+            if (qty <= minStock) return "Sắp Hết";
+            return "Còn Hàng";
         }
 
         private void DgvInventory_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvInventory.Columns["Status"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvInventory.Columns["Trạng thái"].Index)
             {
                 e.Handled = true;
                 e.PaintBackground(e.CellBounds, true);
@@ -314,12 +314,12 @@ namespace BookStoreManagement.UserControls
 
                 Color bgColor, textColor;
 
-                if (status == "Out of Stock")
+                if (status == "Hết Hàng")
                 {
                     bgColor = Color.FromArgb(40, Color.Firebrick);
                     textColor = Color.Firebrick;
                 }
-                else if (status == "Low Stock")
+                else if (status == "Sắp Hết")
                 {
                     bgColor = Color.FromArgb(40, Color.DarkOrange);
                     textColor = Color.DarkOrange;

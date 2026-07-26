@@ -12,6 +12,50 @@ namespace BookStoreManagement.Services
         private readonly ExportReceiptRepository _repository;
         public ExportReceiptService() { _repository = new ExportReceiptRepository(); }
 
+        public int CreateReceipt(int storeId, string reason, string? customerName, string? note, List<ExportReceiptDetail> details)
+        {
+            PermissionService.RequireAdmin();
+            Require(storeId > 0, "Vui lòng chọn Kho xuất.");
+            Require(details != null && details.Count > 0, "Phiếu xuất phải có ít nhất một sản phẩm.");
+
+            var receipt = new ExportReceipt
+            {
+                ReceiptCode = "EX" + DateTime.Now.ToString("yyMMddHHmmss"),
+                StoreId = storeId,
+                UserId = CurrentSession.UserId > 0 ? CurrentSession.UserId : 1,
+                Reason = reason,
+                CustomerName = customerName ?? string.Empty,
+                ExportDate = DateTime.Now,
+                TotalAmount = details.Sum(d => d.LineTotal),
+                Status = "Hoàn thành",
+                Note = note
+            };
+
+            return ((ExportReceiptRepository)_repository).CreateReceipt(receipt, details);
+        }
+
+        public async System.Threading.Tasks.Task<int> CreateReceiptAsync(int storeId, string reason, string? customerName, string? note, List<ExportReceiptDetail> details)
+        {
+            PermissionService.RequireAdmin();
+            Require(storeId > 0, "Vui lòng chọn Kho xuất.");
+            Require(details != null && details.Count > 0, "Phiếu xuất phải có ít nhất một sản phẩm.");
+
+            var receipt = new ExportReceipt
+            {
+                ReceiptCode = "EX" + DateTime.Now.ToString("yyMMddHHmmss"),
+                StoreId = storeId,
+                UserId = CurrentSession.UserId > 0 ? CurrentSession.UserId : 1,
+                Reason = reason,
+                CustomerName = customerName ?? string.Empty,
+                ExportDate = DateTime.Now,
+                TotalAmount = details.Sum(d => d.LineTotal),
+                Status = "Hoàn thành",
+                Note = note
+            };
+
+            return await ((ExportReceiptRepository)_repository).CreateReceiptAsync(receipt, details);
+        }
+
         public List<ExportReceiptListViewModel> GetAll() 
         { 
             return _repository.GetAll(); 

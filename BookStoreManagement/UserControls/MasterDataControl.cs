@@ -67,18 +67,18 @@ namespace BookStoreManagement.UserControls
             
             if (currentDataType == MasterDataType.Category)
             {
-                lblTitle.Text = "Category Management";
-                lblSubtitle.Text = "Manage book categories";
+                lblTitle.Text = "Quản lý Danh mục";
+                lblSubtitle.Text = "Quản lý danh mục sách";
             }
             else if (currentDataType == MasterDataType.Author)
             {
-                lblTitle.Text = "Author Management";
-                lblSubtitle.Text = "Manage author list";
+                lblTitle.Text = "Quản lý Tác giả";
+                lblSubtitle.Text = "Quản lý danh sách tác giả";
             }
             else if (currentDataType == MasterDataType.Publisher)
             {
-                lblTitle.Text = "Publisher Management";
-                lblSubtitle.Text = "Manage publisher list";
+                lblTitle.Text = "Quản lý Nhà xuất bản";
+                lblSubtitle.Text = "Quản lý danh sách Nhà xuất bản";
             }
 
             SetupDataGridViewColumns();
@@ -100,7 +100,7 @@ namespace BookStoreManagement.UserControls
             
             lblTitle = new Label 
             { 
-                Text = "Category List", 
+                Text = "Danh sách Danh mục", 
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
                 AutoSize = true, 
                 Location = new Point(0, 0) 
@@ -108,7 +108,7 @@ namespace BookStoreManagement.UserControls
             
             lblSubtitle = new Label 
             { 
-                Text = "Manage master data", 
+                Text = "Quản lý dữ liệu gốc", 
                 Font = new Font("Segoe UI", 11F), 
                 AutoSize = true, 
                 Location = new Point(0, 45) 
@@ -121,12 +121,12 @@ namespace BookStoreManagement.UserControls
                 Width = 200,
                 Location = new Point(0, 10) // Position will be updated in layout
             };
-            cboDataType.Items.AddRange(new string[] { "Book categories", "Author", "Publisher" });
+            cboDataType.Items.AddRange(new string[] { "Danh mục sách", "Tác giả", "Nhà xuất bản" });
             cboDataType.SelectedIndexChanged += CboDataType_SelectedIndexChanged;
 
             btnAdd = new Button 
             { 
-                Text = "+ Add New", 
+                Text = "+ Thêm Mới", 
                 Font = new Font("Segoe UI", 10, FontStyle.Bold), 
                 Width = 120, 
                 Height = 36, 
@@ -137,7 +137,7 @@ namespace BookStoreManagement.UserControls
 
             btnExport = new Button 
             { 
-                Text = "Export Excel", 
+                Text = "Xuất Excel", 
                 Font = new Font("Segoe UI", 11F), 
                 Width = 110, 
                 Height = 36, 
@@ -159,7 +159,7 @@ namespace BookStoreManagement.UserControls
             // Filter Panel
             pnlFilter = new Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(16) };
             
-            lblShow = new Label { Text = "Show", AutoSize = true, Location = new Point(16, 20) };
+            lblShow = new Label { Text = "Hiển thị", AutoSize = true, Location = new Point(16, 20) };
             cboPageSize = new ComboBox 
             { 
                 DropDownStyle = ComboBoxStyle.DropDownList, 
@@ -177,10 +177,10 @@ namespace BookStoreManagement.UserControls
                 Font = new Font("Segoe UI", 11F)
             };
             // Placeholder text logic
-            txtSearch.Text = "Filter data...";
+            txtSearch.Text = "Lọc dữ liệu...";
             txtSearch.ForeColor = Color.Gray;
-            txtSearch.GotFocus += (s, e) => { if (txtSearch.Text == "Filter data...") { txtSearch.Text = ""; txtSearch.ForeColor = ThemeManager.TextPrimary; } };
-            txtSearch.LostFocus += (s, e) => { if (string.IsNullOrWhiteSpace(txtSearch.Text)) { txtSearch.Text = "Filter data..."; txtSearch.ForeColor = Color.Gray; } };
+            txtSearch.GotFocus += (s, e) => { if (txtSearch.Text == "Lọc dữ liệu...") { txtSearch.Text = ""; txtSearch.ForeColor = ThemeManager.TextPrimary; } };
+            txtSearch.LostFocus += (s, e) => { if (string.IsNullOrWhiteSpace(txtSearch.Text)) { txtSearch.Text = "Lọc dữ liệu..."; txtSearch.ForeColor = Color.Gray; } };
             txtSearch.TextChanged += TxtSearch_TextChanged;
 
             pnlFilter.Controls.Add(lblShow);
@@ -260,7 +260,7 @@ namespace BookStoreManagement.UserControls
             cboPageSize.BackColor = ThemeManager.CardBackground;
             cboPageSize.ForeColor = ThemeManager.TextPrimary;
             
-            if (txtSearch.Text != "Filter data...")
+            if (txtSearch.Text != "Lọc dữ liệu...")
                 txtSearch.ForeColor = ThemeManager.TextPrimary;
             txtSearch.BackColor = ThemeManager.CardBackground;
 
@@ -315,31 +315,31 @@ namespace BookStoreManagement.UserControls
 
             if (currentDataType == MasterDataType.Category)
             {
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Category Code", DataPropertyName = "CategoryCode", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Category Name", DataPropertyName = "CategoryName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Book quantity", DataPropertyName = "BookCount", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description", Width = 250, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Status", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mã Danh mục", DataPropertyName = "CategoryCode", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tên Danh mục", DataPropertyName = "CategoryName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Số lượng sách", DataPropertyName = "BookCount", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mô tả", DataPropertyName = "Description", Width = 250, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             }
             else if (currentDataType == MasterDataType.Author)
             {
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Author Code", DataPropertyName = "Id", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Author Name", DataPropertyName = "AuthorName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Description", DataPropertyName = "Description", Width = 300, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Status", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mã tác giả", DataPropertyName = "Id", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tên Tác giả", DataPropertyName = "AuthorName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mô tả", DataPropertyName = "Description", Width = 300, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             }
             else if (currentDataType == MasterDataType.Publisher)
             {
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Publisher ID", DataPropertyName = "Id", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Publisher Name", DataPropertyName = "PublisherName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Phone number", DataPropertyName = "Phone", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mã NXB", DataPropertyName = "Id", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tên NXB", DataPropertyName = "PublisherName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Số điện thoại", DataPropertyName = "Phone", Width = 150, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
                 dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Email", DataPropertyName = "Email", Width = 200, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Status", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+                dgvData.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", Name = "colStatus", Width = 120, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = new DataGridViewColumnHeaderCell { Style = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             }
 
             dgvData.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Action",
+                HeaderText = "Thao tác",
                 Name = "colAction",
                 Width = 100,
                 DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter },
@@ -349,7 +349,7 @@ namespace BookStoreManagement.UserControls
 
         private async void LoadData()
         {
-            string search = txtSearch.Text == "Filter data..." ? "" : txtSearch.Text;
+            string search = txtSearch.Text == "Lọc dữ liệu..." ? "" : txtSearch.Text;
 
             if (currentDataType == MasterDataType.Category)
             {
@@ -404,7 +404,7 @@ namespace BookStoreManagement.UserControls
 
         private void TxtSearch_TextChanged(object sender, EventArgs e)
         {
-            if (txtSearch.Text != "Filter data...")
+            if (txtSearch.Text != "Lọc dữ liệu...")
             {
                 currentPage = 1;
                 LoadData();
@@ -415,7 +415,7 @@ namespace BookStoreManagement.UserControls
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                txtSearch.Text = "Filter data...";
+                txtSearch.Text = "Lọc dữ liệu...";
                 txtSearch.ForeColor = Color.Gray;
             }
             else
@@ -453,7 +453,7 @@ namespace BookStoreManagement.UserControls
                     else if (currentDataType == MasterDataType.Publisher && currentPublishers.Count > e.RowIndex)
                         isActive = currentPublishers[e.RowIndex].IsActive;
 
-                    string text = isActive ? "Active" : "Locked";
+                    string text = isActive ? "Đang hoạt động" : "Đã khóa";
                     Color bgColor = isActive ? Color.FromArgb(220, 252, 231) : Color.FromArgb(254, 226, 226);
                     Color fgColor = isActive ? Color.FromArgb(22, 163, 74) : Color.FromArgb(220, 38, 38);
 
@@ -597,7 +597,7 @@ namespace BookStoreManagement.UserControls
                 else if (mouseInCell.X >= startX + iconSize + spacing && mouseInCell.X <= startX + totalWidth)
                 {
                     // Delete
-                    var result = MessageBox.Show($"Are you sure you want to delete this record?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa bản ghi này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (result == DialogResult.Yes)
                     {
                         bool success = false;
@@ -607,12 +607,12 @@ namespace BookStoreManagement.UserControls
 
                         if (success)
                         {
-                            MessageBox.Show("Deleted successfully!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Đã xóa thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadData();
                         }
                         else
                         {
-                            MessageBox.Show("Error deleting. Record might be in use.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Lỗi xóa. Bản ghi có thể đang được sử dụng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -627,7 +627,7 @@ namespace BookStoreManagement.UserControls
             int startRecord = (currentPage - 1) * pageSize + 1;
             int endRecord = Math.Min(currentPage * pageSize, totalRecords);
             
-            lblPageInfo.Text = totalRecords == 0 ? "No data" : $"Hiển thị {startRecord} - {endRecord} của {totalRecords} bản ghi";
+            lblPageInfo.Text = totalRecords == 0 ? "Không có dữ liệu" : $"Hiển thị {startRecord} - {endRecord} của {totalRecords} bản ghi";
 
             flpPagination.Controls.Clear();
 

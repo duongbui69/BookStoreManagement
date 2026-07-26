@@ -73,7 +73,7 @@ namespace BookStoreManagement.UserControls
             int endRec = Math.Min(_currentPage * _pageSize, _totalRecords);
             if (_totalRecords == 0) { startRec = 0; endRec = 0; }
 
-            lblInfo.Text = $"Showing {startRec} to {endRec} of {_totalRecords} results (Page {_currentPage} of {_totalPages})";
+            lblInfo.Text = $"Trang {_currentPage} / {_totalPages}";
 
             BuildButtons();
             PaginationControl_Resize(this, EventArgs.Empty);
@@ -111,7 +111,6 @@ namespace BookStoreManagement.UserControls
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = enabled ? Cursors.Hand : Cursors.Default,
-                Enabled = enabled,
                 Margin = new Padding(2)
             };
             btn.FlatAppearance.BorderSize = 1;
@@ -127,6 +126,12 @@ namespace BookStoreManagement.UserControls
                 btn.BackColor = ThemeManager.CardBackground;
                 btn.ForeColor = enabled ? ThemeManager.TextPrimary : ThemeManager.TextSecondary;
                 btn.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            }
+
+            if (!enabled || isCurrent)
+            {
+                btn.FlatAppearance.MouseOverBackColor = btn.BackColor;
+                btn.FlatAppearance.MouseDownBackColor = btn.BackColor;
             }
 
             if (enabled)

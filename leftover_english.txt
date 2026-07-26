@@ -1,0 +1,33 @@
+0 VND
+AD
+Bookstore ERP
+Doanh thu
+EMAIL
+Email
+Form1
+ISBN
+ISBN: 
+Kho
+Kinh doanh
+LOGIN ➔
+NXB: 
+Q
+SKU
+SL Mua
+TOTAL REFUND: 0 ₫
+TOTAL:
+This book is out of stock!
+Vd: INV-2023...
+X
+admin
+cloud_done
+v2.4.0 (Stable)
+© 2024 Bookstore ERP
+⚙   Settings
+🎛   Dashboard
+👥   HR
+📊   Reports
+📖   Catalog
+📦   Inventory
+🚪   Logout
+🛒   Orders

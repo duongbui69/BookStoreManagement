@@ -71,8 +71,8 @@ namespace BookStoreManagement.UserControls
 
             // 1. Header
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
-            lblTitle = new Label { Text = "System Settings", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Manage core configuration, security, and operational parameters.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            lblTitle = new Label { Text = "Cài đặt Hệ thống", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Quản lý cấu hình, bảo mật, và hệ thống.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
             
             primaryLabels.Add(lblTitle);
@@ -205,7 +205,7 @@ namespace BookStoreManagement.UserControls
             var txtBranchId = CreateInputGroup("Branch ID", "BW-NYC-001", true, 340, 70);
             var txtAddress = CreateInputGroup("Physical Address", "120 Broadway, New York, NY 10271", false, 20, 150);
             txtAddress.Width = 560; 
-            var btnSave = new Guna2Button { Text = "Save Changes", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 230) };
+            var btnSave = new Guna2Button { Text = "Lưu thay đổi", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 230) };
             
             card1.Controls.AddRange(new Control[] { txtStoreName, txtBranchId, txtAddress, btnSave });
             actionButtons.Add(btnSave);
@@ -241,7 +241,7 @@ namespace BookStoreManagement.UserControls
             var pnl = new Guna2Panel { Dock = DockStyle.Fill };
             
             var card1 = CreateCard("Theme Preferences", "dark_mode", 180, 0);
-            var lblDesc = new Label { Text = "Toggle between Light and Dark mode for the administrative interface.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 70) };
+            var lblDesc = new Label { Text = "Chuyển đổi giữa chế độ Sáng và Tối.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 70) };
             var toggleTheme = new Guna2ToggleSwitch { Checked = ThemeManager.IsDarkMode, Location = new Point(20, 100), Size = new Size(50, 25) };
             var lblMode = new Label { Text = ThemeManager.IsDarkMode ? "Dark Mode Active" : "Light Mode Active", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 103) };
             
@@ -292,8 +292,8 @@ namespace BookStoreManagement.UserControls
         {
             var pnl = new Guna2Panel { Dock = DockStyle.Fill };
             var card1 = CreateCard("Inventory Alerts", "notifications_active", 200, 0);
-            var lblTitle = new Label { Text = "Low Stock Threshold", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 70) };
-            var lblSub = new Label { Text = "Trigger alert when quantity falls below this value.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 95) };
+            var lblTitle = new Label { Text = "Mức cảnh báo sắp hết", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 70) };
+            var lblSub = new Label { Text = "Báo động khi số lượng thấp hơn mức này.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 95) };
             
             var txtThreshold = new Guna2TextBox { Text = "15", Size = new Size(60, 30), Location = new Point(200, 70), TextAlign = HorizontalAlignment.Center, BorderRadius = 4 };
             var trackBar = new Guna2TrackBar { Location = new Point(20, 130), Width = 300, Minimum = 1, Maximum = 100, Value = 15 };
@@ -306,8 +306,8 @@ namespace BookStoreManagement.UserControls
             card1.Controls.AddRange(new Control[] { lblTitle, lblSub, txtThreshold, trackBar });
             
             var card2 = CreateCard("Email Settings (SMTP)", "mail", 200, 220);
-            var lblSmtp = new Label { Text = "Configure email server to send daily reports.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 70) };
-            var btnConfig = new Guna2Button { Text = "Configure SMTP", Size = new Size(150, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 110) };
+            var lblSmtp = new Label { Text = "Cấu hình server email để gửi báo cáo.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 70) };
+            var btnConfig = new Guna2Button { Text = "Cấu hình SMTP", Size = new Size(150, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 110) };
             
             actionButtons.Add(btnConfig);
             standardLabels.Add(lblSmtp);
@@ -331,9 +331,9 @@ namespace BookStoreManagement.UserControls
             
             var pnlStatus = new Guna2Panel { Size = new Size(300, 90), Location = new Point(20, 70), BorderRadius = 8, BorderThickness = 1 };
             var iconStatus = new Label { Text = "cloud_done", Font = new Font("Material Symbols Outlined", 20F), ForeColor = Color.FromArgb(0, 186, 97), AutoSize = true, Location = new Point(15, 25) };
-            var lblStatusTitle = new Label { Text = "STATUS", Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(60, 15) };
-            var lblStatusVal = new Label { Text = "Healthy", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(58, 32) };
-            var lblStatusSub = new Label { Text = "Last automated backup completed successfully today at 02:00 AM.", Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(60, 55) };
+            var lblStatusTitle = new Label { Text = "TRẠNG THÁI", Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(60, 15) };
+            var lblStatusVal = new Label { Text = "Bình thường", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(58, 32) };
+            var lblStatusSub = new Label { Text = "Bản sao lưu tự động hoàn tất lúc 02:00 SA.", Font = new Font("Segoe UI", 8F), AutoSize = true, Location = new Point(60, 55) };
             
             pnlStatus.Controls.AddRange(new Control[] { iconStatus, lblStatusTitle, lblStatusVal, lblStatusSub });
             borderPanels.Add(pnlStatus);
@@ -342,7 +342,7 @@ namespace BookStoreManagement.UserControls
             standardLabels.Add(lblStatusSub);
 
             var btnManual = new Guna2Button { Text = "â–¶ Run Manual Backup", Size = new Size(300, 40), Location = new Point(20, 180), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            var btnRestore = new Guna2Button { Text = "Restore from File", Size = new Size(300, 40), Location = new Point(20, 230), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            var btnRestore = new Guna2Button { Text = "Khôi phục từ File", Size = new Size(300, 40), Location = new Point(20, 230), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             
             outlineButtons.Add(btnManual);
             outlineButtons.Add(btnRestore);

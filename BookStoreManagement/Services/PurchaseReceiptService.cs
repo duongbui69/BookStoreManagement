@@ -29,7 +29,7 @@ namespace BookStoreManagement.Services
                 StoreId = storeId,
                 SupplierId = supplierId,
                 UserId = CurrentSession.UserId,
-                Note = TrimNullable(note)
+                Note = TrimNullable(note), TotalAmount = details.Sum(d => d.Quantity * d.ImportPrice)
             };
 
             return _repository.CreateReceipt(receipt, details);
@@ -51,7 +51,7 @@ namespace BookStoreManagement.Services
                 StoreId = storeId,
                 SupplierId = supplierId,
                 UserId = CurrentSession.UserId,
-                Note = TrimNullable(note)
+                Note = TrimNullable(note), TotalAmount = details.Sum(d => d.Quantity * d.ImportPrice)
             };
 
             return await _repository.CreateReceiptAsync(receipt, details);

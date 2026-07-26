@@ -14,6 +14,7 @@ namespace BookStoreManagement.UserControls
     {
         private readonly InventoryService _inventoryService;
         private readonly CategoryService _categoryService;
+        private readonly StoreService _storeService;
 
         private Guna2Panel pnlContent;
         
@@ -42,7 +43,6 @@ namespace BookStoreManagement.UserControls
         private Guna2TextBox txtSearch;
         private Guna2ComboBox cbWarehouse;
         private Guna2ComboBox cbCategory;
-        private Guna2Button btnFilterWarning;
         private Guna2Button btnExport;
         private Guna2Button btnAddNew;
         
@@ -71,6 +71,7 @@ namespace BookStoreManagement.UserControls
         {
             _inventoryService = new InventoryService();
             _categoryService = new CategoryService();
+            _storeService = new StoreService();
             
             InitializeUI();
             LoadFilters();
@@ -83,13 +84,16 @@ namespace BookStoreManagement.UserControls
         private void LoadFilters()
         {
             var categories = _categoryService.GetActive();
-            categories.Insert(0, new Models.Category { Id = 0, CategoryName = "Category: All" });
+            categories.Insert(0, new Models.Category { Id = 0, CategoryName = "Tất cả Danh mục" });
             cbCategory.DataSource = categories;
             cbCategory.DisplayMember = "CategoryName";
             cbCategory.ValueMember = "CategoryName";
             
-            cbWarehouse.Items.AddRange(new string[] { "Warehouse: All", "Main Warehouse (Hanoi)", "Branch Warehouse (HCM)", "Central Warehouse" });
-            cbWarehouse.SelectedIndex = 0;
+            var stores = _storeService.GetActive();
+            stores.Insert(0, new Models.Store { Id = 0, StoreName = "Cửa hàng: Tất cả" });
+            cbWarehouse.DataSource = stores;
+            cbWarehouse.DisplayMember = "StoreName";
+            cbWarehouse.ValueMember = "StoreName";
             
             cbWarehouse.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
             cbCategory.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
@@ -105,17 +109,17 @@ namespace BookStoreManagement.UserControls
             
             // 1. Header
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
-            lblTitle = new Label { Text = "Inventory statistics", Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Overview and analysis of current inventory data.", Font = new Font("Segoe UI", 14), AutoSize = true, Location = new Point(0, 55) };
+            lblTitle = new Label { Text = "Thống kê kho", Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu kho hiện tại.", Font = new Font("Segoe UI", 14), AutoSize = true, Location = new Point(0, 55) };
             lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(700, 20) };
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, lblLastUpdated });
             
             // 2. KPI Cards
             pnlKpiContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(0, 20, 0, 20) };
             
-            cardTotalStock = CreateKpiCard("Total stock", "0", 0);
-            cardCriticalStock = CreateKpiCard("Low stock (Critical)", "0", 1);
-            cardStockValue = CreateKpiCard("Inventory value", "0 ₫", 2);
+            cardTotalStock = CreateKpiCard("Tổng tồn kho", "0", 0);
+            cardCriticalStock = CreateKpiCard("Sách sắp hết (Critical)", "0", 1);
+            cardStockValue = CreateKpiCard("Giá trị tồn kho", "0 ₫", 2);
             
             pnlKpiContainer.Controls.AddRange(new Control[] { cardTotalStock, cardCriticalStock, cardStockValue });
             pnlKpiContainer.Resize += (s, e) => 
@@ -129,11 +133,11 @@ namespace BookStoreManagement.UserControls
             // 3. Toolbar (Filters)
             pnlToolbar = new Guna2Panel { Dock = DockStyle.Top, Height = 70, Padding = new Padding(0, 15, 0, 15) };
             
-            txtSearch = new Guna2TextBox { PlaceholderText = "Search product (SKU, Name)...", Size = new Size(250, 40), Location = new Point(0, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
+            txtSearch = new Guna2TextBox { PlaceholderText = "Tìm sản phẩm (SKU, Tên)...", Size = new Size(250, 40), Location = new Point(0, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
             cbWarehouse = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(270, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
             cbCategory = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(490, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
             
-            btnAddNew = new Guna2Button { Text = "+ Add New", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAddNew = new Guna2Button { Text = "+ Thêm Mới", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAddNew.Click += (s, e) => {
                 var frm = new Forms.InventoryEditForm();
                 if (frm.ShowDialog() == DialogResult.OK) LoadData();
@@ -141,13 +145,12 @@ namespace BookStoreManagement.UserControls
             
             btnExport = new Guna2Button { Text = "📥 Xuất Excel", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
             
-            btnFilterWarning = new Guna2Button { Text = "Stock warning", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
-            
-            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnFilterWarning, btnExport, btnAddNew });
+            btnExport.Click += BtnExport_Click;
+
+            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnExport, btnAddNew });
             pnlToolbar.Resize += (s, e) => {
                 btnAddNew.Left = pnlToolbar.Width - btnAddNew.Width;
                 btnExport.Left = btnAddNew.Left - btnExport.Width - 10;
-                btnFilterWarning.Left = btnExport.Left - btnFilterWarning.Width - 10;
             };
 
             // 4. Grid Container
@@ -217,18 +220,18 @@ namespace BookStoreManagement.UserControls
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "BookId", Visible = false });
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Index", HeaderText = "#", Width = 50, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sku", HeaderText = "SKU", Width = 120 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Title", HeaderText = "Book title", Width = 280 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Warehouse", HeaderText = "Kho", Width = 150 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", HeaderText = "Current stock", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "MinStock", HeaderText = "Min stock", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Tiêu đề", HeaderText = "Tên sách", Width = 280 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Kho hàng", HeaderText = "Kho", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", HeaderText = "Tồn kho hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "MinStock", HeaderText = "Tồn tối thiểu", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
             
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Category", HeaderText = "Category", Width = 150 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Author", HeaderText = "Author", Width = 150 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Publisher", HeaderText = "Publisher", Width = 150 });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Price", HeaderText = "Selling price", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Danh mục", HeaderText = "Danh mục", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Tác giả", HeaderText = "Tác giả", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nhà xuất bản", HeaderText = "Nhà xuất bản", Width = 150 });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Price", HeaderText = "Giá bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } });
             
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 140, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Action", Width = 100, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Trạng thái", HeaderText = "Trạng thái", Width = 140, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvInventory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "Thao tác", Width = 100, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             
             foreach (DataGridViewColumn col in dgvInventory.Columns)
             {
@@ -266,7 +269,7 @@ namespace BookStoreManagement.UserControls
             lblStockValue.Text = stats.StockValue.ToString("N0") + " ₫";
             
             // Load Grid Data
-            string wFilter = cbWarehouse.SelectedIndex > 0 ? cbWarehouse.SelectedItem.ToString() : "";
+            string wFilter = cbWarehouse.SelectedIndex > 0 ? cbWarehouse.SelectedValue.ToString() : "";
             string cFilter = cbCategory.SelectedIndex > 0 ? cbCategory.SelectedValue.ToString() : "";
             
             var result = _inventoryService.GetPagedInventoryItems(_currentPage, _pageSize, _currentSearchTerm, wFilter, cFilter);
@@ -294,6 +297,26 @@ namespace BookStoreManagement.UserControls
             
             paginationControl.UpdatePagination(result.TotalCount, _currentPage, _pageSize);
             lblLastUpdated.Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}";
+        }
+
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "ThongKeTonKho.xlsx" })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvInventory, sfd.FileName, "Tồn Kho");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void DgvInventory_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
@@ -336,14 +359,14 @@ namespace BookStoreManagement.UserControls
                 
                 e.Handled = true;
             }
-            else if (dgvInventory.Columns[e.ColumnIndex].Name == "Status")
+            else if (dgvInventory.Columns[e.ColumnIndex].Name == "Trạng thái")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
                 string status = e.FormattedValue?.ToString() ?? "";
                 
                 Color bgColor, textColor;
-                if (status == "In stock") { bgColor = Color.FromArgb(210, 248, 226); textColor = Color.FromArgb(0, 100, 40); }
-                else if (status == "Out of stock") { bgColor = Color.FromArgb(250, 200, 200); textColor = Color.FromArgb(180, 0, 0); }
+                if (status == "Đủ hàng") { bgColor = Color.FromArgb(210, 248, 226); textColor = Color.FromArgb(0, 100, 40); }
+                else if (status == "Hết hàng") { bgColor = Color.FromArgb(250, 200, 200); textColor = Color.FromArgb(180, 0, 0); }
                 else { bgColor = Color.FromArgb(255, 230, 200); textColor = Color.FromArgb(180, 100, 0); }
                 
                 Size size;
@@ -420,7 +443,7 @@ namespace BookStoreManagement.UserControls
             if (e.RowIndex >= 0 && dgvInventory.Columns[e.ColumnIndex].Name == "Actions")
             {
                 int bookId = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells[0].Value);
-                string warehouse = dgvInventory.Rows[e.RowIndex].Cells["Warehouse"].Value.ToString();
+                string warehouse = dgvInventory.Rows[e.RowIndex].Cells["Kho hàng"].Value.ToString();
                 
                 if (e.X < dgvInventory.Columns[e.ColumnIndex].Width / 2)
                 {
@@ -434,7 +457,7 @@ namespace BookStoreManagement.UserControls
                 else
                 {
                     // Delete
-                    if (MessageBox.Show("Are you sure you want to delete the inventory of this product?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa tồn kho của sản phẩm này không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         try
                         {
@@ -443,7 +466,7 @@ namespace BookStoreManagement.UserControls
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -498,10 +521,6 @@ namespace BookStoreManagement.UserControls
             btnExport.FillColor = ThemeManager.CardBackground;
             btnExport.ForeColor = ThemeManager.TextPrimary;
             btnExport.BorderColor = ThemeManager.TextBoxBorder;
-            
-            btnFilterWarning.FillColor = ThemeManager.CardBackground;
-            btnFilterWarning.ForeColor = ThemeManager.TextPrimary;
-            btnFilterWarning.BorderColor = ThemeManager.TextBoxBorder;
 
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
             pnlGridContainer.FillColor = ThemeManager.CardBackground;

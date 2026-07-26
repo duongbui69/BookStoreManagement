@@ -52,7 +52,7 @@ namespace BookStoreManagement.Forms
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(460, 80);
             this.lblTitle.TabIndex = 1;
-            this.lblTitle.Text = "Book Title";
+            this.lblTitle.Text = "Tên Sách";
             
             // lblAuthor
             this.lblAuthor.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -60,7 +60,7 @@ namespace BookStoreManagement.Forms
             this.lblAuthor.Name = "lblAuthor";
             this.lblAuthor.Size = new System.Drawing.Size(460, 25);
             this.lblAuthor.TabIndex = 2;
-            this.lblAuthor.Text = "Author: ";
+            this.lblAuthor.Text = "Tác giả: ";
             
             // lblCategory
             this.lblCategory.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -68,7 +68,7 @@ namespace BookStoreManagement.Forms
             this.lblCategory.Name = "lblCategory";
             this.lblCategory.Size = new System.Drawing.Size(460, 25);
             this.lblCategory.TabIndex = 3;
-            this.lblCategory.Text = "Category: ";
+            this.lblCategory.Text = "Danh mục: ";
             
             // lblPublisher
             this.lblPublisher.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -76,7 +76,7 @@ namespace BookStoreManagement.Forms
             this.lblPublisher.Name = "lblPublisher";
             this.lblPublisher.Size = new System.Drawing.Size(460, 25);
             this.lblPublisher.TabIndex = 4;
-            this.lblPublisher.Text = "Publisher: ";
+            this.lblPublisher.Text = "NXB: ";
             
             // lblISBN
             this.lblISBN.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -92,7 +92,7 @@ namespace BookStoreManagement.Forms
             this.lblStock.Name = "lblStock";
             this.lblStock.Size = new System.Drawing.Size(460, 25);
             this.lblStock.TabIndex = 6;
-            this.lblStock.Text = "Stock: ";
+            this.lblStock.Text = "Tồn: ";
             
             // lblPrice
             this.lblPrice.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
@@ -100,7 +100,7 @@ namespace BookStoreManagement.Forms
             this.lblPrice.Name = "lblPrice";
             this.lblPrice.Size = new System.Drawing.Size(460, 35);
             this.lblPrice.TabIndex = 7;
-            this.lblPrice.Text = "Price: ";
+            this.lblPrice.Text = "Giá: ";
             
             // txtDescription
             this.txtDescription.BorderRadius = 8;
@@ -135,7 +135,7 @@ namespace BookStoreManagement.Forms
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(120, 45);
             this.btnClose.TabIndex = 9;
-            this.btnClose.Text = "Close";
+            this.btnClose.Text = "Đóng";
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             
             // BookDetailsForm
@@ -155,7 +155,7 @@ namespace BookStoreManagement.Forms
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "BookDetailsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Book Details";
+            this.Text = "Chi tiết Sách";
             ((System.ComponentModel.ISupportInitialize)(this.picCover)).EndInit();
             this.ResumeLayout(false);
 

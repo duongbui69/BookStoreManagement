@@ -94,8 +94,8 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = false };
 
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0,0,0,10) };
-            lblTitle = new Label { Text = "Book Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubtitle = new Label { Text = "Manage books, inventory, and book information.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
+            lblTitle = new Label { Text = "Quản lý Sách", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubtitle = new Label { Text = "Quản lý sách, tồn kho, và thông tin sách.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
             pnlPageHeader.Controls.Add(lblTitle);
             pnlPageHeader.Controls.Add(lblSubtitle);
 
@@ -107,9 +107,9 @@ namespace BookStoreManagement.UserControls
             };
             for(int i=0; i<3; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
             
-            card1 = CreateStatCard("TOTAL BOOKS", "0", "library_books", Color.FromArgb(41, 128, 185)); // Primary
-            card2 = CreateStatCard("LOW STOCK / OUT OF STOCK", "0", "warning", Color.FromArgb(186, 26, 26)); // Error
-            card3 = CreateStatCard("NEWLY IMPORTED", "0", "new_releases", Color.FromArgb(0, 186, 97)); // Tertiary
+            card1 = CreateStatCard("TỔNG SỐ SÁCH", "0", "library_books", Color.FromArgb(41, 128, 185)); // Primary
+            card2 = CreateStatCard("SẮP HẾT / HẾT HÀNG", "0", "warning", Color.FromArgb(186, 26, 26)); // Error
+            card3 = CreateStatCard("SÁCH MỚI NHẬP", "0", "new_releases", Color.FromArgb(0, 186, 97)); // Tertiary
             
             tlpStats.Controls.Add(card1, 0, 0);
             tlpStats.Controls.Add(card2, 1, 0);
@@ -117,11 +117,11 @@ namespace BookStoreManagement.UserControls
 
             pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,0,gutter), BorderRadius = 8 };
             
-            txtSearch = new Guna2TextBox { Size = new Size(240, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Search ISBN, Book title..." };
+            txtSearch = new Guna2TextBox { Size = new Size(240, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Tìm kiếm ISBN, Tên sách..." };
             txtSearch.TextChanged += async (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; await LoadDataAsync(); };
 
             cbCategory = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(280, 16), BorderRadius = 8, Cursor = Cursors.Hand };
-            cbCategory.Items.Add(new { Text = "All Categories", Value = (int?)null }); cbCategory.SelectedIndex = 0;
+            cbCategory.Items.Add(new { Text = "Tất cả Danh mục", Value = (int?)null }); cbCategory.SelectedIndex = 0;
             cbCategory.SelectedIndexChanged += async (s, e) => {
                 _categoryFilter = cbCategory.SelectedIndex > 0 ? (int?)((dynamic)cbCategory.SelectedItem).Value : null;
                 _currentPage = 1;
@@ -129,10 +129,10 @@ namespace BookStoreManagement.UserControls
             };
 
             cbStockStatus = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(460, 16), BorderRadius = 8, Cursor = Cursors.Hand };
-            cbStockStatus.Items.Add(new { Text = "All Statuses", Value = "" });
-            cbStockStatus.Items.Add(new { Text = "In stock", Value = "instock" });
-            cbStockStatus.Items.Add(new { Text = "Out of stock", Value = "outstock" });
-            cbStockStatus.Items.Add(new { Text = "Locked", Value = "locked" });
+            cbStockStatus.Items.Add(new { Text = "Tất cả Trạng thái", Value = "" });
+            cbStockStatus.Items.Add(new { Text = "Đủ hàng", Value = "instock" });
+            cbStockStatus.Items.Add(new { Text = "Hết hàng", Value = "outstock" });
+            cbStockStatus.Items.Add(new { Text = "Đã khóa", Value = "locked" });
             cbStockStatus.DisplayMember = "Text";
             cbStockStatus.ValueMember = "Value";
             cbStockStatus.SelectedIndex = 0;
@@ -142,10 +142,10 @@ namespace BookStoreManagement.UserControls
                 await LoadDataAsync();
             };
 
-            btnExport = new Guna2Button { Text = "Export Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnExport.Click += BtnExport_Click;
 
-            btnAdd = new Guna2Button { Text = "+ Add New", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd = new Guna2Button { Text = "+ Thêm Mới", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
             pnlFilters.Controls.AddRange(new Control[] { txtSearch, cbCategory, cbStockStatus, btnExport, btnAdd });
@@ -175,13 +175,13 @@ namespace BookStoreManagement.UserControls
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 50 });
             dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Isbn13", HeaderText = "ISBN", Width = 150 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "BOOK TITLE", Width = 250 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Author", HeaderText = "AUTHOR", Width = 150 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "CATEGORY", Width = 120 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Price", HeaderText = "UNIT PRICE", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleRight } }, Width = 120 });
-            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "STATUS", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "TÊN SÁCH", Width = 250 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Author", HeaderText = "TÁC GIẢ", Width = 150 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "DANH MỤC", Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Price", HeaderText = "ĐƠN GIÁ", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleRight } }, Width = 120 });
+            dgvBooks.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "TRẠNG THÁI", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 120 });
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTION", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "THAO TÁC", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvBooks.Columns.Add(actionCol);
 
             dgvBooks.CellPainting += DgvBooks_CellPainting;
@@ -251,7 +251,7 @@ namespace BookStoreManagement.UserControls
         {
             var cats = await _categoryService.GetAllAsync();
             cbCategory.Items.Clear();
-            cbCategory.Items.Add(new { Text = "All Categories", Value = (int?)null });
+            cbCategory.Items.Add(new { Text = "Tất cả Danh mục", Value = (int?)null });
             foreach (var c in cats)
             {
                 if (c.IsActive)
@@ -280,12 +280,12 @@ namespace BookStoreManagement.UserControls
                     try
                     {
                         var excelService = new ExcelExportService();
-                        excelService.ExportDataGridView(dgvBooks, sfd.FileName, "Book");
-                        MessageBox.Show("Excel file exported successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        excelService.ExportDataGridView(dgvBooks, sfd.FileName, "Sách");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error exporting Excel: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -392,23 +392,23 @@ namespace BookStoreManagement.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("Book not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Không tìm thấy sách.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
                 {
                     // Delete
-                    if (MessageBox.Show("Are you sure you want to delete this book?", "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa cuốn sách này không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         try
                         {
                             await _bookService.SetActiveAsync(bookId, false);
-                            MessageBox.Show("Book deleted successfully!");
+                            MessageBox.Show("Đã xóa sách thành công!");
                             await LoadDataAsync();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -445,12 +445,12 @@ namespace BookStoreManagement.UserControls
                 e.FormattingApplied = true;
             }
 
-            if (dgvBooks.Columns[e.ColumnIndex].Name == "Status" && e.Value != null)
+            if (dgvBooks.Columns[e.ColumnIndex].Name == "Trạng thái" && e.Value != null)
             {
                 string status = e.Value.ToString();
                 e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
                 if (status == "IN STOCK") e.CellStyle.ForeColor = Color.FromArgb(46, 204, 113);
-                else if (status == "LOCKED") e.CellStyle.ForeColor = ThemeManager.TextSecondary;
+                else if (status == "ĐÃ KHÓA") e.CellStyle.ForeColor = ThemeManager.TextSecondary;
                 else e.CellStyle.ForeColor = Color.FromArgb(231, 76, 60);
             }
         }

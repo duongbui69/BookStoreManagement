@@ -120,7 +120,7 @@ namespace BookStoreManagement.Forms
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                lblError.Text = "Please enter username and password.";
+                lblError.Text = "Vui lòng nhập tài khoản và mật khẩu.";
                 lblError.Visible = true;
                 return;
             }
@@ -136,7 +136,7 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                lblError.Text = "Invalid username or password.";
+                lblError.Text = "Tên đăng nhập hoặc mật khẩu không đúng.";
                 lblError.Visible = true;
             }
         }

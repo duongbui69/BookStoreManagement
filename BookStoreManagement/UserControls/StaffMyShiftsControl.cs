@@ -88,7 +88,7 @@ namespace BookStoreManagement.UserControls
             pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "My shifts",
+                Text = "Ca của tôi",
                 Font = new Font("Inter", 18F, FontStyle.Bold),
                 Location = new Point(0, 10)
             };
@@ -113,9 +113,9 @@ namespace BookStoreManagement.UserControls
             pnlCurrentShift.Controls.Add(lblEmployeeInfo);
 
             // Bento Grid Items
-            pnlStartInfo = CreateBentoItem("play_circle", "Start", out lblStartTime, out lblStartDate);
-            pnlRevenueInfo = CreateBentoItem("payments", "Sales", out lblRevenue, out _);
-            pnlOrdersInfo = CreateBentoItem("shopping_cart", "Orders", out lblOrders, out _);
+            pnlStartInfo = CreateBentoItem("play_circle", "Bắt đầu", out lblStartTime, out lblStartDate);
+            pnlRevenueInfo = CreateBentoItem("payments", "Doanh số", out lblRevenue, out _);
+            pnlOrdersInfo = CreateBentoItem("shopping_cart", "Đơn hàng", out lblOrders, out _);
 
             pnlCurrentShift.Controls.Add(pnlStartInfo);
             pnlCurrentShift.Controls.Add(pnlRevenueInfo);
@@ -129,7 +129,7 @@ namespace BookStoreManagement.UserControls
             };
             Guna2HtmlLabel lblTimerLabel = new Guna2HtmlLabel
             {
-                Text = "Working hours",
+                Text = "Giờ làm việc",
                 Font = new Font("Inter", 10F),
                 ForeColor = Color.FromArgb(172, 201, 237),
                 Location = new Point(16, 16)
@@ -143,7 +143,7 @@ namespace BookStoreManagement.UserControls
             };
             btnCloseShift = new Guna2Button
             {
-                Text = "End shift",
+                Text = "Kết thúc ca làm việc",
                 FillColor = Color.FromArgb(186, 26, 26),
                 ForeColor = Color.White,
                 Font = new Font("Inter", 10F, FontStyle.Bold),
@@ -175,13 +175,13 @@ namespace BookStoreManagement.UserControls
             Guna2Panel pnlHistoryHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Padding = new Padding(16, 10, 16, 10) };
             lblHistoryTitle = new Guna2HtmlLabel
             {
-                Text = "Shift history",
+                Text = "Lịch sử ca",
                 Font = new Font("Inter", 12F, FontStyle.Bold),
                 Location = new Point(16, 18)
             };
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Search shift...",
+                PlaceholderText = "Tìm ca...",
                 BorderRadius = 4,
                 Size = new Size(250, 36),
                 Location = new Point(pnlHistoryHeader.Width - 266, 12),
@@ -218,18 +218,18 @@ namespace BookStoreManagement.UserControls
             };
             dgvHistory.Columns.Add("Id", "ID");
             dgvHistory.Columns["Id"].Width = 80;
-            dgvHistory.Columns.Add("Date", "Date");
+            dgvHistory.Columns.Add("Ngày", "Ngày");
             dgvHistory.Columns.Add("ShiftName", "Ca");
-            dgvHistory.Columns.Add("Time", "Start - End");
-            dgvHistory.Columns.Add("Revenue", "Sales (VND)");
+            dgvHistory.Columns.Add("Thời gian", "Bắt đầu - Kết thúc");
+            dgvHistory.Columns.Add("Revenue", "Doanh số (đ)");
             dgvHistory.Columns["Revenue"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dgvHistory.Columns.Add("Status", "Status");
-            dgvHistory.Columns["Status"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvHistory.Columns.Add("Trạng thái", "Trạng thái");
+            dgvHistory.Columns["Trạng thái"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             
             var actionCol = new DataGridViewTextBoxColumn
             {
-                Name = "Action",
-                HeaderText = "Action",
+                Name = "Thao tác",
+                HeaderText = "Thao tác",
                 Width = 100,
                 DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
@@ -341,7 +341,7 @@ namespace BookStoreManagement.UserControls
 
                 if (_activeShift != null)
                 {
-                    lblCurrentShiftTitle.Text = $"Current shift ({_activeShift.ShiftName})";
+                    lblCurrentShiftTitle.Text = $"Ca hiện tại ({_activeShift.ShiftName})";
                     lblEmployeeInfo.Text = $"Nhân viên: {CurrentSession.FullName} (ID: EMP-{CurrentSession.UserId})";
                     lblStartTime.Text = _activeShift.StartTime.ToString("HH:mm:ss");
                     // Assuming lblStartDate is not null
@@ -360,10 +360,10 @@ namespace BookStoreManagement.UserControls
                 }
                 else
                 {
-                    lblCurrentShiftTitle.Text = "No shift available";
+                    lblCurrentShiftTitle.Text = "Không có ca";
                     lblEmployeeInfo.Text = "";
                     lblStartTime.Text = "-";
-                    lblRevenue.Text = "0 VND";
+                    lblRevenue.Text = "0 đ";
                     lblOrders.Text = "0";
                     lblTimer.Text = "00:00:00";
                 }
@@ -374,7 +374,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.ToString(), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -432,6 +432,27 @@ namespace BookStoreManagement.UserControls
 
         private void RenderHistoryPage()
         {
+            if (dgvHistory.Columns.Count == 0)
+            {
+                dgvHistory.Columns.Add("Id", "ID");
+                dgvHistory.Columns["Id"].Width = 80;
+                dgvHistory.Columns.Add("Ngày", "Ngày");
+                dgvHistory.Columns.Add("ShiftName", "Ca");
+                dgvHistory.Columns.Add("Thời gian", "Bắt đầu - Kết thúc");
+                dgvHistory.Columns.Add("Revenue", "Doanh số (đ)");
+                dgvHistory.Columns["Revenue"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dgvHistory.Columns.Add("Trạng thái", "Trạng thái");
+                dgvHistory.Columns["Trạng thái"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                
+                var actionCol = new DataGridViewTextBoxColumn
+                {
+                    Name = "Thao tác",
+                    HeaderText = "Thao tác",
+                    Width = 100,
+                    DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }
+                };
+                dgvHistory.Columns.Add(actionCol);
+            }
             dgvHistory.Rows.Clear();
             if (_shiftHistory == null || _shiftHistory.Count == 0)
             {
@@ -444,7 +465,7 @@ namespace BookStoreManagement.UserControls
 
             foreach (var item in pageItems)
             {
-                string timeStr = $"{item.StartTime:HH:mm} - {(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm") : "Open")}";
+                string timeStr = $"{item.StartTime:HH:mm} - {(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm") : "Đang mở")}";
                 
                 int rowIndex = dgvHistory.Rows.Add(
                     "#" + item.Id,
@@ -452,8 +473,8 @@ namespace BookStoreManagement.UserControls
                     item.ShiftName,
                     timeStr,
                     item.Revenue.ToString("N0") + " ₫",
-                    item.Status == "Closed" ? "Closed" : "Open",
-                    "Details"
+                    item.Status == "Đã đóng" ? "Đã đóng" : "Đang mở",
+                    "Chi tiết"
                 );
                 dgvHistory.Rows[rowIndex].Tag = item;
             }
@@ -462,15 +483,15 @@ namespace BookStoreManagement.UserControls
 
         private void DgvHistory_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvHistory.Columns["Status"].Index)
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvHistory.Columns["Trạng thái"].Index)
             {
                 e.Handled = true;
                 e.PaintBackground(e.CellBounds, true);
                 string status = e.Value?.ToString() ?? "";
                 if (string.IsNullOrEmpty(status)) return;
 
-                Color bgColor = status == "Closed" ? ThemeManager.HoverColor : Color.FromArgb(40, Color.ForestGreen);
-                Color textColor = status == "Closed" ? ThemeManager.TextSecondary : Color.ForestGreen;
+                Color bgColor = status == "Đã đóng" ? ThemeManager.HoverColor : Color.FromArgb(40, Color.ForestGreen);
+                Color textColor = status == "Đã đóng" ? ThemeManager.TextSecondary : Color.ForestGreen;
 
                 Rectangle badgeRect = e.CellBounds;
                 badgeRect.Inflate(-25, -12); // Resize for badge
@@ -492,7 +513,7 @@ namespace BookStoreManagement.UserControls
                 }
                 TextRenderer.DrawText(e.Graphics, status, new Font("Inter", 8F, FontStyle.Bold), badgeRect, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
-            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvHistory.Columns["Action"].Index)
+            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvHistory.Columns["Thao tác"].Index)
             {
                 e.PaintBackground(e.CellBounds, true);
                 Rectangle btnRect = e.CellBounds;
@@ -515,7 +536,7 @@ namespace BookStoreManagement.UserControls
                         e.Graphics.DrawPath(pen, path);
                     }
                 }
-                TextRenderer.DrawText(e.Graphics, "DETAILS", new Font("Inter", 8F, FontStyle.Bold), btnRect, ThemeManager.TextSecondary, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, "CHI TIẾT", new Font("Inter", 8F, FontStyle.Bold), btnRect, ThemeManager.TextSecondary, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 e.Handled = true;
             }
         }

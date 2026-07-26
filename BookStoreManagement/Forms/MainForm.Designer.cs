@@ -166,7 +166,7 @@ namespace BookStoreManagement.Forms
             lblRole.Name = "lblRole";
             lblRole.Size = new System.Drawing.Size(84, 13);
             lblRole.TabIndex = 2;
-            lblRole.Text = "LOGGED IN";
+            lblRole.Text = "ĐÃ ĐĂNG NHẬP";
             // 
             // lblUsername
             // 
@@ -178,7 +178,7 @@ namespace BookStoreManagement.Forms
             lblUsername.Name = "lblUsername";
             lblUsername.Size = new System.Drawing.Size(82, 17);
             lblUsername.TabIndex = 1;
-            lblUsername.Text = "Admin User";
+            lblUsername.Text = "Người dùng Admin";
             // 
             // btnAvatar
             // 
@@ -206,7 +206,7 @@ namespace BookStoreManagement.Forms
             btnSettings.ShadowDecoration.CustomizableEdges = customizableEdges33;
             btnSettings.Size = new System.Drawing.Size(260, 45);
             btnSettings.TabIndex = 7;
-            btnSettings.Text = "⚙   Settings";
+            btnSettings.Text = "⚙   Cài đặt";
             btnSettings.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnSettings.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -223,7 +223,7 @@ namespace BookStoreManagement.Forms
             btnReports.ShadowDecoration.CustomizableEdges = customizableEdges7;
             btnReports.Size = new System.Drawing.Size(260, 45);
             btnReports.TabIndex = 6;
-            btnReports.Text = "📊   Reports";
+            btnReports.Text = "📊   Báo cáo";
             btnReports.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnReports.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -240,7 +240,7 @@ namespace BookStoreManagement.Forms
             btnHR.ShadowDecoration.CustomizableEdges = customizableEdges9;
             btnHR.Size = new System.Drawing.Size(260, 45);
             btnHR.TabIndex = 5;
-            btnHR.Text = "👥   HR";
+            btnHR.Text = "👥   Nhân sự";
             btnHR.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnHR.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -257,7 +257,7 @@ namespace BookStoreManagement.Forms
             btnOrders.ShadowDecoration.CustomizableEdges = customizableEdges11;
             btnOrders.Size = new System.Drawing.Size(260, 45);
             btnOrders.TabIndex = 4;
-            btnOrders.Text = "🛒   Orders";
+            btnOrders.Text = "🛒   Đơn hàng";
             btnOrders.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnOrders.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -274,7 +274,7 @@ namespace BookStoreManagement.Forms
             btnInventory.ShadowDecoration.CustomizableEdges = customizableEdges13;
             btnInventory.Size = new System.Drawing.Size(260, 45);
             btnInventory.TabIndex = 3;
-            btnInventory.Text = "📦   Inventory";
+            btnInventory.Text = "📦   Kho hàng";
             btnInventory.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnInventory.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -291,7 +291,7 @@ namespace BookStoreManagement.Forms
             btnCatalog.ShadowDecoration.CustomizableEdges = customizableEdges15;
             btnCatalog.Size = new System.Drawing.Size(260, 45);
             btnCatalog.TabIndex = 2;
-            btnCatalog.Text = "📖   Catalog";
+            btnCatalog.Text = "📖   Danh mục";
             btnCatalog.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnCatalog.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -310,7 +310,7 @@ namespace BookStoreManagement.Forms
             btnDashboard.ShadowDecoration.CustomizableEdges = customizableEdges17;
             btnDashboard.Size = new System.Drawing.Size(260, 45);
             btnDashboard.TabIndex = 1;
-            btnDashboard.Text = "🎛   Dashboard";
+            btnDashboard.Text = "🎛   Tổng quan";
             btnDashboard.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             btnDashboard.TextOffset = new System.Drawing.Point(20, 0);
             // 
@@ -324,7 +324,7 @@ namespace BookStoreManagement.Forms
             lblBrand.Name = "lblBrand";
             lblBrand.Size = new System.Drawing.Size(200, 30);
             lblBrand.TabIndex = 0;
-            lblBrand.Text = "BOOKSTORE MANAGEMENT";
+            lblBrand.Text = "QUẢN LÝ NHÀ SÁCH";
             lblBrand.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblSubBrand
@@ -337,7 +337,7 @@ namespace BookStoreManagement.Forms
             lblSubBrand.Name = "lblSubBrand";
             lblSubBrand.Size = new System.Drawing.Size(120, 15);
             lblSubBrand.TabIndex = 9;
-            lblSubBrand.Text = "Admin Terminal";
+            lblSubBrand.Text = "Giao diện Admin";
             lblSubBrand.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panelTop
@@ -452,7 +452,7 @@ namespace BookStoreManagement.Forms
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "MainForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            Text = "BookStore Management";
+            Text = "Quản lý Nhà Sách";
             panelSidebar.ResumeLayout(false);
             panelSidebar.PerformLayout();
             panelUserProfile.ResumeLayout(false);

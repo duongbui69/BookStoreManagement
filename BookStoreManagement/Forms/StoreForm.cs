@@ -27,7 +27,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = _store == null ? "Add new store" : "Update store";
+            this.Text = _store == null ? "Thêm mới cửa hàng" : "Cập nhật cửa hàng";
             this.Size = new Size(500, 600);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -47,44 +47,44 @@ namespace BookStoreManagement.Forms
             int spacing = 65;
 
             // Store Code
-            this.Controls.Add(new Label { Text = "Store ID / Code *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            this.Controls.Add(new Label { Text = "Mã Chi nhánh *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
             txtStoreCode = new TextBox { Location = new Point(20, startY + 20), Width = 440, Font = new Font("Segoe UI", 10) };
             this.Controls.Add(txtStoreCode);
             startY += spacing;
 
             // Store Name
-            this.Controls.Add(new Label { Text = "Store Name *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            this.Controls.Add(new Label { Text = "Tên Chi nhánh *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
             txtStoreName = new TextBox { Location = new Point(20, startY + 20), Width = 440, Font = new Font("Segoe UI", 10) };
             this.Controls.Add(txtStoreName);
             startY += spacing;
 
             // Address
-            this.Controls.Add(new Label { Text = "Address *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            this.Controls.Add(new Label { Text = "Địa chỉ *", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
             txtAddress = new TextBox { Location = new Point(20, startY + 20), Width = 440, Font = new Font("Segoe UI", 10) };
             this.Controls.Add(txtAddress);
             startY += spacing;
 
             // Phone
-            this.Controls.Add(new Label { Text = "Phone Number", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            this.Controls.Add(new Label { Text = "Số điện thoại", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
             txtPhone = new TextBox { Location = new Point(20, startY + 20), Width = 440, Font = new Font("Segoe UI", 10) };
             this.Controls.Add(txtPhone);
             startY += spacing;
 
             // Manager Name
-            this.Controls.Add(new Label { Text = "Manager Name", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            this.Controls.Add(new Label { Text = "Tên Người quản lý", Location = new Point(20, startY), AutoSize = true, Font = new Font("Segoe UI", 9) });
             txtManagerName = new TextBox { Location = new Point(20, startY + 20), Width = 440, Font = new Font("Segoe UI", 10) };
             this.Controls.Add(txtManagerName);
             startY += spacing;
 
             // Status
-            chkIsActive = new CheckBox { Text = "Active", Location = new Point(20, startY + 20), AutoSize = true, Font = new Font("Segoe UI", 10), Checked = true };
+            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(20, startY + 20), AutoSize = true, Font = new Font("Segoe UI", 10), Checked = true };
             this.Controls.Add(chkIsActive);
             startY += spacing;
 
             // Buttons
             btnSave = new Button
             {
-                Text = "Save",
+                Text = "Lưu (Save)",
                 Location = new Point(250, startY + 20),
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
@@ -96,7 +96,7 @@ namespace BookStoreManagement.Forms
 
             btnCancel = new Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 Location = new Point(360, startY + 20),
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
@@ -160,7 +160,7 @@ namespace BookStoreManagement.Forms
                 string.IsNullOrWhiteSpace(txtStoreName.Text) || 
                 string.IsNullOrWhiteSpace(txtAddress.Text))
             {
-                MessageBox.Show("Please fill required fields (*).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng điền các trường bắt buộc (*).", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -168,7 +168,7 @@ namespace BookStoreManagement.Forms
             {
                 if (_repository.IsStoreCodeExists(txtStoreCode.Text))
                 {
-                    MessageBox.Show("Store code already exists.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Mã chi nhánh đã tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 

@@ -1,47 +1,44 @@
-using BookStoreManagement.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
+using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
-using BookStoreManagement.Models;
 using BookStoreManagement.Interfaces;
 using Guna.UI2.WinForms;
-using System.Collections.Generic;
-using System.Linq;
+using BookStoreManagement.Repositories;
+using BookStoreManagement.Helpers; // For InventoryTransactionDto
 
 namespace BookStoreManagement.UserControls
 {
-    public class VoucherTypeControl : UserControl, ISearchableControl
+    public partial class VoucherTypeControl : UserControl, ISearchableControl
     {
-        private readonly VoucherTypeService _service;
-        private List<VoucherType> _allVouchers = new();
+        private readonly InventoryTransactionService _service;
 
-        // Headers
         private Label lblTitle;
         private Label lblSubTitle;
-        
-        // Toolbar
         private Guna2Panel pnlToolbar;
         private Guna2TextBox txtSearch;
         private Guna2Button btnExport;
-        private Guna2Button btnAdd;
-
-        // Grid
         private Guna2Panel pnlGridContainer;
         private DataGridView dgvData;
         private PaginationControl pagination;
-        private int _currentPage = 1;
-        private const int PageSize = 5;
+        private Guna2DateTimePicker dtpFrom;
+        private Guna2DateTimePicker dtpTo;
 
+        private int _currentPage = 1;
+        private int PageSize = 10;
         private int _hoveredRowIndex = -1;
 
         public VoucherTypeControl()
         {
-            _service = new VoucherTypeService();
+            _service = new InventoryTransactionService();
             InitializeComponent();
             ApplyTheme();
             LoadData();
+            ThemeManager.ThemeChanged += (s, e) => ApplyTheme();
         }
 
         private void InitializeComponent()
@@ -55,14 +52,14 @@ namespace BookStoreManagement.UserControls
             
             lblTitle = new Label
             {
-                Text = "Receipt type",
+                Text = "Lịch sử giao dịch",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
             lblSubTitle = new Label
             {
-                Text = "Admin manages document types for accounting/inventory.",
+                Text = "Theo dõi nhật ký xuất/nhập và các thay đổi kho.",
                 Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 AutoSize = true,
                 Location = new Point(0, 35)
@@ -87,42 +84,44 @@ namespace BookStoreManagement.UserControls
                 Padding = new Padding(24, 12, 24, 12)
             };
             
-            txtSearch = new Guna2TextBox
+            dtpFrom = new Guna2DateTimePicker
             {
-                PlaceholderText = "Search receipt type...",
-                Size = new Size(250, 36),
+                Size = new Size(150, 36),
                 Location = new Point(24, 12),
-                BorderRadius = 8
+                BorderRadius = 8,
+                Format = DateTimePickerFormat.Short,
+                Value = DateTime.Now.AddDays(-30)
             };
-            txtSearch.TextChanged += (s, e) => ApplyFilters();
+            dtpFrom.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
+
+            dtpTo = new Guna2DateTimePicker
+            {
+                Size = new Size(150, 36),
+                Location = new Point(190, 12),
+                BorderRadius = 8,
+                Format = DateTimePickerFormat.Short,
+                Value = DateTime.Now
+            };
+            dtpTo.ValueChanged += (s, e) => { _currentPage = 1; LoadData(); };
 
             btnExport = new Guna2Button
             {
-                Text = "Export Excel",
+                Text = "Xuất Excel",
                 Size = new Size(120, 36),
                 BorderRadius = 8,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 Cursor = Cursors.Hand
             };
             
-            btnAdd = new Guna2Button
-            {
-                Text = "+ Add New",
-                Size = new Size(120, 36),
-                BorderRadius = 8,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Cursor = Cursors.Hand
-            };
-            btnAdd.Click += (s, e) => ShowEditForm(null);
-
             // Add dynamic resize logic for toolbar buttons
             pnlToolbar.Resize += (s, e) => 
             {
-                btnAdd.Location = new Point(pnlToolbar.Width - btnAdd.Width - 24, 12);
-                btnExport.Location = new Point(btnAdd.Left - btnExport.Width - 10, 12);
+                btnExport.Location = new Point(pnlToolbar.Width - btnExport.Width - 24, 12);
             };
 
-            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, btnExport, btnAdd });
+            btnExport.Click += BtnExport_Click;
+
+            pnlToolbar.Controls.AddRange(new Control[] { dtpFrom, dtpTo, btnExport });
 
             // Grid Container
             pnlGridContainer = new Guna2Panel
@@ -148,26 +147,25 @@ namespace BookStoreManagement.UserControls
             };
             dgvData.SetDoubleBuffered(true);
 
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Code", HeaderText = "Type code", Width = 100 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Receipt type name", Width = 200 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Description", HeaderText = "Description", Width = 300 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "GroupType", HeaderText = "Group", Width = 120 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 120 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Action", HeaderText = "Action", Width = 100, AutoSizeMode = DataGridViewAutoSizeColumnMode.None });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "CreatedAt", HeaderText = "Ngày", Width = 150 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "VoucherNo", HeaderText = "Số phiếu", Width = 150 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "ProductName", HeaderText = "Sản phẩm", Width = 300 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Description", HeaderText = "Diễn giải", Width = 250 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "ImportQty", HeaderText = "Nhập", Width = 100 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "ExportQty", HeaderText = "Xuất", Width = 100 });
+            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Balance", HeaderText = "Tồn", Width = 100 });
 
             foreach (DataGridViewColumn col in dgvData.Columns)
             {
                 col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-            dgvData.Columns["Name"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dgvData.Columns["ProductName"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvData.Columns["Description"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
             dgvData.CellMouseEnter += (s, e) => { if (e.RowIndex >= 0) { _hoveredRowIndex = e.RowIndex; dgvData.InvalidateRow(e.RowIndex); } };
             dgvData.CellMouseLeave += (s, e) => { _hoveredRowIndex = -1; if (e.RowIndex >= 0) dgvData.InvalidateRow(e.RowIndex); };
-            dgvData.CellPainting += DgvData_CellPainting;
-            dgvData.CellClick += DgvData_CellClick;
-
+            
             pnlGridContainer.Controls.Add(dgvData);
 
             pagination = new PaginationControl
@@ -175,7 +173,7 @@ namespace BookStoreManagement.UserControls
                 Dock = DockStyle.Bottom,
                 Height = 50
             };
-            pagination.PageChanged += (s, e) => { _currentPage = e.NewPage; DisplayPage(); };
+            pagination.PageChanged += (s, e) => { _currentPage = e.NewPage; LoadData(); };
 
             pnlMainCard.Controls.Add(pnlGridContainer);
             pnlMainCard.Controls.Add(pnlToolbar);
@@ -185,163 +183,51 @@ namespace BookStoreManagement.UserControls
             this.Controls.Add(pnlHeader);
         }
 
-        private void LoadData()
-        {
-            _allVouchers = _service.GetAll();
-            ApplyFilters();
-        }
-
-        private void ApplyFilters()
-        {
-            var filtered = _allVouchers.AsEnumerable();
-            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-            {
-                string kw = txtSearch.Text.ToLower();
-                filtered = filtered.Where(x => x.Code.ToLower().Contains(kw) || x.Name.ToLower().Contains(kw));
-            }
-            _allVouchers = filtered.ToList();
-            _currentPage = 1;
-            pagination.UpdatePagination(_allVouchers.Count, _currentPage, PageSize);
-            DisplayPage();
-        }
-
-        private void DisplayPage()
+        private async void LoadData()
         {
             if (this.IsDisposed) return;
+            var result = await _service.GetPagedTransactionsAsync(_currentPage, PageSize, dtpFrom.Value, dtpTo.Value);
+            
             dgvData.Rows.Clear();
-            var paged = _allVouchers.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
-
-            foreach (var item in paged)
+            foreach (var item in result.Items)
             {
                 int r = dgvData.Rows.Add(
-                    item.Code,
-                    item.Name,
+                    item.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                    item.VoucherNo,
+                    item.ProductName,
                     item.Description,
-                    item.GroupType,
-                    item.Status,
-                    ""
+                    item.ImportQty > 0 ? item.ImportQty.ToString() : "-",
+                    item.ExportQty > 0 ? item.ExportQty.ToString() : "-",
+                    item.Balance
                 );
                 dgvData.Rows[r].Tag = item;
             }
+            pagination.UpdatePagination(result.TotalCount, _currentPage, PageSize);
         }
 
-        private void DgvData_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void BtnExport_Click(object? sender, EventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["Action"].Index)
+            try
             {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                if (e.RowIndex == _hoveredRowIndex)
+                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "LichSuGiaoDich.xlsx" })
                 {
-                    int iconSize = 20;
-                    int padding = 10;
-                    int totalWidth = (iconSize * 2) + padding;
-                    int startX = e.CellBounds.Left + (e.CellBounds.Width - totalWidth) / 2;
-                    int startY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
-
-                    Rectangle rectEdit = new Rectangle(startX, startY, iconSize, iconSize);
-                    Rectangle rectDelete = new Rectangle(startX + iconSize + padding, startY, iconSize, iconSize);
-
-                    Point mouseLoc = dgvData.PointToClient(Cursor.Position);
-                    Color editColor = rectEdit.Contains(mouseLoc) ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
-                    Color deleteColor = rectDelete.Contains(mouseLoc) ? Color.FromArgb(231, 76, 60) : ThemeManager.TextSecondary;
-
-                    using (var font = new Font("Segoe UI Emoji", 12))
+                    if (sfd.ShowDialog() == DialogResult.OK)
                     {
-                    TextRenderer.DrawText(e.Graphics, "✏️", font, rectEdit, editColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-                    }
-                    using (var font = new Font("Segoe UI Emoji", 12))
-                    {
-                    TextRenderer.DrawText(e.Graphics, "🗑️", font, rectDelete, deleteColor, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvData, sfd.FileName, "Giao Dịch");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
-                e.Handled = true;
             }
-            // Tags styling
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["GroupType"].Index)
+            catch (Exception ex)
             {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                string text = e.Value?.ToString() ?? "";
-                Color tagBg = text == "Import" ? Color.FromArgb(208, 228, 255) : (text == "Export" ? Color.FromArgb(237, 220, 255) : Color.FromArgb(231, 232, 234));
-                Color tagText = text == "Import" ? Color.FromArgb(0, 29, 53) : (text == "Export" ? Color.FromArgb(40, 0, 86) : Color.FromArgb(25, 28, 30));
-
-                DrawPillTag(e.Graphics, e.CellBounds, text, tagBg, tagText);
-                e.Handled = true;
-            }
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["Status"].Index)
-            {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
-                string text = e.Value?.ToString() ?? "";
-                Color tagBg = text == "Active" ? Color.FromArgb(107, 254, 156) : Color.FromArgb(217, 218, 220);
-                Color tagText = text == "Active" ? Color.FromArgb(0, 33, 12) : Color.FromArgb(67, 71, 77);
-
-                DrawPillTag(e.Graphics, e.CellBounds, text, tagBg, tagText);
-                e.Handled = true;
-            }
-        }
-
-        private void DrawPillTag(Graphics g, Rectangle bounds, string text, Color bg, Color fg)
-        {
-            SizeF size = g.MeasureString(text, new Font("Segoe UI", 9, FontStyle.Bold));
-            int width = (int)size.Width + 16;
-            int height = 24;
-            int x = bounds.Left + (bounds.Width - width) / 2;
-            int y = bounds.Top + (bounds.Height - height) / 2;
-
-            using var brush = new SolidBrush(bg);
-            g.FillRectangle(brush, x, y, width, height); // Simplified for WinForms without complex GraphicsPath
-            using (var font = new Font("Segoe UI", 9, FontStyle.Bold))
-            {
-            TextRenderer.DrawText(g, text, font, new Rectangle(x, y, width, height), fg, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
-            }
-        }
-
-        private void DgvData_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["Action"].Index)
-            {
-                var item = dgvData.Rows[e.RowIndex].Tag as VoucherType;
-                if (item == null) return;
-
-                int iconSize = 20, padding = 10;
-                int totalWidth = (iconSize * 2) + padding;
-                Rectangle cellBounds = dgvData.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-                
-                int startX = cellBounds.Left + (cellBounds.Width - totalWidth) / 2;
-                int startY = cellBounds.Top + (cellBounds.Height - iconSize) / 2;
-
-                Rectangle rectEdit = new Rectangle(startX, startY, iconSize, iconSize);
-                Rectangle rectDelete = new Rectangle(startX + iconSize + padding, startY, iconSize, iconSize);
-
-                Point mouseLoc = dgvData.PointToClient(Cursor.Position);
-
-                if (rectEdit.Contains(mouseLoc)) ShowEditForm(item);
-                else if (rectDelete.Contains(mouseLoc)) DeleteItem(item);
-            }
-        }
-
-        private void ShowEditForm(VoucherType? vt)
-        {
-            using var frm = new VoucherTypeEditForm(vt);
-            if (frm.ShowDialog() == DialogResult.OK)
-            {
-                LoadData();
-            }
-        }
-
-        private void DeleteItem(VoucherType vt)
-        {
-            var res = MessageBox.Show($"Xác nhận xóa loại phiếu '{vt.Name}'?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-            if (res == DialogResult.Yes)
-            {
-                _service.Delete(vt.Id);
-                LoadData();
+                MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         public void PerformSearch(string keyword)
         {
-            txtSearch.Text = keyword;
-            ApplyFilters();
+            // Do nothing, we removed search in favor of date filter
         }
 
         public void ApplyTheme()
@@ -355,17 +241,15 @@ namespace BookStoreManagement.UserControls
             pnlToolbar.Parent.BackColor = ThemeManager.CardBackground;
             if (pnlToolbar.Parent is Guna2Panel p) p.CustomBorderColor = ThemeManager.TextBoxBorder;
 
-            txtSearch.FillColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
-
             btnExport.FillColor = ThemeManager.CardBackground;
             btnExport.ForeColor = ThemeManager.TextPrimary;
             btnExport.BorderColor = ThemeManager.TextBoxBorder;
             btnExport.BorderThickness = 1;
-
-            btnAdd.FillColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = ThemeManager.ButtonText;
+            
+            dtpFrom.FillColor = ThemeManager.TextBoxBackground;
+            dtpFrom.ForeColor = ThemeManager.TextPrimary;
+            dtpTo.FillColor = ThemeManager.TextBoxBackground;
+            dtpTo.ForeColor = ThemeManager.TextPrimary;
 
             ThemeManager.ApplyDataGridViewStyle(dgvData);
         }

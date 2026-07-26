@@ -85,10 +85,10 @@ namespace BookStoreManagement.UserControls
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            lblTitle = new Label { Text = "Employee Management", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Manage staff records, roles, and branch assignments.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Quản lý Nhân viên", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
+            lblSubTitle = new Label { Text = "Quản lý nhân viên, vai trò, và chi nhánh.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
             
-            btnAdd = new Guna2Button { Text = "+ Add Employee", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Guna2Button { Text = "+ Thêm Nhân viên", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
             btnAdd.Click += async (s, e) => {
                 var frm = new Forms.EmployeeForm(null);
                 if (frm.ShowDialog() == DialogResult.OK)
@@ -108,17 +108,17 @@ namespace BookStoreManagement.UserControls
             pnlFilters.CustomizableEdges.BottomRight = false;
 
             cbBranch = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(20, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
-            cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Sales" });
+            cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Doanh số" });
             cbBranch.SelectedIndex = 0;
             cbBranch.SelectedIndexChanged += async (s, e) => { _currentBranch = cbBranch.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
 
             cbRole = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(220, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
-            cbRole.Items.AddRange(new object[] { "Status: All", "ACTIVE", "INACTIVE" });
+            cbRole.Items.AddRange(new object[] { "Status: All", "ĐANG HOẠT ĐỘNG", "INACTIVE" });
             cbRole.SelectedIndex = 0;
             cbRole.SelectedIndexChanged += async (s, e) => { _currentRole = cbRole.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
 
-            btnPayroll = new Guna2Button { Text = "Payroll", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            btnPayroll.Click += (s, e) => MessageBox.Show("Payroll feature is under development.", "Info");
+            btnPayroll = new Guna2Button { Text = "Tính lương", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnPayroll.Click += (s, e) => MessageBox.Show("Tính năng tính lương đang phát triển.", "Thông tin");
 
             pnlFilters.Controls.AddRange(new Control[] { cbBranch, cbRole, btnPayroll });
             pnlFilters.Resize += (s, e) =>
@@ -149,15 +149,15 @@ namespace BookStoreManagement.UserControls
             
             // Define Columns
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Name = "Id", Visible = false });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { Name = "Avatar", HeaderText = "AVATAR", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "EmployeeId", Name = "EmployeeId", HeaderText = "EMPLOYEE ID", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", Name = "Name", HeaderText = "FULL NAME", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RoleName", HeaderText = "POSITION", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Department", HeaderText = "BRANCH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
-            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Status", HeaderText = "STATUS", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 100 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { Name = "Avatar", HeaderText = "ẢNH ĐẠI DIỆN", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "EmployeeId", Name = "EmployeeId", HeaderText = "MÀ NHÂN VIÊN", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", Name = "Tên", HeaderText = "HỌ VÀ TÊN", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RoleName", HeaderText = "VỊ TRÍ", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Department", HeaderText = "CHI NHÁNH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", Name = "Trạng thái", HeaderText = "TRẠNG THÁI", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 100 });
             dgvEmployees.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Email", Name = "Email", Visible = false });
             
-            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "ACTION", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
+            DataGridViewTextBoxColumn actionCol = new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "THAO TÁC", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } };
             dgvEmployees.Columns.Add(actionCol);
 
             dgvEmployees.CellPainting += DgvEmployees_CellPainting;
@@ -264,23 +264,23 @@ namespace BookStoreManagement.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("Employee not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Không tìm thấy nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
                 {
                     // Delete
-                    if (MessageBox.Show("Are you sure you want to delete this employee?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có chắc chắn muốn xóa nhân viên này không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         try
                         {
                             _service.DeleteUser(empId);
-                            MessageBox.Show("Employee deleted successfully!");
+                            MessageBox.Show("Xóa nhân viên thành công!");
                             await LoadDataAsync();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -339,7 +339,7 @@ namespace BookStoreManagement.UserControls
             {
                 e.PaintBackground(e.CellBounds, true);
                 
-                string name = dgvEmployees.Rows[e.RowIndex].Cells["Name"].Value?.ToString() ?? "";
+                string name = dgvEmployees.Rows[e.RowIndex].Cells["Tên"].Value?.ToString() ?? "";
                 string initials = "U";
                 if (!string.IsNullOrEmpty(name))
                 {
@@ -376,7 +376,7 @@ namespace BookStoreManagement.UserControls
                 e.Handled = true;
             }
             // Custom Paint for Employee Name
-            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Name")
+            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Tên")
             {
                 e.PaintBackground(e.CellBounds, true);
 
@@ -398,7 +398,7 @@ namespace BookStoreManagement.UserControls
 
                 e.Handled = true;
             }
-            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Status")
+            else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Trạng thái")
             {
                 e.PaintBackground(e.CellBounds, true);
                 string status = e.Value?.ToString() ?? "";
@@ -406,7 +406,7 @@ namespace BookStoreManagement.UserControls
                 Color bgColor = ThemeManager.TextBoxBorder;
                 Color textColor = ThemeManager.TextPrimary;
 
-                if (status.ToUpper() == "ACTIVE") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
+                if (status.ToUpper() == "ĐANG HOẠT ĐỘNG") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
                 else if (status.ToUpper() == "INACTIVE" || status.ToUpper() == "TERMINATED") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
                 else { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
 

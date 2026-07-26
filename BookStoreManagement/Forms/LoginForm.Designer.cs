@@ -131,7 +131,7 @@ namespace BookStoreManagement.Forms
             this.lblTitleText.AutoSize = true;
             this.lblTitleText.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.lblTitleText.Location = new System.Drawing.Point(36, 11);
-            this.lblTitleText.Text = "Bookstore ERP System";
+            this.lblTitleText.Text = "Hệ thống Bookstore ERP";
             
             // 
             // btnMinimize
@@ -217,7 +217,7 @@ namespace BookStoreManagement.Forms
             this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblSubtitle.Location = new System.Drawing.Point(0, 150);
             this.lblSubtitle.Size = new System.Drawing.Size(400, 20);
-            this.lblSubtitle.Text = "Management System Login";
+            this.lblSubtitle.Text = "Đăng Nhập Hệ Thống Quản Lý";
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // 
@@ -226,7 +226,7 @@ namespace BookStoreManagement.Forms
             this.lblUserLabel.AutoSize = true;
             this.lblUserLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
             this.lblUserLabel.Location = new System.Drawing.Point(40, 195);
-            this.lblUserLabel.Text = "Username";
+            this.lblUserLabel.Text = "Tên đăng nhập";
             
             // 
             // txtUsername
@@ -244,7 +244,7 @@ namespace BookStoreManagement.Forms
             this.lblPassLabel.AutoSize = true;
             this.lblPassLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
             this.lblPassLabel.Location = new System.Drawing.Point(40, 275);
-            this.lblPassLabel.Text = "Password";
+            this.lblPassLabel.Text = "Mật khẩu";
             
             // 
             // txtPassword
@@ -266,7 +266,7 @@ namespace BookStoreManagement.Forms
             this.chkRemember.AutoSize = true;
             this.chkRemember.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.chkRemember.Location = new System.Drawing.Point(40, 355);
-            this.chkRemember.Text = "Remember Me";
+            this.chkRemember.Text = "Ghi nhớ";
             this.chkRemember.CheckedState.BorderRadius = 2;
             
             // 
@@ -276,7 +276,7 @@ namespace BookStoreManagement.Forms
             this.lblForgot.Cursor = System.Windows.Forms.Cursors.Hand;
             this.lblForgot.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
             this.lblForgot.Location = new System.Drawing.Point(245, 357);
-            this.lblForgot.Text = "Forgot Password?";
+            this.lblForgot.Text = "Quên mật khẩu?";
             
             // 
             // lblError
@@ -328,7 +328,7 @@ namespace BookStoreManagement.Forms
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Bookstore ERP - Login";
+            this.Text = "Bookstore ERP - Đăng nhập";
             this.pnlTitleBar.ResumeLayout(false);
             this.pnlTitleBar.PerformLayout();
             this.loginCard.ResumeLayout(false);

@@ -48,36 +48,36 @@ namespace BookStoreManagement.Forms
 
             int y = 70;
             txtUserCode = CreateInput("User Code", ref y);
-            txtUsername = CreateInput("Username", ref y);
+            txtUsername = CreateInput("Tên đăng nhập", ref y);
             
-            Label lblPass = new Label { Text = "Password (Leave blank if not changing)", Location = new Point(20, y), AutoSize = true };
+            Label lblPass = new Label { Text = "Mật khẩu (Để trống nếu không đổi)", Location = new Point(20, y), AutoSize = true };
             this.Controls.Add(lblPass);
             txtPassword = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), PasswordChar = '*' };
             this.Controls.Add(txtPassword);
             y += 60;
 
-            txtFullName = CreateInput("Full Name", ref y);
+            txtFullName = CreateInput("Họ và Tên", ref y);
             txtIdentity = CreateInput("Identity Number", ref y);
-            txtPhone = CreateInput("Phone", ref y);
+            txtPhone = CreateInput("SĐT", ref y);
             txtEmail = CreateInput("Email", ref y);
-            txtAddress = CreateInput("Address", ref y);
+            txtAddress = CreateInput("Địa chỉ", ref y);
 
-            Label lblRole = new Label { Text = "Role", Location = new Point(20, y), AutoSize = true };
+            Label lblRole = new Label { Text = "Vai trò", Location = new Point(20, y), AutoSize = true };
             cbRole = new ComboBox { Location = new Point(20, y + 20), Width = 210, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
             this.Controls.AddRange(new Control[] { lblRole, cbRole });
 
-            Label lblStore = new Label { Text = "Store", Location = new Point(250, y), AutoSize = true };
+            Label lblStore = new Label { Text = "Chi nhánh", Location = new Point(250, y), AutoSize = true };
             cbStore = new ComboBox { Location = new Point(250, y + 20), Width = 210, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
             this.Controls.AddRange(new Control[] { lblStore, cbStore });
             y += 60;
 
-            chkIsActive = new CheckBox { Text = "Is Active", Location = new Point(20, y), AutoSize = true, Checked = true };
+            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true };
             this.Controls.Add(chkIsActive);
             y += 40;
 
-            btnSave = new Button { Text = "Save", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnSave = new Button { Text = "Lưu (Save)", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Cancel", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnCancel = new Button { Text = "Hủy bỏ", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
@@ -154,22 +154,22 @@ namespace BookStoreManagement.Forms
             try {
                 if (EmployeeModel.Id == 0) {
                     if (string.IsNullOrEmpty(txtPassword.Text)) {
-                        MessageBox.Show("Password is required for new employee.");
+                        MessageBox.Show("Vui lòng nhập mật khẩu cho nhân viên mới.");
                         return;
                     }
                     _hrService.CreateUser(EmployeeModel, txtPassword.Text);
-                    MessageBox.Show("Employee created.");
+                    MessageBox.Show("Đã tạo nhân viên.");
                 } else {
                     _hrService.UpdateUser(EmployeeModel);
                     if (!string.IsNullOrEmpty(txtPassword.Text)) {
                         _hrService.ResetPassword(EmployeeModel.Id, txtPassword.Text);
                     }
-                    MessageBox.Show("Employee updated.");
+                    MessageBox.Show("Đã cập nhật nhân viên.");
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             } catch (Exception ex) {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message);
             }
         }
 

@@ -70,8 +70,8 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = false };
 
             pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0,0,0,gutter) };
-            lblTitle = new Label { Text = "Dashboard Overview", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Welcome back, here's what's happening with your store today.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0,30) };
+            lblTitle = new Label { Text = "Tổng quan", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Chào mừng trở lại, đây là thông tin cửa hàng hôm nay.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(0, 45) };
             
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
@@ -83,10 +83,10 @@ namespace BookStoreManagement.UserControls
             };
             for(int i=0; i<4; i++) tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             
-            card1 = CreateStatCard("TOTAL SALES", "$0", Color.FromArgb(41, 128, 185));
-            card2 = CreateStatCard("NET PROFIT", "$0", Color.FromArgb(128, 90, 213));
-            card3 = CreateStatCard("TOTAL ORDERS", "0", Color.FromArgb(46, 204, 113));
-            card4 = CreateStatCard("LOW STOCK ALERTS", "0", Color.FromArgb(231, 76, 60));
+            card1 = CreateStatCard("TỔNG DOANH THU", "$0", Color.FromArgb(41, 128, 185));
+            card2 = CreateStatCard("LỢI NHUẬN RÒNG", "$0", Color.FromArgb(128, 90, 213));
+            card3 = CreateStatCard("TỔNG ĐƠN HÀNG", "0", Color.FromArgb(46, 204, 113));
+            card4 = CreateStatCard("SÁCH SẮP HẾT", "0", Color.FromArgb(231, 76, 60));
             
             card1.Margin = new Padding(0, 0, 10, 0);
             card2.Margin = new Padding(10, 0, 10, 0);
@@ -110,7 +110,7 @@ namespace BookStoreManagement.UserControls
             tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
 
             pnlChartContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,10,0) };
-            lblChartTitle = new Label { Text = "Sales Trends", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            lblChartTitle = new Label { Text = "Xu hướng Bán hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
             lblChartTitle.Tag = "ChartTitle";
             pnlChartContainer.Controls.Add(lblChartTitle);
             
@@ -127,7 +127,7 @@ namespace BookStoreManagement.UserControls
             pnlTableContainer = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(10,0,0,0) };
             
             pnlTableHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, CustomBorderThickness = new Padding(0,0,0,1) };
-            lblTableTitle = new Label { Text = "Low Stock Products", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
+            lblTableTitle = new Label { Text = "Sản phẩm sắp hết hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
             lblTableTitle.Tag = "TableTitle";
             pnlTableHeader.Controls.Add(lblTableTitle);
             pnlTableContainer.Controls.Add(pnlTableHeader);
@@ -149,11 +149,11 @@ namespace BookStoreManagement.UserControls
             dgvProducts.SetDoubleBuffered(true);
             
             dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", Visible = false });
-            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCode", HeaderText = "Book Code", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
-            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Title", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 150 });
-            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "Category", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Stock", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 60 });
-            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Threshold", HeaderText = "Min", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 50 });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BookCode", HeaderText = "Mã Sách", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tiêu đề", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, Width = 150 });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Category", HeaderText = "Danh mục", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Tồn kho", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 60 });
+            dgvProducts.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Threshold", HeaderText = "Tối thiểu", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 50 });
             
             dgvProducts.CellFormatting += DgvProducts_CellFormatting;
             

@@ -135,7 +135,7 @@ namespace BookStoreManagement.UserControls
 
             lblSearchTitle = new Guna2HtmlLabel
             {
-                Text = "Search Invoice",
+                Text = "Tìm Hóa đơn",
                 Font = new Font("Inter", 14F, FontStyle.Bold),
                 Location = new Point(20, 20)
             };
@@ -143,7 +143,7 @@ namespace BookStoreManagement.UserControls
 
             lblSearchLabel = new Guna2HtmlLabel
             {
-                Text = "Invoice ID / Customer Phone",
+                Text = "Mã Hóa đơn / SĐT",
                 Font = new Font("Inter", 9F, FontStyle.Bold),
                 Location = new Point(20, 55)
             };
@@ -162,7 +162,7 @@ namespace BookStoreManagement.UserControls
 
             btnSearch = new Guna2Button
             {
-                Text = "Search",
+                Text = "Tìm kiếm",
                 BorderRadius = 4,
                 Font = new Font("Inter", 9F, FontStyle.Bold),
                 Location = new Point(20, 118),
@@ -196,7 +196,7 @@ namespace BookStoreManagement.UserControls
 
             lblInfoTitle = new Guna2HtmlLabel
             {
-                Text = "Invoice info",
+                Text = "Thông tin hóa đơn",
                 Font = new Font("Inter", 14F, FontStyle.Bold),
                 Location = new Point(20, 20)
             };
@@ -212,7 +212,7 @@ namespace BookStoreManagement.UserControls
 
             lblStatus = new Guna2HtmlLabel
             {
-                Text = "Status",
+                Text = "Trạng thái",
                 Font = new Font("Inter", 9F, FontStyle.Bold),
                 Location = new Point(pnlInfo.Width - 100, 24),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -235,9 +235,9 @@ namespace BookStoreManagement.UserControls
             tlpInfoDetails.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
             pnlInfo.Controls.Add(tlpInfoDetails);
 
-            pnlDate = CreateInfoBox("Purchase date", out lblDateTitle, out lblDateValue);
-            pnlCustomer = CreateInfoBox("Customer", out lblCustomerTitle, out lblCustomerValue);
-            pnlCashier = CreateInfoBox("Cashier", out lblCashierTitle, out lblCashierValue);
+            pnlDate = CreateInfoBox("Ngày mua", out lblDateTitle, out lblDateValue);
+            pnlCustomer = CreateInfoBox("Khách hàng", out lblCustomerTitle, out lblCustomerValue);
+            pnlCashier = CreateInfoBox("Thu ngân", out lblCashierTitle, out lblCashierValue);
 
             pnlDate.Margin = new Padding(0, 0, 8, 0);
             pnlCustomer.Margin = new Padding(4, 0, 4, 0);
@@ -316,7 +316,7 @@ namespace BookStoreManagement.UserControls
 
             lblGridTitle = new Guna2HtmlLabel
             {
-                Text = "Product List",
+                Text = "Danh sách Sản phẩm",
                 Font = new Font("Inter", 12F, FontStyle.Bold),
                 Location = new Point(16, 12)
             };
@@ -324,7 +324,7 @@ namespace BookStoreManagement.UserControls
 
             lblGridSummary = new Guna2HtmlLabel
             {
-                Text = "0 items (Total Qty: 0)",
+                Text = "0 mặt hàng (Tổng SL: 0)",
                 Font = new Font("Inter", 9F, FontStyle.Bold),
                 Location = new Point(pnlGridHeader.Width - 200, 16),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -360,10 +360,10 @@ namespace BookStoreManagement.UserControls
             dgvItems.Columns["STT"].Width = 50;
             dgvItems.Columns["STT"].ReadOnly = true;
 
-            dgvItems.Columns.Add("Product", "Product");
-            dgvItems.Columns["Product"].ReadOnly = true;
+            dgvItems.Columns.Add("Sản phẩm", "Sản phẩm");
+            dgvItems.Columns["Sản phẩm"].ReadOnly = true;
 
-            dgvItems.Columns.Add("UnitPrice", "Unit price");
+            dgvItems.Columns.Add("UnitPrice", "Đơn giá");
             dgvItems.Columns["UnitPrice"].Width = 100;
             dgvItems.Columns["UnitPrice"].ReadOnly = true;
             dgvItems.Columns["UnitPrice"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -373,7 +373,7 @@ namespace BookStoreManagement.UserControls
             dgvItems.Columns["PurchasedQty"].ReadOnly = true;
             dgvItems.Columns["PurchasedQty"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            dgvItems.Columns.Add("ReturnQty", "Return Qty");
+            dgvItems.Columns.Add("ReturnQty", "Số lượng trả");
             dgvItems.Columns["ReturnQty"].Width = 80;
             dgvItems.Columns["ReturnQty"].ReadOnly = false;
             dgvItems.Columns["ReturnQty"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -381,14 +381,14 @@ namespace BookStoreManagement.UserControls
             DataGridViewComboBoxColumn colReason = new DataGridViewComboBoxColumn
             {
                 Name = "ReturnReason",
-                HeaderText = "Return reason",
+                HeaderText = "Lý do trả",
                 Width = 150,
                 DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
             };
-            colReason.Items.AddRange("Defective book/Torn pages", "Wrong item", "Customer changed mind", "Other...");
+            colReason.Items.AddRange("Sách lỗi/Rách trang", "Sai mặt hàng", "Khách đổi ý", "Khác...");
             dgvItems.Columns.Add(colReason);
 
-            dgvItems.Columns.Add("RefundAmount", "Refund total");
+            dgvItems.Columns.Add("RefundAmount", "Thành tiền hoàn");
             dgvItems.Columns["RefundAmount"].Width = 120;
             dgvItems.Columns["RefundAmount"].ReadOnly = true;
             dgvItems.Columns["RefundAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -416,7 +416,7 @@ namespace BookStoreManagement.UserControls
 
             lblTotalReturnQty = new Guna2HtmlLabel
             {
-                Text = "Total Return Qty: 0",
+                Text = "Tổng SL Trả: 0",
                 Font = new Font("Inter", 10F, FontStyle.Bold),
                 Location = new Point(20, 16)
             };
@@ -424,7 +424,7 @@ namespace BookStoreManagement.UserControls
 
             lblTotalRefundAmountTitle = new Guna2HtmlLabel
             {
-                Text = "Total refund amount: ",
+                Text = "Tổng tiền hoàn: ",
                 Font = new Font("Inter", 12F),
                 Location = new Point(20, 40)
             };
@@ -432,7 +432,7 @@ namespace BookStoreManagement.UserControls
 
             lblTotalRefundAmount = new Guna2HtmlLabel
             {
-                Text = "0 VND",
+                Text = "0 đ",
                 Font = new Font("Inter", 18F, FontStyle.Bold),
                 Location = new Point(lblTotalRefundAmountTitle.Right + 5, 34)
             };
@@ -440,7 +440,7 @@ namespace BookStoreManagement.UserControls
 
             btnConfirm = new Guna2Button
             {
-                Text = "Confirm Return & Refund",
+                Text = "Xác nhận Trả hàng & Hoàn tiền",
                 BorderRadius = 4,
                 Font = new Font("Inter", 10F, FontStyle.Bold),
                 Size = new Size(220, 44),
@@ -452,7 +452,7 @@ namespace BookStoreManagement.UserControls
 
             btnCancel = new Guna2Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 BorderRadius = 4,
                 BorderThickness = 1,
                 Font = new Font("Inter", 10F, FontStyle.Bold),
@@ -568,7 +568,7 @@ namespace BookStoreManagement.UserControls
                 var orders = await _orderService.SearchAsync(keyword);
                 if (orders == null || orders.Count == 0)
                 {
-                    MessageBox.Show("Invoice not found.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Không tìm thấy hóa đơn.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     ClearData();
                     return;
                 }
@@ -579,7 +579,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -599,19 +599,19 @@ namespace BookStoreManagement.UserControls
                 // Update Info Panel
                 lblInvoiceCode.Text = _currentOrder.OrderCode;
                 lblDateValue.Text = _currentOrder.OrderDate.ToString("dd/MM/yyyy HH:mm");
-                lblCustomerValue.Text = string.IsNullOrEmpty(_currentOrder.CustomerName) ? "Retail customer" : _currentOrder.CustomerName;
+                lblCustomerValue.Text = string.IsNullOrEmpty(_currentOrder.CustomerName) ? "Khách lẻ" : _currentOrder.CustomerName;
                 lblCashierValue.Text = _currentOrder.StaffName;
                 
                 // Status mapping
                 switch (_currentOrder.OrderStatus)
                 {
-                    case "Completed":
-                        lblStatus.Text = "Completed";
+                    case "Hoàn thành":
+                        lblStatus.Text = "Hoàn thành";
                         lblStatus.ForeColor = Color.White;
                         lblStatus.BackColor = Color.ForestGreen;
                         break;
-                    case "Cancelled":
-                        lblStatus.Text = "Cancelled";
+                    case "Đã hủy":
+                        lblStatus.Text = "Đã hủy";
                         lblStatus.ForeColor = Color.White;
                         lblStatus.BackColor = Color.Firebrick;
                         break;
@@ -631,7 +631,7 @@ namespace BookStoreManagement.UserControls
                         detail.UnitPrice.ToString("N0") + " ₫",
                         detail.Quantity,
                         0, // Default return qty is 0
-                        "Customer changed mind", // Default reason
+                        "Khách đổi ý", // Default reason
                         "0" // Refund amount
                     );
                     
@@ -648,7 +648,7 @@ namespace BookStoreManagement.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -661,7 +661,7 @@ namespace BookStoreManagement.UserControls
             lblDateValue.Text = "---";
             lblCustomerValue.Text = "---";
             lblCashierValue.Text = "---";
-            lblStatus.Text = "Status";
+            lblStatus.Text = "Trạng thái";
             lblStatus.BackColor = ThemeManager.HoverColor;
             lblStatus.ForeColor = ThemeManager.TextSecondary;
 
@@ -693,7 +693,7 @@ namespace BookStoreManagement.UserControls
                 if (!int.TryParse(e.FormattedValue?.ToString(), out int returnQty) || returnQty < 0)
                 {
                     e.Cancel = true;
-                    MessageBox.Show("Return quantity must be a valid positive number.", "Input error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Số lượng trả phải là số dương hợp lệ.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -701,7 +701,7 @@ namespace BookStoreManagement.UserControls
                 if (detail != null && returnQty > detail.Quantity)
                 {
                     e.Cancel = true;
-                    MessageBox.Show($"Số lượng trả không được vượt quá số lượng mua ({detail.Quantity}).", "Input error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Số lượng trả không được vượt quá số lượng mua ({detail.Quantity}).", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
@@ -777,7 +777,7 @@ namespace BookStoreManagement.UserControls
                             BookId = orderDetail.BookId,
                             Quantity = rQty,
                             UnitPrice = orderDetail.UnitPrice,
-                            ReturnReason = row.Cells["ReturnReason"].Value?.ToString() ?? "Other..."
+                            ReturnReason = row.Cells["ReturnReason"].Value?.ToString() ?? "Khác..."
                         });
                     }
                 }
@@ -785,35 +785,35 @@ namespace BookStoreManagement.UserControls
 
             if (returnDetails.Count == 0)
             {
-                MessageBox.Show("Please enter return quantity for at least one item.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập số lượng trả cho ít nhất một mặt hàng.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var confirmResult = MessageBox.Show($"Xác nhận trả hàng và hoàn số tiền {lblTotalRefundAmount.Text}?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirmResult = MessageBox.Show($"Xác nhận trả hàng và hoàn số tiền {lblTotalRefundAmount.Text}?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirmResult != DialogResult.Yes) return;
 
             try
             {
                 if (!CurrentSession.StoreId.HasValue)
                 {
-                    throw new Exception("Employee not assigned to any store.");
+                    throw new Exception("Nhân viên chưa được gán cửa hàng.");
                 }
 
                 int returnId = await _returnService.CreateReturnAsync(
                     _currentOrder.Id, 
                     CurrentSession.StoreId.Value, 
                     _currentOrder.CustomerId, 
-                    "Customer returns directly", 
+                    "Khách trả hàng trực tiếp", 
                     returnDetails
                 );
 
-                MessageBox.Show($"Trả hàng thành công! Mã phiếu trả: #{returnId}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Trả hàng thành công! Mã phiếu trả: #{returnId}", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 ClearData();
                 txtSearch.Clear();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error saving", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi khi lưu", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

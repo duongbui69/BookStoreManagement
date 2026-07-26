@@ -39,7 +39,7 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent(decimal currentRevenue, int currentOrders)
         {
-            this.Text = "End shift";
+            this.Text = "Kết thúc ca làm việc";
             this.Size = new Size(400, 260);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -51,7 +51,7 @@ namespace BookStoreManagement.Forms
 
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Confirm close shift",
+                Text = "Xác nhận đóng ca",
                 Font = new Font("Inter", 16F, FontStyle.Bold),
                 Location = new Point(24, 24)
             };
@@ -59,7 +59,7 @@ namespace BookStoreManagement.Forms
 
             lblMessage = new Guna2HtmlLabel
             {
-                Text = "Are you sure you want to end the current shift?",
+                Text = "Bạn có chắc chắn muốn kết thúc ca hiện tại không?",
                 Font = new Font("Inter", 10F),
                 Location = new Point(24, 65)
             };
@@ -85,7 +85,7 @@ namespace BookStoreManagement.Forms
 
             btnCancel = new Guna2Button
             {
-                Text = "Cancel",
+                Text = "Hủy bỏ",
                 Size = new Size(100, 40),
                 Location = new Point(144, 165),
                 BorderRadius = 4,
@@ -97,7 +97,7 @@ namespace BookStoreManagement.Forms
 
             btnConfirm = new Guna2Button
             {
-                Text = "End",
+                Text = "Kết thúc",
                 Size = new Size(100, 40),
                 Location = new Point(254, 165),
                 BorderRadius = 4,
@@ -114,12 +114,12 @@ namespace BookStoreManagement.Forms
             try
             {
                 _shiftService.CloseShift(_shiftId);
-                MessageBox.Show("Shift closed successfully!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Đóng ca thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

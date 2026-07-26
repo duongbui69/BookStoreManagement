@@ -34,9 +34,9 @@ namespace BookStoreManagement.Repositories
         {
             return new InventoryStats
             {
-                TotalItems = ExecuteScalarInt("SELECT ISNULL(SUM(ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)), 0) FROM Books WHERE IsActive = 1"),
-                OutOfStock = ExecuteScalarInt("SELECT COUNT(*) FROM Books WHERE (ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)) = 0 AND IsActive = 1"),
-                StockValue = ExecuteScalarDecimal("SELECT ISNULL(SUM((ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)) * SellingPrice), 0) FROM Books WHERE IsActive = 1")
+                TotalItems = ExecuteScalarInt("SELECT ISNULL(SUM(Quantity), 0) FROM StoreBookInventories WHERE IsActive = 1"),
+                OutOfStock = ExecuteScalarInt("SELECT COUNT(DISTINCT BookId) FROM StoreBookInventories WHERE Quantity <= 0 AND IsActive = 1"),
+                StockValue = ExecuteScalarDecimal("SELECT ISNULL(SUM(s.Quantity * b.SellingPrice), 0) FROM StoreBookInventories s JOIN Books b ON s.BookId = b.Id WHERE s.IsActive = 1")
             };
         }
 
@@ -44,9 +44,9 @@ namespace BookStoreManagement.Repositories
         {
             return new InventoryStats
             {
-                TotalItems = await ExecuteScalarAsync<int>("SELECT ISNULL(SUM(ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)), 0) FROM Books WHERE IsActive = 1"),
-                OutOfStock = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Books WHERE (ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)) = 0 AND IsActive = 1"),
-                StockValue = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM((ISNULL(StockNorth, 0) + ISNULL(StockWest, 0) + ISNULL(StockCentral, 0)) * SellingPrice), 0) FROM Books WHERE IsActive = 1")
+                TotalItems = await ExecuteScalarAsync<int>("SELECT ISNULL(SUM(Quantity), 0) FROM StoreBookInventories WHERE IsActive = 1"),
+                OutOfStock = await ExecuteScalarAsync<int>("SELECT COUNT(DISTINCT BookId) FROM StoreBookInventories WHERE Quantity <= 0 AND IsActive = 1"),
+                StockValue = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(s.Quantity * b.SellingPrice), 0) FROM StoreBookInventories s JOIN Books b ON s.BookId = b.Id WHERE s.IsActive = 1")
             };
         }
 
@@ -54,17 +54,14 @@ namespace BookStoreManagement.Repositories
         {
             string cte = @"
                 WITH CTE_Inventory AS (
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Tổng (Hà Nội)' AS Warehouse, ISNULL(b.StockNorth, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
-                    UNION ALL
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Chi Nhánh (HCM)' AS Warehouse, ISNULL(b.StockWest, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
-                    UNION ALL
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Miền Trung' AS Warehouse, ISNULL(b.StockCentral, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
+                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, st.StoreName AS Warehouse, ISNULL(sbi.Quantity, 0) AS CurrentStock, sbi.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
+                    FROM StoreBookInventories sbi
+                    JOIN Stores st ON sbi.StoreId = st.Id
+                    JOIN Books b ON sbi.BookId = b.Id
+                    LEFT JOIN Categories c ON b.CategoryId = c.Id
+                    LEFT JOIN Authors a ON b.AuthorId = a.Id
+                    LEFT JOIN Publishers p ON b.PublisherId = p.Id
+                    WHERE b.IsActive = 1 AND sbi.IsActive = 1
                 )
             ";
 
@@ -127,17 +124,14 @@ namespace BookStoreManagement.Repositories
         {
             string cte = @"
                 WITH CTE_Inventory AS (
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Tổng (Hà Nội)' AS Warehouse, ISNULL(b.StockNorth, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
-                    UNION ALL
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Chi Nhánh (HCM)' AS Warehouse, ISNULL(b.StockWest, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
-                    UNION ALL
-                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, N'Kho Miền Trung' AS Warehouse, ISNULL(b.StockCentral, 0) AS CurrentStock, b.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
-                    FROM Books b LEFT JOIN Categories c ON b.CategoryId = c.Id LEFT JOIN Authors a ON b.AuthorId = a.Id LEFT JOIN Publishers p ON b.PublisherId = p.Id
-                    WHERE b.IsActive = 1
+                    SELECT b.Id AS BookId, b.BookCode AS Sku, b.Title, st.StoreName AS Warehouse, ISNULL(sbi.Quantity, 0) AS CurrentStock, sbi.MinStock, ISNULL(c.CategoryName, '') AS CategoryName, ISNULL(a.AuthorName, '') AS AuthorName, ISNULL(p.PublisherName, '') AS PublisherName, b.SellingPrice
+                    FROM StoreBookInventories sbi
+                    JOIN Stores st ON sbi.StoreId = st.Id
+                    JOIN Books b ON sbi.BookId = b.Id
+                    LEFT JOIN Categories c ON b.CategoryId = c.Id
+                    LEFT JOIN Authors a ON b.AuthorId = a.Id
+                    LEFT JOIN Publishers p ON b.PublisherId = p.Id
+                    WHERE b.IsActive = 1 AND sbi.IsActive = 1
                 )
             ";
 
@@ -177,14 +171,16 @@ namespace BookStoreManagement.Repositories
 
         public bool UpdateStock(int bookId, string warehouse, int currentStock, int minStock)
         {
-            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
-            string sql = $@"
-                UPDATE Books
-                SET {column} = @CurrentStock, MinStock = @MinStock, UpdatedAt = SYSDATETIME()
-                WHERE Id = @BookId
+            string sql = @"
+                UPDATE sbi
+                SET sbi.Quantity = @CurrentStock, sbi.MinStock = @MinStock, sbi.UpdatedAt = SYSDATETIME()
+                FROM StoreBookInventories sbi
+                JOIN Stores st ON sbi.StoreId = st.Id
+                WHERE sbi.BookId = @BookId AND st.StoreName = @Warehouse
             ";
             return ExecuteNonQuery(sql, p => {
                 AddParameter(p, "@BookId", bookId);
+                AddParameter(p, "@Warehouse", warehouse);
                 AddParameter(p, "@CurrentStock", currentStock);
                 AddParameter(p, "@MinStock", minStock);
             }) > 0;
@@ -192,35 +188,41 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<bool> UpdateStockAsync(int bookId, string warehouse, int currentStock, int minStock)
         {
-            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
-            string sql = $@"
-                UPDATE Books
-                SET {column} = @CurrentStock, MinStock = @MinStock, UpdatedAt = SYSDATETIME()
-                WHERE Id = @BookId
+            string sql = @"
+                UPDATE sbi
+                SET sbi.Quantity = @CurrentStock, sbi.MinStock = @MinStock, sbi.UpdatedAt = SYSDATETIME()
+                FROM StoreBookInventories sbi
+                JOIN Stores st ON sbi.StoreId = st.Id
+                WHERE sbi.BookId = @BookId AND st.StoreName = @Warehouse
             ";
-            return await ExecuteAsync(sql, new { BookId = bookId, CurrentStock = currentStock, MinStock = minStock }) > 0;
+            return await ExecuteAsync(sql, new { BookId = bookId, Warehouse = warehouse, CurrentStock = currentStock, MinStock = minStock }) > 0;
         }
 
         public bool DeleteStock(int bookId, string warehouse)
         {
-            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
-            string sql = $@"
-                UPDATE Books
-                SET {column} = 0, UpdatedAt = SYSDATETIME()
-                WHERE Id = @BookId
+            string sql = @"
+                UPDATE sbi
+                SET sbi.Quantity = 0, sbi.UpdatedAt = SYSDATETIME()
+                FROM StoreBookInventories sbi
+                JOIN Stores st ON sbi.StoreId = st.Id
+                WHERE sbi.BookId = @BookId AND st.StoreName = @Warehouse
             ";
-            return ExecuteNonQuery(sql, p => AddParameter(p, "@BookId", bookId)) > 0;
+            return ExecuteNonQuery(sql, p => {
+                AddParameter(p, "@BookId", bookId);
+                AddParameter(p, "@Warehouse", warehouse);
+            }) > 0;
         }
 
         public async System.Threading.Tasks.Task<bool> DeleteStockAsync(int bookId, string warehouse)
         {
-            string column = warehouse == "Main Warehouse (Hanoi)" ? "StockNorth" : (warehouse == "Branch Warehouse (HCM)" ? "StockWest" : "StockCentral");
-            string sql = $@"
-                UPDATE Books
-                SET {column} = 0, UpdatedAt = SYSDATETIME()
-                WHERE Id = @BookId
+            string sql = @"
+                UPDATE sbi
+                SET sbi.Quantity = 0, sbi.UpdatedAt = SYSDATETIME()
+                FROM StoreBookInventories sbi
+                JOIN Stores st ON sbi.StoreId = st.Id
+                WHERE sbi.BookId = @BookId AND st.StoreName = @Warehouse
             ";
-            return await ExecuteAsync(sql, new { BookId = bookId }) > 0;
+            return await ExecuteAsync(sql, new { BookId = bookId, Warehouse = warehouse }) > 0;
         }
     }
 }

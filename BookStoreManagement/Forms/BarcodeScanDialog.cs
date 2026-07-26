@@ -77,7 +77,7 @@ namespace BookStoreManagement.Forms
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(161, 27);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Scan Barcode";
+            this.lblTitle.Text = "Quét Mã vạch";
             
             // lblDescription
             this.lblDescription.BackColor = System.Drawing.Color.Transparent;
@@ -86,7 +86,7 @@ namespace BookStoreManagement.Forms
             this.lblDescription.Name = "lblDescription";
             this.lblDescription.Size = new System.Drawing.Size(273, 18);
             this.lblDescription.TabIndex = 1;
-            this.lblDescription.Text = "Use a scanner or manually enter invoice/product code.";
+            this.lblDescription.Text = "Sử dụng máy quét hoặc nhập mã hóa đơn/sản phẩm.";
             
             // txtBarcode
             this.txtBarcode.BorderRadius = 4;
@@ -109,7 +109,7 @@ namespace BookStoreManagement.Forms
             this.btnConfirm.Name = "btnConfirm";
             this.btnConfirm.Size = new System.Drawing.Size(130, 42);
             this.btnConfirm.TabIndex = 3;
-            this.btnConfirm.Text = "Confirm";
+            this.btnConfirm.Text = "Xác nhận";
             this.btnConfirm.Click += new System.EventHandler(this.BtnConfirm_Click);
             
             // btnCancel
@@ -120,7 +120,7 @@ namespace BookStoreManagement.Forms
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(130, 42);
             this.btnCancel.TabIndex = 4;
-            this.btnCancel.Text = "Cancel";
+            this.btnCancel.Text = "Hủy bỏ";
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             
             // BarcodeScanDialog
@@ -131,7 +131,7 @@ namespace BookStoreManagement.Forms
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "BarcodeScanDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Scan Barcode";
+            this.Text = "Quét Mã vạch";
             this.pnlBackground.ResumeLayout(false);
             this.pnlBackground.PerformLayout();
             this.ResumeLayout(false);
@@ -161,7 +161,7 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                MessageBox.Show("Please enter barcode.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập mã vạch.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
