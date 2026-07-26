@@ -274,7 +274,7 @@ namespace BookStoreManagement.UserControls
             var books = await _bookService.GetAllAsync();
             books.Insert(0, new BookStoreManagement.ViewModels.BookListViewModel { Id = 0, Title = "Tất cả sản phẩm" });
             cbBookFilter.DataSource = books;
-            cbBookFilter.DisplayMember = "Tiêu đề";
+            cbBookFilter.DisplayMember = "Title";
             cbBookFilter.ValueMember = "Id";
 
             var stores = await _storeService.GetAllAsync();
