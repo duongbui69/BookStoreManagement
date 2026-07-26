@@ -44,7 +44,6 @@ namespace BookStoreManagement.UserControls
         private Guna2ComboBox cbWarehouse;
         private Guna2ComboBox cbCategory;
         private Guna2Button btnExport;
-        private Guna2Button btnAddNew;
         
         // Grid
         private Guna2Panel pnlGridContainer;
@@ -137,20 +136,13 @@ namespace BookStoreManagement.UserControls
             cbWarehouse = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(270, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
             cbCategory = new Guna2ComboBox { Size = new Size(200, 40), Location = new Point(490, 15), BorderRadius = 4, Font = new Font("Segoe UI", 11F) };
             
-            btnAddNew = new Guna2Button { Text = "+ Thêm Mới", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
-            btnAddNew.Click += (s, e) => {
-                var frm = new Forms.InventoryEditForm();
-                if (frm.ShowDialog() == DialogResult.OK) LoadData();
-            };
-            
-            btnExport = new Guna2Button { Text = "📥 Xuất Excel", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             
             btnExport.Click += BtnExport_Click;
 
-            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnExport, btnAddNew });
+            pnlToolbar.Controls.AddRange(new Control[] { txtSearch, cbWarehouse, cbCategory, btnExport });
             pnlToolbar.Resize += (s, e) => {
-                btnAddNew.Left = pnlToolbar.Width - btnAddNew.Width;
-                btnExport.Left = btnAddNew.Left - btnExport.Width - 10;
+                btnExport.Location = new Point(pnlToolbar.Width - 140, 17);
             };
 
             // 4. Grid Container
@@ -514,9 +506,6 @@ namespace BookStoreManagement.UserControls
             cbCategory.FillColor = ThemeManager.TextBoxBackground;
             cbCategory.ForeColor = ThemeManager.TextPrimary;
             cbCategory.BorderColor = ThemeManager.TextBoxBorder;
-            
-            btnAddNew.FillColor = ThemeManager.ButtonFill;
-            btnAddNew.ForeColor = Color.White;
             
             btnExport.FillColor = ThemeManager.CardBackground;
             btnExport.ForeColor = ThemeManager.TextPrimary;
