@@ -35,7 +35,7 @@ namespace BookStoreManagement.Forms
             // Load Dashboard by default for Admin, POS for Staff
             if (CurrentSession.IsStaff)
             {
-                SetActiveTab(btnOrders); // or btnOrders/btnPOS if defined
+
                 BtnPOS_Click(this, EventArgs.Empty);
             }
             else
@@ -90,25 +90,25 @@ namespace BookStoreManagement.Forms
 
         private void BtnCatalog_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnCatalog);
+
             LoadControl(new UserControls.CatalogControl(), "Search by book title, ISBN or author...");
         }
 
         private void BtnOrders_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnOrders);
+
             LoadControl(new UserControls.OrdersControl(), "Search orders, customers...");
         }
 
         private void BtnInvoices_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnOrders); // or another button if preferred, but it's under Customer group
+
             LoadControl(new UserControls.InvoiceControl(), "Search invoices...");
         }
 
         private void BtnRefunds_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnOrders); // reuse group tab
+
             if (CurrentSession.IsAdmin)
             {
                 LoadControl(new UserControls.RefundControl(), "Search return receipts...");
@@ -149,37 +149,37 @@ namespace BookStoreManagement.Forms
 
         private void BtnHR_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnHR);
+
             LoadControl(new UserControls.HRControl(), "Search employees, roles, or departments...");
         }
 
         private void BtnAccount_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnHR); // Highlight the parent group
+
             LoadControl(new UserControls.AccountControl(), "Search accounts by username, name, email...");
         }
 
         private void BtnReports_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnReports);
+
             LoadControl(new UserControls.ReportsControl(), "Search reports...");
         }
 
         private void BtnStores_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnHR); // Part of HR group or create its own highlighting
+
             LoadControl(new UserControls.StoresControl(), "Search stores...");
         }
 
         private void BtnSettings_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnSettings);
+
             LoadControl(new UserControls.SettingsControl(), "Search system logs or settings...");
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)
         {
-            SetActiveTab(btnDashboard);
+
             LoadDashboard();
         }
 
@@ -352,6 +352,7 @@ namespace BookStoreManagement.Forms
         private void AddMenu(string title, string icon, EventHandler onClick)
         {
             var btn = CreateMenuButton(title, GetEmojiForMaterialIcon(icon));
+            btn.Click += (s, e) => SetActiveTab(btn);
             if (onClick != null)
                 btn.Click += onClick;
             navPanel.Controls.Add(btn);
@@ -375,6 +376,7 @@ namespace BookStoreManagement.Forms
             foreach (var item in subItems)
             {
                 var btnSub = CreateMenuButton(item.Key, "", true);
+                btnSub.Click += (s, e) => SetActiveTab(btnSub);
                 if (item.Value != null)
                     btnSub.Click += item.Value;
                 pnlSub.Controls.Add(btnSub);
