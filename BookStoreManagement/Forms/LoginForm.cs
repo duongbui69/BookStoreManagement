@@ -24,6 +24,9 @@ namespace BookStoreManagement.Forms
             txtPassword.IconLeft = CreateEmojiImage("🔒", 20);
             txtPassword.IconRight = CreateEmojiImage("👁", 18);
             
+            txtUsername.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
+            txtPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
+            
             ApplyTheme();
         }
 
