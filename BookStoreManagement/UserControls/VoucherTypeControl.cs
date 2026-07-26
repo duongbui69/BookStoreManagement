@@ -62,7 +62,7 @@ namespace BookStoreManagement.UserControls
                 Text = "Theo dõi nhật ký xuất/nhập và các thay đổi kho.",
                 Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 AutoSize = true,
-                Location = new Point(0, 35)
+                Location = new Point(0, 50)
             };
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
