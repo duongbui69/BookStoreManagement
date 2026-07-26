@@ -29,7 +29,7 @@ namespace BookStoreManagement.UserControls
         private Guna2DateTimePicker dtpTo;
 
         private int _currentPage = 1;
-        private int PageSize = 10;
+        private int PageSize = 8;
         private int _hoveredRowIndex = -1;
 
         public VoucherTypeControl()
@@ -45,14 +45,14 @@ namespace BookStoreManagement.UserControls
         {
             this.Dock = DockStyle.Fill;
             this.Padding = new Padding(24);
-            this.AutoScroll = true;
+            this.AutoScroll = false;
 
             // Header Region
             Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.Transparent };
             
             lblTitle = new Label
             {
-                Text = "Lịch sử giao dịch",
+                Text = "Loại phiếu",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 0)
@@ -143,7 +143,8 @@ namespace BookStoreManagement.UserControls
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 RowTemplate = { Height = 45 },
                 EnableHeadersVisualStyles = false,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                ScrollBars = ScrollBars.None
             };
             dgvData.SetDoubleBuffered(true);
 
