@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -65,7 +65,7 @@ namespace BookStoreManagement.UserControls
         private void InitializeComponent()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(20);
+            this.Padding = new Padding(32);
             this.BackColor = ThemeManager.Background;
 
             var tlpMain = new TableLayoutPanel
@@ -405,43 +405,83 @@ namespace BookStoreManagement.UserControls
             var pic = new PictureBox
             {
                 Dock = DockStyle.Top,
-                Height = 120,
+                Height = 135,
                 BackColor = ThemeManager.HoverColor,
                 SizeMode = PictureBoxSizeMode.Zoom
             };
             
+            bool hasImage = false;
+            if (!string.IsNullOrEmpty(item.ImagePath))
+            {
+                string fullPath = System.IO.Path.Combine(Application.StartupPath, "Covers", item.ImagePath);
+                if (System.IO.File.Exists(fullPath))
+                {
+                    pic.Image = Image.FromFile(fullPath);
+                    hasImage = true;
+                }
+            }
+            if (!hasImage)
+            {
+                pic.Paint += (s, e) => {
+                    var g = e.Graphics;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    string initials = item.Title.Length >= 2 ? item.Title.Substring(0, 2).ToUpper() : item.Title.ToUpper();
+                    using (var brush = new SolidBrush(ThemeManager.TextSecondary))
+                    using (var font = new Font("Segoe UI", 24, FontStyle.Bold))
+                    {
+                        var size = g.MeasureString(initials, font);
+                        g.DrawString(initials, font, brush, (pic.Width - size.Width) / 2, (pic.Height - size.Height) / 2);
+                    }
+                };
+            }
+
+            var pnlBottom = new Guna2Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 70,
+                BackColor = Color.Transparent,
+                Padding = new Padding(10, 5, 10, 5)
+            };
+
             var lblTitle = new Label
             {
                 Text = item.Title,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-                Location = new Point(10, 130),
-                Width = 200,
+                Dock = DockStyle.Top,
+                Height = 35,
                 AutoEllipsis = true,
-                BackColor = Color.Transparent
+                BackColor = Color.Transparent,
+                ForeColor = ThemeManager.TextPrimary
             };
 
             var lblPrice = new Label
             {
-                Text = $"{item.SellingPrice:N0} ₫",
+                Text = $"{item.SellingPrice:N0} đ",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 ForeColor = ThemeManager.ButtonFill,
-                Location = new Point(10, 160),
+                Dock = DockStyle.Left,
                 AutoSize = true,
+                Padding = new Padding(0, 5, 0, 0),
                 BackColor = Color.Transparent
             };
 
             var lblStock = new Label
             {
                 Text = $"Tồn: {item.Quantity}",
-                Font = new Font("Segoe UI", 8F),
-                Location = new Point(pnl.Width - 60, 165),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Font = new Font("Segoe UI", 8.5F),
+                Dock = DockStyle.Right,
                 AutoSize = true,
+                Padding = new Padding(0, 8, 0, 0),
                 BackColor = Color.Transparent,
                 ForeColor = item.Quantity > 0 ? ThemeManager.TextSecondary : Color.Red
             };
             
-            pnl.Controls.AddRange(new Control[] { pic, lblTitle, lblPrice, lblStock });
+            pnlBottom.Controls.Add(lblStock);
+            pnlBottom.Controls.Add(lblPrice);
+            
+            pnl.Controls.Add(pnlBottom);
+            pnl.Controls.Add(lblTitle);
+            pnl.Controls.Add(pic);
             
             pnl.Click += (s, e) => AddToCart(item);
             pic.Click += (s, e) => AddToCart(item);

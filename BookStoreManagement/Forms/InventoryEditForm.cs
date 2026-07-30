@@ -1,124 +1,126 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
-using BookStoreManagement.Themes;
-using BookStoreManagement.Services;
 using BookStoreManagement.Models;
+using BookStoreManagement.Services;
+using BookStoreManagement.Themes;
 using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.Forms
 {
     public class InventoryEditForm : Form
     {
-        private readonly InventoryService _inventoryService;
-        private readonly BookService _bookService;
-        private int _bookId;
-        private string _warehouse;
-        private bool _isEditMode;
-
-        private Guna2Panel pnlHeader;
+        private InventoryService _inventoryService;
+        private BookService _bookService;
+        
+        private int? _bookId;
+        private string? _warehouse;
+        
         private Label lblTitle;
-        private Guna2Button btnClose;
-        private Guna2Panel pnlContent;
-        
-        private Label lblBook;
-        private Guna2ComboBox cbBook;
-        
-        private Label lblWarehouse;
-        private Guna2ComboBox cbWarehouse;
-        
-        private Label lblCurrentStock;
-        private Guna2TextBox txtCurrentStock;
-        
-        private Label lblMinStock;
-        private Guna2TextBox txtMinStock;
-        
-        private Guna2Button btnSave;
-        private Guna2Button btnCancel;
+        private Guna2ComboBox cbBook, cbWarehouse;
+        private Guna2TextBox txtCurrentStock, txtMinStock;
+        private Guna2Button btnSave, btnCancel;
 
-        public InventoryEditForm(int bookId = 0, string warehouse = "", int currentStock = 0, int minStock = 0)
+        public InventoryEditForm(int? bookId = null, string? warehouse = null, int currentStock = 0, int minStock = 0)
         {
             _inventoryService = new InventoryService();
             _bookService = new BookService();
             _bookId = bookId;
             _warehouse = warehouse;
-            _isEditMode = bookId > 0 && !string.IsNullOrEmpty(warehouse);
             
             InitializeComponent();
             LoadBooks();
             ApplyTheme();
             
-            if (_isEditMode)
+            if (_bookId.HasValue)
             {
-                cbBook.SelectedValue = _bookId;
+                cbBook.SelectedValue = _bookId.Value;
                 cbBook.Enabled = false;
                 cbWarehouse.SelectedItem = _warehouse;
                 cbWarehouse.Enabled = false;
                 txtCurrentStock.Text = currentStock.ToString();
                 txtMinStock.Text = minStock.ToString();
-                lblTitle.Text = "Cập nhật kho";
+                lblTitle.Text = "Cập nhật Kho";
+                this.Text = "Cập nhật Kho";
             }
             else
             {
-                lblTitle.Text = "Thêm mới kho";
+                lblTitle.Text = "Thêm mới Kho";
+                this.Text = "Thêm mới Kho";
             }
             
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.FormClosed += (s, e) => ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
         }
 
         private void InitializeComponent()
         {
-            this.Text = "Quản lý Kho";
-            this.Size = new Size(500, 480);
+            this.Size = new Size(500, 520);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = ThemeManager.Background;
-            
-            // Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, FillColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = "Quản lý Kho", ForeColor = Color.White, Font = new Font("Segoe UI", 14, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), BackColor = Color.Transparent };
-            btnClose = new Guna2Button { Text = "✕", Size = new Size(40, 40), Location = new Point(450, 10), FillColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Segoe UI", 12, FontStyle.Bold), Cursor = Cursors.Hand };
-            btnClose.Click += (s, e) => this.Close();
-            pnlHeader.Controls.AddRange(new Control[] { lblTitle, btnClose });
-            
-            // Content
-            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(30), FillColor = ThemeManager.Background };
-            
-            lblBook = new Label { Text = "Sản phẩm", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 20), ForeColor = ThemeManager.TextPrimary };
-            cbBook = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 45), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
-            
-            lblWarehouse = new Label { Text = "Kho hàng", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 95), ForeColor = ThemeManager.TextPrimary };
-            cbWarehouse = new Guna2ComboBox { Size = new Size(440, 36), Location = new Point(30, 120), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+
+            lblTitle = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Segoe UI", 18F, FontStyle.Bold) };
+            this.Controls.Add(lblTitle);
+
+            int startY = 70;
+
+            Label lblBook = new Label { Text = "Sản phẩm (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbBook = new Guna2ComboBox { Location = new Point(24, startY + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            this.Controls.AddRange(new Control[] { lblBook, cbBook });
+            startY += 75;
+
+            Label lblWarehouse = new Label { Text = "Kho hàng (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbWarehouse = new Guna2ComboBox { Location = new Point(24, startY + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             cbWarehouse.Items.AddRange(new object[] { "Kho Tổng (Hà Nội)", "Kho Chi Nhánh (HCM)", "Kho Miền Trung" });
             cbWarehouse.SelectedIndex = 0;
-            
-            lblCurrentStock = new Label { Text = "Tồn kho hiện tại", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 170), ForeColor = ThemeManager.TextPrimary };
-            txtCurrentStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 195), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
-            
-            lblMinStock = new Label { Text = "Tồn tối thiểu", Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Location = new Point(30, 245), ForeColor = ThemeManager.TextPrimary };
-            txtMinStock = new Guna2TextBox { Size = new Size(440, 36), Location = new Point(30, 270), BorderRadius = 4, Font = new Font("Segoe UI", 10) };
-            
-            btnCancel = new Guna2Button { Text = "Hủy bỏ", Size = new Size(120, 40), Location = new Point(220, 340), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1 };
+            this.Controls.AddRange(new Control[] { lblWarehouse, cbWarehouse });
+            startY += 75;
+
+            txtCurrentStock = CreateInput("Tồn kho hiện tại", ref startY);
+            txtMinStock = CreateInput("Tồn kho tối thiểu", ref startY);
+
+            btnCancel = new Guna2Button
+            {
+                Text = "Hủy bỏ",
+                Size = new Size(100, 45),
+                Location = new Point(this.Width - 140, this.Height - 100),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                FillColor = Color.Transparent,
+                BorderThickness = 1
+            };
             btnCancel.Click += (s, e) => this.Close();
-            
-            btnSave = new Guna2Button { Text = "Lưu thông tin", Size = new Size(140, 40), Location = new Point(350, 340), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand };
+
+            btnSave = new Guna2Button
+            {
+                Text = "Lưu thay đổi",
+                Size = new Size(130, 45),
+                Location = new Point(this.Width - 280, this.Height - 100),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
             btnSave.Click += BtnSave_Click;
-            
-            pnlContent.Controls.AddRange(new Control[] { lblBook, cbBook, lblWarehouse, cbWarehouse, lblCurrentStock, txtCurrentStock, lblMinStock, txtMinStock, btnCancel, btnSave });
-            
-            this.Controls.Add(pnlContent);
-            this.Controls.Add(pnlHeader);
-            
-            // Add Border to Form
-            Guna2BorderlessForm borderlessForm = new Guna2BorderlessForm { ContainerControl = this, BorderRadius = 8 };
+
+            this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }
-        
+
+        private Guna2TextBox CreateInput(string label, ref int y)
+        {
+            Label lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Guna2TextBox txt = new Guna2TextBox { Location = new Point(24, y + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            this.Controls.AddRange(new Control[] { lbl, txt });
+            y += 75;
+            return txt;
+        }
+
         private void LoadBooks()
         {
             var books = _bookService.GetAll();
             cbBook.DataSource = books;
-            cbBook.DisplayMember = "Tiêu đề";
+            cbBook.DisplayMember = "Title"; // Assuming Title is the property name, adjust if necessary
             cbBook.ValueMember = "Id";
         }
         
@@ -126,39 +128,35 @@ namespace BookStoreManagement.Forms
 
         private void ApplyTheme()
         {
-            this.BackColor = ThemeManager.Background;
-            pnlContent.FillColor = ThemeManager.Background;
-            pnlHeader.FillColor = ThemeManager.ButtonFill;
-            lblTitle.ForeColor = Color.White;
-            
-            lblBook.ForeColor = ThemeManager.TextPrimary;
-            lblWarehouse.ForeColor = ThemeManager.TextPrimary;
-            lblCurrentStock.ForeColor = ThemeManager.TextPrimary;
-            lblMinStock.ForeColor = ThemeManager.TextPrimary;
-            
-            cbBook.FillColor = ThemeManager.TextBoxBackground;
-            cbBook.ForeColor = ThemeManager.TextPrimary;
-            cbBook.BorderColor = ThemeManager.TextBoxBorder;
-            
-            cbWarehouse.FillColor = ThemeManager.TextBoxBackground;
-            cbWarehouse.ForeColor = ThemeManager.TextPrimary;
-            cbWarehouse.BorderColor = ThemeManager.TextBoxBorder;
-            
-            txtCurrentStock.FillColor = ThemeManager.TextBoxBackground;
-            txtCurrentStock.ForeColor = ThemeManager.TextPrimary;
-            txtCurrentStock.BorderColor = ThemeManager.TextBoxBorder;
-            
-            txtMinStock.FillColor = ThemeManager.TextBoxBackground;
-            txtMinStock.ForeColor = ThemeManager.TextPrimary;
-            txtMinStock.BorderColor = ThemeManager.TextBoxBorder;
-            
-            btnCancel.FillColor = Color.Transparent;
+            this.BackColor = ThemeManager.CardBackground;
+            lblTitle.ForeColor = ThemeManager.TextPrimary;
+
+            foreach (Control control in this.Controls)
+            {
+                if (control is Label lbl && lbl != lblTitle)
+                {
+                    lbl.ForeColor = ThemeManager.TextPrimary;
+                }
+                else if (control is Guna2TextBox txt)
+                {
+                    txt.FillColor = ThemeManager.TextBoxBackground;
+                    txt.ForeColor = ThemeManager.TextPrimary;
+                    txt.BorderColor = ThemeManager.TextBoxBorder;
+                    txt.FocusedState.BorderColor = ThemeManager.ButtonFill;
+                }
+                else if (control is Guna2ComboBox cb)
+                {
+                    cb.FillColor = ThemeManager.TextBoxBackground;
+                    cb.ForeColor = ThemeManager.TextPrimary;
+                    cb.BorderColor = ThemeManager.TextBoxBorder;
+                }
+            }
+
             btnCancel.ForeColor = ThemeManager.TextPrimary;
             btnCancel.BorderColor = ThemeManager.TextBoxBorder;
-            
+
             btnSave.FillColor = ThemeManager.ButtonFill;
-            btnSave.ForeColor = Color.White;
-            btnSave.BorderColor = ThemeManager.ButtonFill;
+            btnSave.ForeColor = ThemeManager.ButtonText;
         }
         
         private void BtnSave_Click(object? sender, EventArgs e)
@@ -173,7 +171,7 @@ namespace BookStoreManagement.Forms
                 
                 _inventoryService.UpdateStock(bookId, warehouse, currentStock, minStock);
                 
-                MessageBox.Show("Đã lưu thông tin kho thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Đã lưu thông tin kho thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
@@ -182,15 +180,5 @@ namespace BookStoreManagement.Forms
                 MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (var pen = new Pen(ThemeManager.TextBoxBorder, 1))
-            {
-                e.Graphics.DrawRectangle(pen, 0, 0, this.Width - 1, this.Height - 1);
-            }
-        }
     }
 }
-

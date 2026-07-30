@@ -61,14 +61,14 @@ namespace BookStoreManagement.UserControls
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            int gutter = 20;
+            int gutter = 30; // Increased spacing
             this.Padding = new Padding(0);
             this.AutoScroll = true;
 
             pnlContent = new Guna2Panel { Dock = DockStyle.Top, Padding = new Padding(gutter), AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
 
             // 1. Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter + 10) };
             
             lblTitle = new Label { Text = "Thống kê chung", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
             lblSubtitle = new Label { Text = "Tổng quan doanh thu, đơn hàng và cảnh báo kho.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
@@ -88,7 +88,7 @@ namespace BookStoreManagement.UserControls
             pnlHeader.Resize += (s, e) => { btnExportExcel.Location = new Point(pnlHeader.Width - 130, 22); };
 
             // 2. Metric Cards
-            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 130, Margin = new Padding(0, 0, 0, gutter) };
+            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter + 20) };
             cardRevenue = CreateMetricCard("Tổng Doanh Thu", "1,245,000,000 đ", "+12.5% so với tháng trước", true);
             cardOrders = CreateMetricCard("Tổng Đơn Hàng", "4,521", "-2.1% so với tháng trước", false);
             cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "34", "Cần nhập hàng khẩn cấp", false, true);
@@ -111,7 +111,7 @@ namespace BookStoreManagement.UserControls
                 Dock = DockStyle.Top, Height = 350, 
                 BorderRadius = 4,
                 BorderThickness = 1,
-                Margin = new Padding(0, 0, 0, gutter)
+                Margin = new Padding(0, 0, 0, gutter + 20)
             };
             var lblChartTitle = new Label { Text = "Biểu đồ doanh thu 12 tháng qua", Font = new Font("Segoe UI", 16F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20), Name = "ChartTitle" };
             pnlChart.Controls.Add(lblChartTitle);
@@ -124,16 +124,16 @@ namespace BookStoreManagement.UserControls
             pnlWarnings = CreateTableContainer("Cảnh báo tồn kho", out dgvWarnings);
 
             // Configure Top Selling Grid
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Rank", HeaderText = "Hạng", Width = 60, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QuantitySold", HeaderText = "SL Bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
-            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Revenue", HeaderText = "Doanh thu", Width = 150, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N0" } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { Name = "Rank", DataPropertyName = "Rank", HeaderText = "Hạng", Width = 60, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { Name = "Title", DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { Name = "QuantitySold", DataPropertyName = "QuantitySold", HeaderText = "SL Bán", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvTopSelling.Columns.Add(new DataGridViewTextBoxColumn { Name = "Revenue", DataPropertyName = "Revenue", HeaderText = "Doanh thu", Width = 150, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N0" } });
             
             // Configure Warnings Grid
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Sku", HeaderText = "ISBN", Width = 120 });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CurrentStock", HeaderText = "Tồn kho hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
-            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Status", HeaderText = "Trạng thái", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sku", DataPropertyName = "Sku", HeaderText = "ISBN", Width = 120 });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { Name = "Title", DataPropertyName = "Title", HeaderText = "Tên sách", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { Name = "CurrentStock", DataPropertyName = "CurrentStock", HeaderText = "Tồn kho hiện tại", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvWarnings.Columns.Add(new DataGridViewTextBoxColumn { Name = "Trạng thái", DataPropertyName = "Status", HeaderText = "Trạng thái", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
 
             dgvWarnings.CellPainting += DgvWarnings_CellPainting;
 
@@ -149,10 +149,6 @@ namespace BookStoreManagement.UserControls
                     pnlWarnings.Width = halfWidth; pnlWarnings.Left = halfWidth + gutter;
                 }
             };
-
-            // Fix DataGridView Column count bug (AutoGenerateColumns = false must be set correctly for manually added columns)
-            dgvTopSelling.AutoGenerateColumns = false;
-            dgvWarnings.AutoGenerateColumns = false;
 
             pnlContent.Controls.Add(pnlTables);
             pnlContent.Controls.Add(pnlChart);
@@ -186,7 +182,8 @@ namespace BookStoreManagement.UserControls
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
                 RowTemplate = { Height = 45 },
                 EnableHeadersVisualStyles = false,
-                ScrollBars = ScrollBars.Vertical
+                ScrollBars = ScrollBars.Vertical,
+                AutoGenerateColumns = false
             };
             grid.SetDoubleBuffered(true);
             
@@ -198,19 +195,27 @@ namespace BookStoreManagement.UserControls
 
         private Guna2Panel CreateMetricCard(string title, string val, string subText, bool isPositive, bool isError = false)
         {
-            var card = new Guna2Panel { Height = 130, BorderRadius = 4, BorderThickness = 1 };
+            Color accent = isError ? Color.FromArgb(231, 76, 60) : (isPositive ? Color.FromArgb(46, 204, 113) : Color.FromArgb(52, 152, 219));
             
-            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 14F), AutoSize = true, Location = new Point(20, 20) };
-            var lblVal = new Label { Name = "ValueLabel", Text = val, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 45) };
+            var card = new Guna2Panel { Height = 100, BorderRadius = 10, BorderThickness = 1, BackColor = Color.Transparent };
             
-            var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(20, 95) };
-            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Segoe UI", 11F, FontStyle.Bold), AutoSize = true, Padding = new Padding(4) };
+            var iconPanel = new Guna2Panel { Size = new Size(48, 48), Location = new Point(16, 17), BorderRadius = 8, FillColor = Color.FromArgb(20, accent), Name = "IconPanel" };
+            string iconStr = isError ? "!" : (isPositive ? "▲" : "▼");
+            if (string.IsNullOrEmpty(subText) && !isError) iconStr = "●";
+            var iconLabel = new Label { Text = iconStr, Font = new Font("Segoe UI", 16F), ForeColor = accent, AutoSize = true, Location = new Point(12, 8), BackColor = Color.Transparent, Name = "IconLabel" };
+            iconPanel.Controls.Add(iconLabel);
+            
+            var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(76, 17), BackColor = Color.Transparent };
+            var lblVal = new Label { Name = "ValueLabel", Text = val, Font = new Font("Segoe UI", 18F, FontStyle.Bold), AutoSize = true, Location = new Point(74, 38), BackColor = Color.Transparent };
+            
+            var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(76, 70), BackColor = Color.Transparent };
+            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Padding = new Padding(2), BackColor = Color.Transparent };
             pnlBadge.Controls.Add(lblBadge);
 
             // Store info in Tag
             card.Tag = new Tuple<bool, bool>(isPositive, isError);
 
-            card.Controls.AddRange(new Control[] { lblTitle, lblVal, pnlBadge });
+            card.Controls.AddRange(new Control[] { iconPanel, lblTitle, lblVal, pnlBadge });
             return card;
         }
 
@@ -231,6 +236,7 @@ namespace BookStoreManagement.UserControls
             _stats = await _service.GetFinancialReportsAsync();
             if (_stats == null) return;
             
+
             string revGrowthSign = _stats.RevenueGrowth >= 0 ? "+" : "";
             UpdateMetricCard(cardRevenue, 
                 $"{_stats.TotalRevenue:N0} đ", 
@@ -425,7 +431,7 @@ namespace BookStoreManagement.UserControls
                 if (card == null) continue;
                 
                 card.FillColor = ThemeManager.CardBackground;
-                card.CustomBorderColor = ThemeManager.TextBoxBorder;
+                card.BorderColor = ThemeManager.TextBoxBorder;
                 
                 var lTitle = card.Controls.Find("TitleLabel", true).FirstOrDefault() as Label;
                 if (lTitle != null) lTitle.ForeColor = ThemeManager.TextSecondary;
@@ -437,8 +443,7 @@ namespace BookStoreManagement.UserControls
                 var lVal = card.Controls.Find("ValueLabel", true).FirstOrDefault() as Label;
                 if (lVal != null) 
                 {
-                    if (isError) lVal.ForeColor = Color.FromArgb(186, 26, 26); // error color
-                    else lVal.ForeColor = ThemeManager.ButtonFill; // primary color
+                    lVal.ForeColor = ThemeManager.TextPrimary;
                 }
                 
                 var bPnl = card.Controls.Find("BadgePanel", true).FirstOrDefault() as Guna2Panel;

@@ -189,17 +189,20 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
-        private Guna2Panel CreateStatCard(string title, string value, Color leftColor)
+        private Guna2Panel CreateStatCard(string title, string value, Color accentColor)
         {
-            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0) };
+            var pnl = new Guna2Panel 
+            { 
+                Dock = DockStyle.Fill, 
+                BorderThickness = 1, 
+                BorderRadius = 10,
+                Margin = new Padding(0) 
+            };
             
-            var leftBar = new Panel { Dock = DockStyle.Left, Width = 4, BackColor = leftColor };
-            leftBar.Tag = "LeftBarColor";
-            pnl.Controls.Add(leftBar);
-            
-            Label lblTitle = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 15) };
+            Label lblTitle = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 14) };
             lblTitle.Tag = "CardTitle";
-            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(12, 35) };
+            
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 22F, FontStyle.Bold), AutoSize = true, Location = new Point(14, 32), ForeColor = accentColor };
             lblValue.Tag = "CardValue";
 
             pnl.Controls.Add(lblTitle);
@@ -372,13 +375,13 @@ namespace BookStoreManagement.UserControls
         
         private void ApplyThemeToCard(Guna2Panel card)
         {
+            card.BackColor = Color.Transparent;
             card.FillColor = ThemeManager.CardBackground;
-            card.CustomBorderColor = ThemeManager.TextBoxBorder;
+            card.BorderColor = ThemeManager.TextBoxBorder;
 
             foreach(Control ctrl in card.Controls)
             {
                 if (ctrl.Tag?.ToString() == "CardTitle") ctrl.ForeColor = ThemeManager.TextSecondary;
-                if (ctrl.Tag?.ToString() == "CardValue") ctrl.ForeColor = ThemeManager.TextPrimary;
             }
         }
 }

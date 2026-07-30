@@ -212,7 +212,7 @@ namespace BookStoreManagement.Repositories
                     ISNULL(u.Email, '') as Email, 
                     ISNULL(u.Phone, '') as Phone, 
                     ISNULL(r.RoleName, 'N/A') as RoleName, 
-                    'Tất cả chi nhánh' as StoreName, 
+                    N'Tất cả chi nhánh' as StoreName, 
                     u.IsActive, 
                     ISNULL(u.UpdatedAt, u.CreatedAt) as LastUpdate
                 FROM Users u

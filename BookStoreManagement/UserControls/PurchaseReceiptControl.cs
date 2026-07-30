@@ -59,13 +59,17 @@ namespace BookStoreManagement.UserControls
             _supplierService = new SupplierService();
             InitializeComponent();
             ApplyTheme();
+            this.Load += async (s, e) => {
+                await LoadFilterDataAsync();
+                await LoadDataAsync();
+            };
         }
 
         private void InitializeComponent()
         {
             this.Dock = DockStyle.Fill;
             this.Padding = new Padding(24);
-            this.AutoScroll = true;
+            // AutoScroll đã bị xóa — xung đột với DockStyle.Fill gây grid collapse
 
             // Header
             Guna2Panel pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.Transparent };
@@ -109,27 +113,32 @@ namespace BookStoreManagement.UserControls
 
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
+            // Spacer before stats
+            Panel spacerStats1 = new Panel { Dock = DockStyle.Top, Height = 16, BackColor = Color.Transparent };
+            Panel spacerStats2 = new Panel { Dock = DockStyle.Top, Height = 16, BackColor = Color.Transparent };
+
             // Stat Cards Container
-            TableLayoutPanel pnlStats = new TableLayoutPanel
+            Guna2Panel pnlStats = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 120,
-                ColumnCount = 3,
-                RowCount = 1,
-                Margin = new Padding(0, 16, 0, 16),
-                Padding = new Padding(0, 16, 0, 16)
+                Height = 100,
+                BackColor = Color.Transparent
             };
-            pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-            pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-            pnlStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
             cardTotalReceipts = CreateStatCard("TỔNG PHIẾU NHẬP", out lblTotalReceiptsValue);
             cardTotalValue = CreateStatCard("TỔNG GIÁ TRỊ (Đã nhập)", out lblTotalValueAmount);
             cardPending = CreateStatCard("CHỜ DUYỆT", out lblPendingValue);
 
-            pnlStats.Controls.Add(cardTotalReceipts, 0, 0);
-            pnlStats.Controls.Add(cardTotalValue, 1, 0);
-            pnlStats.Controls.Add(cardPending, 2, 0);
+            pnlStats.Controls.AddRange(new Control[] { cardTotalReceipts, cardTotalValue, cardPending });
+            pnlStats.Resize += (s, e) =>
+            {
+                if (pnlStats.Width <= 0) return; // Guard: tránh set size âm khi chưa layout
+                int w = (pnlStats.Width - 40) / 3;
+                int h = pnlStats.Height;
+                cardTotalReceipts.Size = new Size(w, h); cardTotalReceipts.Location = new Point(0, 0);
+                cardTotalValue.Size = new Size(w, h); cardTotalValue.Location = new Point(w + 20, 0);
+                cardPending.Size = new Size(w, h); cardPending.Location = new Point((w + 20) * 2, 0);
+            };
 
             // Filter Bar
             pnlFilterBar = new Guna2Panel
@@ -138,8 +147,7 @@ namespace BookStoreManagement.UserControls
                 Height = 60,
                 BorderRadius = 8,
                 BorderThickness = 1,
-                Padding = new Padding(12),
-                Margin = new Padding(0, 0, 0, 16)
+                Padding = new Padding(12)
             };
 
             txtSearch = new Guna2TextBox
@@ -184,7 +192,7 @@ namespace BookStoreManagement.UserControls
                 BorderRadius = 4,
                 Cursor = Cursors.Hand
             };
-            btnRefresh.Click += (s, e) => LoadData();
+            btnRefresh.Click += async (s, e) => await LoadDataAsync();
 
             pnlFilterBar.Controls.AddRange(new Control[] { txtSearch, cbStatus, cbSupplier, btnFilter, btnRefresh, btnExport, btnAdd });
             pnlFilterBar.Resize += (s, e) => {
@@ -257,32 +265,42 @@ namespace BookStoreManagement.UserControls
 
             pnlGridContainer.Controls.Add(dgvReceipts);
 
-            this.Controls.Add(pnlGridContainer);
-            this.Controls.Add(pagination);
-            this.Controls.Add(pnlFilterBar);
-            this.Controls.Add(pnlStats);
-            this.Controls.Add(pnlHeader);
+            this.Controls.AddRange(new Control[] {
+                pnlHeader, spacerStats1, pnlStats, pnlFilterBar, spacerStats2, pagination, pnlGridContainer
+            });
 
-            LoadFilterData();
-            LoadData();
+            // Đảm bảo Z-order chuẩn (Top to Bottom, Bottom, then Fill)
+            pnlHeader.BringToFront();
+            spacerStats1.BringToFront();
+            pnlStats.BringToFront();
+            pnlFilterBar.BringToFront();
+            spacerStats2.BringToFront();
+            pagination.BringToFront();
+            pnlGridContainer.BringToFront();
         }
 
         private Guna2Panel CreateStatCard(string title, out Label lblValue)
         {
-            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,20,0), BorderRadius = 12 };
+            var pnl = new Guna2Panel 
+            {
+                BorderThickness = 1, 
+                BorderRadius = 10,
+                BorderColor = Color.LightGray,
+                BackColor = Color.Transparent
+            };
             
             // Icon
             Color color = title.Contains("PHIẾU") ? Color.FromArgb(41, 128, 185) : 
                           (title.Contains("GIÁ TRỊ") ? Color.FromArgb(0, 186, 97) : Color.FromArgb(243, 156, 18));
-            string iconText = title.Contains("PHIẾU") ? "🏷️" : (title.Contains("GIÁ TRỊ") ? "💰" : "⏳");
+            string iconText = title.Contains("PHIẾU") ? "📄" : (title.Contains("GIÁ TRỊ") ? "💵" : "⏳");
             
             var pnlIcon = new Guna2Panel { Size = new Size(48, 48), Location = new Point(20, 26), BorderRadius = 24, FillColor = Color.FromArgb(30, color) };
             Label lblIcon = new Label { Text = iconText, Font = new Font("Segoe UI Emoji", 16F), AutoSize = false, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
             pnlIcon.Controls.Add(lblIcon);
             
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 26) };
+            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 24) };
             lblTitle.Tag = "CardTitle";
-            lblValue = new Label { Text = "0", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 45), ForeColor = color };
+            lblValue = new Label { Text = "0", Font = new Font("Segoe UI", 22F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 44), ForeColor = color };
             lblValue.Tag = "CardValue";
 
             pnl.Controls.Add(pnlIcon);
@@ -291,23 +309,25 @@ namespace BookStoreManagement.UserControls
             return pnl;
         }
 
-        private void LoadFilterData()
+        private async System.Threading.Tasks.Task LoadFilterDataAsync()
         {
-            var suppliers = _supplierService.GetAll();
+            var suppliers = await _supplierService.GetAllAsync();
             suppliers.Insert(0, new Supplier { Id = 0, SupplierName = "Tất cả Nhà cung cấp" });
             cbSupplier.DataSource = suppliers;
             cbSupplier.DisplayMember = "SupplierName";
             cbSupplier.ValueMember = "Id";
         }
 
-        public void LoadData()
+        public async System.Threading.Tasks.Task LoadDataAsync()
         {
-            var stats = _receiptService.GetStats();
+            var stats = await _receiptService.GetStatsAsync();
+            if (this.IsDisposed) return;
             lblTotalReceiptsValue.Text = stats.TotalReceipts.ToString("N0");
             lblTotalValueAmount.Text = stats.TotalValue.ToString("N0") + " ₫";
             lblPendingValue.Text = stats.PendingCount.ToString("N0");
 
-            _allReceipts = _receiptService.GetAll();
+            _allReceipts = await _receiptService.GetAllAsync();
+            if (this.IsDisposed) return;
             ApplyFilters();
         }
 
@@ -476,21 +496,21 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void EditReceipt(PurchaseReceiptListViewModel item)
+        private async void EditReceipt(PurchaseReceiptListViewModel item)
         {
             using var editForm = new PurchaseReceiptEditForm(item.Id);
             if (editForm.ShowDialog() == DialogResult.OK)
             {
-                LoadData();
+                await LoadDataAsync();
             }
         }
 
-        private void BtnAdd_Click(object? sender, EventArgs e)
+        private async void BtnAdd_Click(object? sender, EventArgs e)
         {
             using var addForm = new PurchaseReceiptAddForm();
             if (addForm.ShowDialog() == DialogResult.OK)
             {
-                LoadData();
+                await LoadDataAsync();
             }
         }
 
@@ -514,15 +534,13 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void DeleteReceipt(PurchaseReceiptListViewModel item)
+        private async void DeleteReceipt(PurchaseReceiptListViewModel item)
         {
             var result = MessageBox.Show($"Bạn có chắc muốn xóa phiếu nhập '{item.ReceiptCode}' không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
-                // Soft delete or actual delete here.
-                // Assuming we can update status to "Đã hủy" instead of actual delete to preserve history
-                _receiptService.UpdateStatus(item.Id, "Đã hủy");
-                LoadData();
+                await _receiptService.UpdateStatusAsync(item.Id, "Đã hủy");
+                await LoadDataAsync();
             }
         }
 
@@ -580,8 +598,8 @@ namespace BookStoreManagement.UserControls
         private void ApplyThemeToCard(Guna2Panel card)
         {
             if (card == null) return;
-            card.BackColor = ThemeManager.CardBackground;
-            card.CustomBorderColor = ThemeManager.TextBoxBorder;
+            card.BackColor = Color.Transparent;
+            card.BorderColor = ThemeManager.TextBoxBorder;
             card.FillColor = ThemeManager.CardBackground;
             foreach (Control c in card.Controls)
             {

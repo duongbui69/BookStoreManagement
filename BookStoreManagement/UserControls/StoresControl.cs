@@ -18,9 +18,12 @@ namespace BookStoreManagement.UserControls
         private string _currentSearchTerm = "";
 
         private Guna.UI2.WinForms.Guna2Panel pnlContent;
-        private TableLayoutPanel tlpHeader;
+        private Guna.UI2.WinForms.Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
+        
+        private Guna.UI2.WinForms.Guna2Panel pnlFilters;
+        private Guna.UI2.WinForms.Guna2TextBox txtSearch;
         private Guna.UI2.WinForms.Guna2Button btnAdd;
 
         private Guna.UI2.WinForms.Guna2Panel pnlGridContainer;
@@ -42,24 +45,27 @@ namespace BookStoreManagement.UserControls
 
             pnlContent = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
-            // 1. Header & Toolbar
-            tlpHeader = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                ColumnCount = 2,
-                RowCount = 2,
-                Height = 80,
-                Margin = new Padding(0, 0, 0, gutter)
-            };
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            // 1. Header
+            pnlPageHeader = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
 
-            lblTitle = new Label { Text = "Quản lý Chi nhánh", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Quản lý chi nhánh, nhân sự, và trạng thái.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Quản lý Chi nhánh", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Quản lý chi nhánh, nhân sự, và trạng thái.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
+
+            // 2. Filters Bar
+            pnlFilters = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0) };
             
-            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Thêm Chi nhánh", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
+            txtSearch = new Guna.UI2.WinForms.Guna2TextBox
+            {
+                PlaceholderText = "Tìm theo mã, tên chi nhánh...",
+                Size = new Size(250, 36),
+                Location = new Point(0, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+            txtSearch.TextChanged += (s, e) => { PerformSearch(txtSearch.Text); };
+
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Thêm Chi nhánh", Size = new Size(160, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += async (s, e) => {
                 var frm = new StoreForm(null);
                 if (frm.ShowDialog() == DialogResult.OK)
@@ -68,10 +74,11 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
-            tlpHeader.Controls.Add(lblTitle, 0, 0);
-            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
-            tlpHeader.Controls.Add(btnAdd, 1, 0);
-            tlpHeader.SetRowSpan(btnAdd, 2);
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnAdd });
+            pnlFilters.Resize += (s, e) =>
+            {
+                btnAdd.Location = new Point(pnlFilters.Width - 160, 12);
+            };
 
             // 2. Grid Container
             pnlGridContainer = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1, 1, 1, 1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 6 };
@@ -116,7 +123,9 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.Controls.Add(paginationControl);
 
             pnlContent.Controls.Add(pnlGridContainer);
-            pnlContent.Controls.Add(tlpHeader);
+            pnlContent.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 10 }); // Spacer
+            pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(pnlPageHeader);
 
             this.Controls.Add(pnlContent);
 
@@ -154,24 +163,36 @@ namespace BookStoreManagement.UserControls
         // Custom painting logic
         private int _hoveredRow = -1;
         private int _hoveredCol = -1;
+        private int _hoveredAction = 0; // 1=edit, 2=delete
         private Point _mouseLocation;
 
         private void DgvStores_CellMouseMove(object? sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0 && dgvStores.Columns[e.ColumnIndex].Name == "Actions")
             {
-                if (_hoveredRow != e.RowIndex || _hoveredCol != e.ColumnIndex)
+                int action = (e.X < dgvStores.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
+                if (_hoveredRow != e.RowIndex || _hoveredCol != e.ColumnIndex || _hoveredAction != action)
                 {
+                    int oldRow = _hoveredRow;
                     _hoveredRow = e.RowIndex;
                     _hoveredCol = e.ColumnIndex;
-                    _mouseLocation = e.Location;
-                    dgvStores.InvalidateRow(e.RowIndex);
-                }
-                else if (e.ColumnIndex == dgvStores.Columns["Actions"].Index)
-                {
-                    _mouseLocation = e.Location;
+                    _hoveredAction = action;
+                    if (oldRow >= 0) dgvStores.InvalidateCell(e.ColumnIndex, oldRow);
                     dgvStores.InvalidateCell(e.ColumnIndex, e.RowIndex);
                 }
+                dgvStores.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRow >= 0)
+                {
+                    int oldRow = _hoveredRow;
+                    _hoveredRow = -1;
+                    _hoveredCol = -1;
+                    _hoveredAction = 0;
+                    dgvStores.InvalidateRow(oldRow);
+                }
+                dgvStores.Cursor = Cursors.Default;
             }
         }
 
@@ -182,8 +203,10 @@ namespace BookStoreManagement.UserControls
                 int oldRow = _hoveredRow;
                 _hoveredRow = -1;
                 _hoveredCol = -1;
+                _hoveredAction = 0;
                 dgvStores.InvalidateRow(oldRow);
             }
+            dgvStores.Cursor = Cursors.Default;
         }
 
         private void DgvStores_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
@@ -255,63 +278,37 @@ namespace BookStoreManagement.UserControls
             }
             else if (e.ColumnIndex == dgvStores.Columns["Actions"].Index)
             {
-                e.PaintBackground(e.CellBounds, true);
-                if (isHoveredRow)
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
+
+                if (e.RowIndex == _hoveredRow)
                 {
-                    using (var hoverBrush = new SolidBrush(ThemeManager.HoverColor))
+                    if (_hoveredAction == 1)
                     {
-                        e.Graphics.FillRectangle(hoverBrush, e.CellBounds);
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
                     }
                 }
 
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
+                int editFontSize = (e.RowIndex == _hoveredRow && _hoveredAction == 1) ? 14 : 12;
+                int delFontSize  = (e.RowIndex == _hoveredRow && _hoveredAction == 2) ? 14 : 12;
 
-                int iconSize = 32;
-                int gap = 8;
-                int totalWidth = (iconSize * 2) + gap;
-                
-                var editRect = new Rectangle(
-                    e.CellBounds.X + (e.CellBounds.Width - totalWidth) / 2,
-                    e.CellBounds.Y + (e.CellBounds.Height - iconSize) / 2,
-                    iconSize, iconSize
-                );
-                
-                var deleteRect = new Rectangle(
-                    editRect.Right + gap,
-                    editRect.Y,
-                    iconSize, iconSize
-                );
+                using (var editFont = new Font("Segoe UI Emoji", editFontSize))
+                    TextRenderer.DrawText(e.Graphics, "✏️", editFont, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
 
-                bool isEditHovered = isHoveredRow && _hoveredCol == e.ColumnIndex && editRect.Contains(e.CellBounds.X + _mouseLocation.X, e.CellBounds.Y + _mouseLocation.Y);
-                bool isDeleteHovered = isHoveredRow && _hoveredCol == e.ColumnIndex && deleteRect.Contains(e.CellBounds.X + _mouseLocation.X, e.CellBounds.Y + _mouseLocation.Y);
+                using (var delFont = new Font("Segoe UI Emoji", delFontSize))
+                    TextRenderer.DrawText(e.Graphics, "🗑️", delFont, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
 
-                if (isEditHovered)
-                {
-                    using (var brush = new SolidBrush(Color.FromArgb(20, Color.FromArgb(0, 36, 64))))
-                        g.FillRoundedRectangle(brush, editRect, 4);
-                    using (var pen = new Pen(Color.FromArgb(50, Color.FromArgb(0, 36, 64))))
-                        g.DrawRoundedRectangle(pen, editRect, 4);
-                }
-                
-                if (isDeleteHovered)
-                {
-                    using (var brush = new SolidBrush(Color.FromArgb(20, Color.FromArgb(186, 26, 26))))
-                        g.FillRoundedRectangle(brush, deleteRect, 4);
-                    using (var pen = new Pen(Color.FromArgb(50, Color.FromArgb(186, 26, 26))))
-                        g.DrawRoundedRectangle(pen, deleteRect, 4);
-                }
-
-                using (var font = new Font("Segoe UI Emoji", 12F))
-                {
-                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                    
-                    using (var brush = new SolidBrush(isEditHovered ? Color.FromArgb(0, 36, 64) : ThemeManager.TextSecondary))
-                        g.DrawString("✏️", font, brush, editRect, format);
-                        
-                    using (var brush = new SolidBrush(isDeleteHovered ? Color.FromArgb(186, 26, 26) : ThemeManager.TextSecondary))
-                        g.DrawString("🗑️", font, brush, deleteRect, format);
-                }
+                using (var pen = new Pen(Color.LightGray))
+                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 8, rect.X + rect.Width / 2, rect.Bottom - 8);
 
                 e.Handled = true;
             }
@@ -338,32 +335,20 @@ namespace BookStoreManagement.UserControls
             var store = _repository.GetById(storeId);
             if (store == null) return;
 
-            int iconSize = 32;
-            int gap = 8;
-            int totalWidth = (iconSize * 2) + gap;
-            
-            var editRect = new Rectangle(
-                (dgvStores.Columns["Actions"].Width - totalWidth) / 2,
-                (dgvStores.RowTemplate.Height - iconSize) / 2,
-                iconSize, iconSize
-            );
-            
-            var deleteRect = new Rectangle(
-                editRect.Right + gap,
-                editRect.Y,
-                iconSize, iconSize
-            );
+            int colWidth = dgvStores.Columns["Actions"].Width;
 
-            if (editRect.Contains(e.Location))
+            if (e.X < colWidth / 2)
             {
+                // Edit - left half
                 var frm = new StoreForm(store);
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
                     await LoadDataAsync();
                 }
             }
-            else if (deleteRect.Contains(e.Location))
+            else
             {
+                // Delete - right half
                 if (MessageBox.Show($"Bạn có chắc muốn xoá cửa hàng '{store.StoreName}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     await _repository.SetActiveAsync(storeId, false);
@@ -372,14 +357,23 @@ namespace BookStoreManagement.UserControls
             }
         }
 
+
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
-            tlpHeader.BackColor = ThemeManager.Background;
+            pnlPageHeader.BackColor = ThemeManager.Background;
+            pnlFilters.BackColor = ThemeManager.Background;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+            
+            if (txtSearch != null)
+            {
+                txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                txtSearch.ForeColor = ThemeManager.TextPrimary;
+                txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
 
             btnAdd.FillColor = ThemeManager.ButtonFill;
             btnAdd.ForeColor = ThemeManager.ButtonText;

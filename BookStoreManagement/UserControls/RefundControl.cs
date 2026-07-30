@@ -6,599 +6,556 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using BookStoreManagement.Database;
 using BookStoreManagement.Forms;
-using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 using BookStoreManagement.ViewModels;
 using BookStoreManagement.Interfaces;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
     public class RefundControl : UserControl, ISearchableControl
     {
-        private Panel pnlHeader;
-        private Label lblTitle;
-        private Label lblSubtitle;
-        private Button btnAdd;
-        private Button btnPrint;
-
-        // Stats
-        private Panel pnlStatsGrid;
-        private Panel statTotal;
-        private Panel statPending;
-        private Panel statCompleted;
-        private Panel statFilter;
-
-        private Label lblTotalValue;
-        private Label lblPendingValue;
-        private Label lblCompletedValue;
-
-        private ComboBox cboStatusFilter;
-        private DateTimePicker dtpFilter;
-
-        // Grid
-        private Panel pnlGridContainer;
-        private Panel pnlGridHeader;
-        private Label lblGridTitle;
-        private DataGridView dgvRefunds;
-        
-        // Pagination
-        private Panel pnlPagination;
-        private Label lblPageInfo;
-        private FlowLayoutPanel flpPagination;
-
+        // ─── Repository ───────────────────────────────────────────────────────
         private readonly ReturnReceiptRepository _returnRepo;
-        private List<ReturnReceiptListViewModel> _allRefunds;
-        private List<ReturnReceiptListViewModel> _filteredRefunds;
 
+        // ─── State ────────────────────────────────────────────────────────────
+        private List<ReturnReceiptListViewModel> _allRefunds = new();
+        private List<ReturnReceiptListViewModel> _filteredRefunds = new();
         private int _currentPage = 1;
-        private int _pageSize = 10;
-        private bool _isCalculatingPageSize = false;
-
+        private const int PageSize = 12; // fallback — được ghi đè bởi _dynamicPageSize
+        private int _dynamicPageSize = 12;
         private string _searchKeyword = "";
-        
+        private string _statusFilter = ""; // "" = all
+
+        // ─── Layout panels ────────────────────────────────────────────────────
+        private Guna2Panel pnlContent;
+        private Guna2Panel pnlHeader;
+        private Guna2Panel pnlFilters;
+        private Guna2Panel pnlStatusBar;
+        private Guna2Panel pnlKpi;
+        private Panel _spacerTop;
+        private Panel _spacerBot;
+        private Guna2Panel pnlGridContainer;
+
+        // ─── Header ───────────────────────────────────────────────────────────
+        private Label lblTitle;
+        private Label lblSubTitle;
+        private Guna2Button btnAdd;
+
+        // ─── Filters ──────────────────────────────────────────────────────────
+        private Guna2TextBox txtSearch;
+        private Guna2DateTimePicker dtpFrom;
+        private Guna2DateTimePicker dtpTo;
+        private Guna2Button btnFilter;
+
+        // ─── Status toggle buttons ────────────────────────────────────────────
+        private Guna2Button btnAll;
+        private Guna2Button btnPending;
+        private Guna2Button btnApproved;
+        private Guna2Button btnCompleted;
+        private Guna2Button btnRejected;
+
+        // ─── KPI cards ────────────────────────────────────────────────────────
+        private Label lblKpiTotalValue;
+        private Label lblKpiPendingValue;
+        private Label lblKpiCompletedValue;
+
+        // ─── Grid ─────────────────────────────────────────────────────────────
+        private Guna2DataGridView dgv;
+        private PaginationControl pagination;
+
+        // ─── Hover state ─────────────────────────────────────────────────────
+        private int hoveredRow = -1;
+
+        // ─── ctor ─────────────────────────────────────────────────────────────
         public RefundControl()
         {
             _returnRepo = new ReturnReceiptRepository();
-            _allRefunds = new List<ReturnReceiptListViewModel>();
-            _filteredRefunds = new List<ReturnReceiptListViewModel>();
 
-            InitializeComponents();
+            InitializeUI();
             ApplyTheme();
-            
-            ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Load += RefundControl_Load;
+            ThemeManager.ThemeChanged += (s, e) => ApplyTheme();
+            this.Load += async (s, e) => await LoadDataAsync();
         }
 
-        private void ThemeManager_ThemeChanged(object sender, EventArgs e)
-        {
-            ApplyTheme();
-            dgvRefunds.Invalidate();
-        }
-
-        private void InitializeComponents()
+        // ═════════════════════════════════════════════════════════════════════
+        // UI BUILD
+        // ═════════════════════════════════════════════════════════════════════
+        private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(30);
+            this.Padding = new Padding(0);
 
-            // 1. HEADER
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 100 };
-            
-            lblTitle = new Label 
-            { 
-                Text = "Quản lý Đổi/Trả", 
-                Font = new Font("Segoe UI", 24F, FontStyle.Bold), 
-                AutoSize = true, 
-                Location = new Point(0, 0) 
-            };
-            
-            lblSubtitle = new Label 
-            { 
-                Text = "Quản lý phiếu trả và yêu cầu hoàn tiền.", 
-                Font = new Font("Segoe UI", 11F), 
-                AutoSize = true, 
-                Location = new Point(0, 45) 
-            };
-            
-            FlowLayoutPanel flpActions = new FlowLayoutPanel
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(24, 16, 24, 8) };
+            this.Controls.Add(pnlContent);
+
+            BuildHeader();
+            BuildFilters();
+            BuildStatusBar();
+            BuildKpi();  // BuildKpi cũng Add spacerTop/spacerBot vào pnlContent
+            BuildGrid();
+
+            // Thêm tất cả vào pnlContent
+            pnlContent.Controls.AddRange(new Control[] {
+                pnlHeader, pnlFilters, pnlStatusBar, _spacerTop, pnlKpi, _spacerBot, pnlGridContainer
+            });
+
+            // Sắp xếp Z-order chuẩn bằng BringToFront() theo thứ tự từ trên xuống dưới
+            pnlHeader.BringToFront();
+            _spacerTop.BringToFront();
+            pnlKpi.BringToFront();
+            _spacerBot.BringToFront();
+            pnlStatusBar.BringToFront();
+            pnlFilters.BringToFront();
+            pnlGridContainer.BringToFront();
+        }
+
+        private void BuildHeader()
+        {
+            // Giảm chiều cao xuống 58px để giải phóng không gian cho grid
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 58, BackColor = Color.Transparent };
+
+            lblTitle = new Label
             {
-                FlowDirection = FlowDirection.RightToLeft,
-                Dock = DockStyle.Right,
-                Width = 400,
-                WrapContents = false,
-                Padding = new Padding(0, 10, 0, 0)
-            };
-
-            btnAdd = new Button 
-            { 
-                Text = "+ Tạo Phiếu Trả", 
-                Size = new Size(180, 40), 
-                FlatStyle = FlatStyle.Flat, 
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Margin = new Padding(10, 0, 0, 0)
-            };
-            btnAdd.FlatAppearance.BorderSize = 0;
-            btnAdd.Click += BtnAdd_Click;
-
-            btnPrint = new Button 
-            { 
-                Text = "In Danh sách", 
-                Size = new Size(120, 40), 
-                FlatStyle = FlatStyle.Flat, 
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Margin = new Padding(10, 0, 0, 0)
-            };
-            btnPrint.FlatAppearance.BorderSize = 1;
-            //btnPrint.Click += BtnPrint_Click;
-
-            flpActions.Controls.Add(btnAdd);
-            flpActions.Controls.Add(btnPrint);
-
-            pnlHeader.Controls.Add(lblTitle);
-            pnlHeader.Controls.Add(lblSubtitle);
-            pnlHeader.Controls.Add(flpActions);
-
-            // 2. STATS GRID (Bento Grid)
-            pnlStatsGrid = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(0, 20, 0, 20) };
-            
-            TableLayoutPanel tlpStats = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 4,
-                RowCount = 1
-            };
-            tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tlpStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-
-            statTotal = CreateStatPanel("Tổng yêu cầu", out lblTotalValue, "assignment_return");
-            statPending = CreateStatPanel("Đang xử lý", out lblPendingValue, "pending_actions");
-            statCompleted = CreateStatPanel("Đã hoàn tiền", out lblCompletedValue, "payments");
-            
-            // Filter panel inside bento grid
-            statFilter = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5) };
-            
-            cboStatusFilter = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Segoe UI", 11F),
-                Width = 200,
-                Location = new Point(15, 15)
-            };
-            cboStatusFilter.Items.AddRange(new object[] { "Tất cả trạng thái", "Đang xử lý", "Đã duyệt", "Đã hoàn tiền", "Từ chối" });
-            cboStatusFilter.SelectedIndex = 0;
-            cboStatusFilter.SelectedIndexChanged += Filter_Changed;
-
-            dtpFilter = new DateTimePicker
-            {
-                Format = DateTimePickerFormat.Short,
-                Font = new Font("Segoe UI", 11F),
-                Width = 200,
-                Location = new Point(15, 50)
-            };
-            dtpFilter.ValueChanged += Filter_Changed;
-
-            statFilter.Controls.Add(cboStatusFilter);
-            statFilter.Controls.Add(dtpFilter);
-
-            tlpStats.Controls.Add(statTotal, 0, 0);
-            tlpStats.Controls.Add(statPending, 1, 0);
-            tlpStats.Controls.Add(statCompleted, 2, 0);
-            tlpStats.Controls.Add(statFilter, 3, 0);
-
-            pnlStatsGrid.Controls.Add(tlpStats);
-
-            // 3. GRID CONTAINER
-            pnlGridContainer = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 20, 0, 0) };
-            
-            pnlGridHeader = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(15, 0, 15, 0) };
-            lblGridTitle = new Label 
-            { 
-                Text = "Danh sách Phiếu trả", 
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold), 
+                Text = "Quản lý Đổi/Trả",
+                Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(15, 15)
+                Location = new Point(0, 0)
             };
-            pnlGridHeader.Controls.Add(lblGridTitle);
+            lblSubTitle = new Label
+            {
+                Text = "Quản lý phiếu trả hàng và yêu cầu hoàn tiền",
+                Font = new Font("Segoe UI", 10F),
+                AutoSize = true,
+                Location = new Point(2, 40)
+            };
 
-            dgvRefunds = new DataGridView
+            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
+        }
+
+        private void BuildFilters()
+        {
+            // Filter row: [Search] [Từ ngày][DateFrom] [Đến ngày][DateTo] [Lọc]  ──────  [+ Tạo Phiếu Trả]
+            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 46, BackColor = Color.Transparent };
+
+            int y = 6; // vertical center of 46px panel
+
+            // Search
+            Label lSearch = new Label { Text = "Tìm kiếm", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(0, y + 8) };
+            txtSearch = new Guna2TextBox
+            {
+                PlaceholderText = "Mã phiếu, mã đơn, tên khách...",
+                Size = new Size(210, 34),
+                Location = new Point(68, y),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+            txtSearch.TextChanged += (s, e) =>
+            {
+                _searchKeyword = txtSearch.Text.ToLower();
+                _currentPage = 1;
+                ApplyFilters();
+            };
+
+            // Date range
+            Label lFrom = new Label { Text = "Từ ngày", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(294, y + 8) };
+            dtpFrom = new Guna2DateTimePicker
+            {
+                Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+                Format = DateTimePickerFormat.Short,
+                Size = new Size(120, 34),
+                Location = new Point(354, y),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+
+            Label lTo = new Label { Text = "Đến ngày", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(488, y + 8) };
+            dtpTo = new Guna2DateTimePicker
+            {
+                Value = DateTime.Now,
+                Format = DateTimePickerFormat.Short,
+                Size = new Size(120, 34),
+                Location = new Point(552, y),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+
+            btnFilter = new Guna2Button
+            {
+                Text = "Lọc",
+                Size = new Size(72, 34),
+                Location = new Point(686, y),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnFilter.Click += (s, e) => { _currentPage = 1; ApplyFilters(); };
+
+            // btnAdd — cùng hàng, sát phải
+            btnAdd = new Guna2Button
+            {
+                Text = "+ Tạo Phiếu Trả",
+                Size = new Size(148, 34),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnAdd.Click += BtnAdd_Click;
+            // Căn phải động theo chiều rộng panel
+            pnlFilters.Resize += (s, e) => { btnAdd.Location = new Point(pnlFilters.Width - 148, y); };
+
+            pnlFilters.Controls.AddRange(new Control[] { lSearch, txtSearch, lFrom, dtpFrom, lTo, dtpTo, btnFilter, btnAdd });
+        }
+
+        private void BuildStatusBar()
+        {
+            // Dùng FlowLayoutPanel để các nút tự động có khoảng cách đều nhau
+            pnlStatusBar = new Guna2Panel { Dock = DockStyle.Top, Height = 46, BackColor = Color.Transparent };
+
+            var flp = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents  = false,
+                AutoSize      = true,
+                Location      = new Point(0, 6), // vertical center of 46px
+                Padding       = new Padding(0)
+            };
+
+            btnAll       = MakeStatusBtn("Tất cả");
+            btnPending   = MakeStatusBtn("⏳ Đang xử lý");
+            btnApproved  = MakeStatusBtn("✅ Đã duyệt");
+            btnCompleted = MakeStatusBtn("💰 Đã hoàn tiền");
+            btnRejected  = MakeStatusBtn("❌ Từ chối");
+
+            btnAll.Click       += (s, e) => SetStatus("",             btnAll);
+            btnPending.Click   += (s, e) => SetStatus("Đang xử lý",   btnPending);
+            btnApproved.Click  += (s, e) => SetStatus("Đã duyệt",     btnApproved);
+            btnCompleted.Click += (s, e) => SetStatus("Đã hoàn tiền", btnCompleted);
+            btnRejected.Click  += (s, e) => SetStatus("Từ chối",      btnRejected);
+
+            flp.Controls.AddRange(new Control[] { btnAll, btnPending, btnApproved, btnCompleted, btnRejected });
+            pnlStatusBar.Controls.Add(flp);
+            SetActiveStatusBtn(btnAll);
+        }
+
+        private Guna2Button MakeStatusBtn(string text) =>
+            new Guna2Button
+            {
+                Text            = text,
+                Size            = new Size(140, 34),
+                Margin          = new Padding(0, 0, 8, 0), // khoảng cách phải giữa các nút
+                BorderRadius    = 6,
+                Font            = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor          = Cursors.Hand,
+                BorderThickness = 1
+            };
+
+        private void SetStatus(string status, Guna2Button activeBtn)
+        {
+            _statusFilter = status;
+            _currentPage = 1;
+            SetActiveStatusBtn(activeBtn);
+            ApplyFilters();
+        }
+
+        private void SetActiveStatusBtn(Guna2Button active)
+        {
+            foreach (var btn in new[] { btnAll, btnPending, btnApproved, btnCompleted, btnRejected })
+            {
+                bool isActive = btn == active;
+                btn.FillColor   = isActive ? ThemeManager.ButtonFill    : ThemeManager.CardBackground;
+                btn.ForeColor   = isActive ? ThemeManager.ButtonText    : ThemeManager.TextPrimary;
+                btn.BorderColor = isActive ? ThemeManager.ButtonFill    : ThemeManager.TextBoxBorder;
+            }
+        }
+
+        private void BuildKpi()
+        {
+            // spacerTop: khoảng trống bên dưới StatusBar
+            _spacerTop = new Panel { Dock = DockStyle.Top, Height = 6, BackColor = Color.Transparent };
+            // spacerBot: khoảng trống bên trên Grid
+            _spacerBot = new Panel { Dock = DockStyle.Top, Height = 6, BackColor = Color.Transparent };
+
+            // Giảm KPI height xuống 78px để tiết kiệm thêm không gian
+            pnlKpi = new Guna2Panel { Dock = DockStyle.Top, Height = 78, BackColor = Color.Transparent };
+
+            var (cardTotal, valTotal) = MakeKpiCard("Tổng yêu cầu",   Color.FromArgb(52, 152, 219));
+            var (cardPend,  valPend)  = MakeKpiCard("Đang xử lý",     Color.FromArgb(243, 156, 18));
+            var (cardDone,  valDone)  = MakeKpiCard("Đã hoàn tiền",   Color.FromArgb(46, 204, 113));
+
+            lblKpiTotalValue     = valTotal;
+            lblKpiPendingValue   = valPend;
+            lblKpiCompletedValue = valDone;
+
+            pnlKpi.Controls.AddRange(new Control[] { cardTotal, cardPend, cardDone });
+            pnlKpi.Resize += (s, e) =>
+            {
+                if (pnlKpi.Width <= 0) return; // Guard
+                int w = (pnlKpi.Width - 40) / 3;
+                int h = pnlKpi.Height;
+                cardTotal.Size = new Size(w, h); cardTotal.Location = new Point(0, 0);
+                cardPend.Size  = new Size(w, h); cardPend.Location  = new Point(w + 20, 0);
+                cardDone.Size  = new Size(w, h); cardDone.Location  = new Point((w + 20) * 2, 0);
+            };
+        }
+
+        private (Guna2Panel card, Label value) MakeKpiCard(string title, Color accent)
+        {
+            var card = new Guna2Panel
+            {
+                Size = new Size(200, 78), // khớp với pnlKpi.Height mới
+                BorderRadius = 10,
+                BorderThickness = 1,
+                BackColor = Color.Transparent
+            };
+            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(16, 12) };
+            lblT.Tag = "KpiTitle";
+            var lblV = new Label { Text = "0", Font = new Font("Segoe UI", 20F, FontStyle.Bold), AutoSize = true, Location = new Point(14, 30), ForeColor = accent };
+            card.Controls.AddRange(new Control[] { lblT, lblV });
+            return (card, lblV);
+        }
+
+        private void BuildGrid()
+        {
+            pnlGridContainer = new Guna2Panel { Dock = DockStyle.Fill, BorderRadius = 8, BorderThickness = 1 };
+
+            dgv = new Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.None,
-                BackgroundColor = Color.White,
-                EnableHeadersVisualStyles = false,
-                AutoGenerateColumns = false,
                 AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
                 ReadOnly = true,
+                AutoGenerateColumns = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false,
                 RowTemplate = { Height = 50 },
-                AllowUserToResizeRows = false
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle(),
+                Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default
             };
-            dgvRefunds.SetDoubleBuffered(true);
-            
-            SetupColumns();
-            
-            dgvRefunds.CellPainting += DgvRefunds_CellPainting;
-            dgvRefunds.CellClick += DgvRefunds_CellClick;
-            dgvRefunds.CellMouseEnter += DgvRefunds_CellMouseEnter;
-            dgvRefunds.CellMouseLeave += DgvRefunds_CellMouseLeave;
 
-            pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(15, 0, 15, 0) };
-            lblPageInfo = new Label { AutoSize = true, Location = new Point(15, 20), Font = new Font("Segoe UI", 11F) };
-            flpPagination = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true, Location = new Point(0, 12), Anchor = AnchorStyles.Top | AnchorStyles.Right };
-            pnlPagination.Controls.Add(lblPageInfo);
-            pnlPagination.Controls.Add(flpPagination);
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id",         Visible = false });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "ReturnCode", HeaderText = "MÃ TRẢ HÀNG",   Width = 120, FillWeight = 9,  DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "OrderCode",  HeaderText = "MÃ ĐƠN GỐC",    Width = 120, FillWeight = 9,  DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "ReturnDate", HeaderText = "NGÀY YÊU CẦU",  Width = 110, FillWeight = 9,  DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Customer",   HeaderText = "KHÁCH HÀNG",    FillWeight = 22, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Amount",     HeaderText = "SỐ TIỀN HOÀN",  Width = 130, FillWeight = 10, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight,  Font = new Font("Segoe UI", 9F, FontStyle.Bold) }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Reason",     HeaderText = "LÝ DO",         FillWeight = 25, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status",     HeaderText = "TRẠNG THÁI",    Width = 130, FillWeight = 10, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { Name = "Action",     HeaderText = "THAO TÁC",      Width = 90,  FillWeight = 7,  DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
 
-            pnlGridContainer.Controls.Add(dgvRefunds);
-            pnlGridContainer.Controls.Add(pnlGridHeader);
-            pnlGridContainer.Controls.Add(pnlPagination);
+            dgv.CellPainting   += Dgv_CellPainting;
+            dgv.CellClick      += Dgv_CellClick;
+            dgv.CellMouseEnter += (s, e) => { if (e.RowIndex >= 0 && e.ColumnIndex == dgv.Columns["Action"].Index) { hoveredRow = e.RowIndex; dgv.InvalidateCell(e.ColumnIndex, e.RowIndex); } };
+            dgv.CellMouseLeave += (s, e) => { if (e.RowIndex >= 0 && e.ColumnIndex == dgv.Columns["Action"].Index) { hoveredRow = -1; dgv.InvalidateCell(e.ColumnIndex, e.RowIndex); } };
 
-            this.Controls.Add(pnlGridContainer);
-            this.Controls.Add(pnlStatsGrid);
-            this.Controls.Add(pnlHeader);
+            pagination = new PaginationControl { Dock = DockStyle.Bottom };
+            pagination.PageChanged += (s, e) => { _currentPage = e.NewPage; UpdateGrid(); };
 
-            dgvRefunds.Resize += DgvRefunds_Resize;
-        }
+            pnlGridContainer.Controls.Add(dgv);
+            pnlGridContainer.Controls.Add(pagination);
 
-        private Panel CreateStatPanel(string title, out Label lblValue, string icon)
-        {
-            Panel pnl = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5) };
-            
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(15, 15) };
-            lblValue = new Label { Text = "0", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(15, 40) };
-            
-            pnl.Controls.Add(lblTitle);
-            pnl.Controls.Add(lblValue);
-            return pnl;
-        }
-
-        private void SetupColumns()
-        {
-            dgvRefunds.Columns.Add(new DataGridViewCheckBoxColumn { Name = "colCheck", HeaderText = "", Width = 50 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReturnCode", HeaderText = "MÃ TRẢ HÀNG", DataPropertyName = "ReturnCode", Width = 130 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colOrderCode", HeaderText = "MÃ ĐƠN GỐC", DataPropertyName = "OrderCode", Width = 130 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colDate", HeaderText = "NGÀY YÊU CẦU", DataPropertyName = "ReturnDate", Width = 120 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colCustomer", HeaderText = "KHÁCH HÀNG", DataPropertyName = "CustomerName", Width = 150 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAmount", HeaderText = "SỐ TIỀN HOÀN", DataPropertyName = "TotalRefundAmount", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "N0" } });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colReason", HeaderText = "LÝ DO", DataPropertyName = "Note", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colStatus", HeaderText = "TRẠNG THÁI", DataPropertyName = "ReturnStatus", Width = 120 });
-            dgvRefunds.Columns.Add(new DataGridViewTextBoxColumn { Name = "colAction", HeaderText = "THAO TÁC", Width = 100 });
-            
-            foreach (DataGridViewColumn col in dgvRefunds.Columns)
+            // Tính PageSize động: mỗi khi grid resize, tính lại số dòng vừa đủ hiển thị
+            dgv.SizeChanged += (s, e) =>
             {
-                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
-            dgvRefunds.Columns["colReason"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dgvRefunds.Columns["colCustomer"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-        }
-
-        private void ApplyTheme()
-        {
-            this.BackColor = ThemeManager.Background;
-            lblTitle.ForeColor = ThemeManager.TextPrimary;
-            lblSubtitle.ForeColor = ThemeManager.TextSecondary;
-            
-            btnAdd.BackColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = Color.White;
-            
-            btnPrint.BackColor = ThemeManager.CardBackground;
-            btnPrint.ForeColor = ThemeManager.TextPrimary;
-            btnPrint.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
-
-            Color statBg = ThemeManager.CardBackground;
-            Color statBorder = ThemeManager.TextBoxBorder;
-
-            foreach (var pnl in new[] { statTotal, statPending, statCompleted, statFilter, pnlGridContainer, pnlGridHeader, pnlPagination })
-            {
-                pnl.BackColor = statBg;
-                if (pnl == statFilter || pnl == statTotal || pnl == statPending || pnl == statCompleted)
+                int rowH    = dgv.RowTemplate.Height;
+                int headerH = dgv.ColumnHeadersHeight;
+                int paginH  = pagination.Height;
+                int available = dgv.Height - headerH - paginH;
+                int newSize   = Math.Max(1, available / rowH);
+                if (newSize != _dynamicPageSize)
                 {
-                    pnl.Paint += (s, e) =>
-                    {
-                        Control c = (Control)s;
-                        using (Pen pen = new Pen(statBorder, 1))
-                        {
-                            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            e.Graphics.DrawRectangle(pen, new Rectangle(0, 0, c.Width - 1, c.Height - 1));
-                        }
-                    };
+                    _dynamicPageSize = newSize;
+                    _currentPage = 1;
+                    if (_filteredRefunds?.Count > 0) UpdateGrid();
                 }
-            }
-
-            foreach (Control c in statTotal.Controls) c.ForeColor = ThemeManager.TextPrimary;
-            foreach (Control c in statPending.Controls) c.ForeColor = ThemeManager.TextPrimary;
-            foreach (Control c in statCompleted.Controls) c.ForeColor = ThemeManager.TextPrimary;
-
-            lblGridTitle.ForeColor = ThemeManager.TextPrimary;
-            lblPageInfo.ForeColor = ThemeManager.TextSecondary;
-            
-            cboStatusFilter.BackColor = ThemeManager.Background;
-            cboStatusFilter.ForeColor = ThemeManager.TextPrimary;
-            dtpFilter.BackColor = ThemeManager.Background;
-            dtpFilter.ForeColor = ThemeManager.TextPrimary;
-
-            ThemeManager.ApplyDataGridViewStyle(dgvRefunds);
+            };
         }
 
-        private async void RefundControl_Load(object sender, EventArgs e)
+        // ═════════════════════════════════════════════════════════════════════
+        // DATA LOADING
+        // ═════════════════════════════════════════════════════════════════════
+        public void PerformSearch(string keyword)
         {
-            await LoadData();
+            _searchKeyword = keyword.ToLower();
+            if (txtSearch != null && txtSearch.Text != keyword)
+                txtSearch.Text = keyword;
+            _currentPage = 1;
+            ApplyFilters();
         }
 
-        private async Task LoadData()
+        private async Task LoadDataAsync()
         {
-            var storeId = BookStoreManagement.Helpers.CurrentSession.StoreId ?? 1;
-            
+            var storeId = CurrentSession.StoreId ?? 1;
             try
             {
                 var result = await _returnRepo.GetAllAsync();
                 _allRefunds = result.Where(r => r.StoreId == storeId).ToList();
                 ApplyFilters();
-                UpdateStats();
+                UpdateKpi();
             }
             catch (Exception ex)
             {
+                System.IO.File.WriteAllText("debug_refund.txt", ex.ToString());
                 MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void Filter_Changed(object sender, EventArgs e)
-        {
-            ApplyFilters();
-        }
-
-        public void PerformSearch(string keyword)
-        {
-            _searchKeyword = keyword.ToLower();
-            ApplyFilters();
         }
 
         private void ApplyFilters()
         {
             var query = _allRefunds.AsQueryable();
 
+            // Keyword
             if (!string.IsNullOrEmpty(_searchKeyword))
             {
-                query = query.Where(r => 
-                    (r.ReturnCode != null && r.ReturnCode.ToLower().Contains(_searchKeyword)) ||
-                    (r.OrderCode != null && r.OrderCode.ToLower().Contains(_searchKeyword)) ||
-                    (r.CustomerName != null && r.CustomerName.ToLower().Contains(_searchKeyword)));
+                query = query.Where(r =>
+                    (r.ReturnCode    != null && r.ReturnCode.ToLower().Contains(_searchKeyword)) ||
+                    (r.OrderCode     != null && r.OrderCode.ToLower().Contains(_searchKeyword))  ||
+                    (r.CustomerName  != null && r.CustomerName.ToLower().Contains(_searchKeyword)));
             }
 
-            if (cboStatusFilter.SelectedIndex > 0)
-            {
-                string status = cboStatusFilter.SelectedItem.ToString();
-                query = query.Where(r => r.ReturnStatus == status);
-            }
+            // Status toggle
+            if (!string.IsNullOrEmpty(_statusFilter))
+                query = query.Where(r => r.ReturnStatus == _statusFilter);
 
-            // For DateTime filter, we might want a checkbox to enable/disable. For now, it filters if it's not today?
-            // Usually we need a way to clear date. I'll just skip strict date filtering if they didn't implement a clear button, or match the exact date.
-            
+            // Date range
+            query = query.Where(r => r.ReturnDate.Date >= dtpFrom.Value.Date && r.ReturnDate.Date <= dtpTo.Value.Date);
+
             _filteredRefunds = query.OrderByDescending(r => r.ReturnDate).ToList();
             _currentPage = 1;
             UpdateGrid();
         }
 
-        private void UpdateStats()
+        private void UpdateKpi()
         {
-            int total = _allRefunds.Count;
-            int pending = _allRefunds.Count(r => r.ReturnStatus == "Đang xử lý");
-            int completed = _allRefunds.Count(r => r.ReturnStatus == "Đã hoàn tiền");
-
-            lblTotalValue.Text = total.ToString("N0");
-            lblPendingValue.Text = pending.ToString("N0");
-            lblCompletedValue.Text = completed.ToString("N0");
-        }
-
-        private void DgvRefunds_Resize(object sender, EventArgs e)
-        {
-            if (_isCalculatingPageSize) return;
-            _isCalculatingPageSize = true;
-            
-            if (dgvRefunds.Height > 0)
-            {
-                int availableHeight = dgvRefunds.Height - dgvRefunds.ColumnHeadersHeight;
-                int newPageSize = availableHeight / dgvRefunds.RowTemplate.Height;
-                if (newPageSize < 1) newPageSize = 1;
-
-                if (_pageSize != newPageSize)
-                {
-                    _pageSize = newPageSize;
-                    _currentPage = 1;
-                    UpdateGrid();
-                }
-            }
-            _isCalculatingPageSize = false;
+            lblKpiTotalValue.Text     = _allRefunds.Count.ToString("N0");
+            lblKpiPendingValue.Text   = _allRefunds.Count(r => r.ReturnStatus == "Đang xử lý").ToString("N0");
+            lblKpiCompletedValue.Text = _allRefunds.Count(r => r.ReturnStatus == "Đã hoàn tiền").ToString("N0");
         }
 
         private void UpdateGrid()
         {
-            int totalPages = (int)Math.Ceiling((double)_filteredRefunds.Count / _pageSize);
-            if (_currentPage > totalPages && totalPages > 0) _currentPage = totalPages;
-            if (_currentPage < 1) _currentPage = 1;
-
             var items = _filteredRefunds
-                .Skip((_currentPage - 1) * _pageSize)
-                .Take(_pageSize)
+                .Skip((_currentPage - 1) * _dynamicPageSize)
+                .Take(_dynamicPageSize)
                 .ToList();
 
-            dgvRefunds.DataSource = items;
-            
-            lblPageInfo.Text = $"Hiển thị {(_filteredRefunds.Count > 0 ? (_currentPage - 1) * _pageSize + 1 : 0)} đến {Math.Min(_currentPage * _pageSize, _filteredRefunds.Count)} của {_filteredRefunds.Count} kết quả";
-            
-            RenderPagination(totalPages);
-        }
-
-        private void RenderPagination(int totalPages)
-        {
-            flpPagination.Controls.Clear();
-            
-            // Back button
-            Button btnPrev = CreatePageButton("<", _currentPage > 1);
-            btnPrev.Click += (s, e) => { if (_currentPage > 1) { _currentPage--; UpdateGrid(); } };
-            flpPagination.Controls.Add(btnPrev);
-
-            // Page numbers
-            for (int i = 1; i <= totalPages; i++)
+            dgv.Rows.Clear();
+            foreach (var item in items)
             {
-                Button btnPage = CreatePageButton(i.ToString(), true, i == _currentPage);
-                int page = i;
-                btnPage.Click += (s, e) => { _currentPage = page; UpdateGrid(); };
-                flpPagination.Controls.Add(btnPage);
+                dgv.Rows.Add(
+                    item.Id,
+                    item.ReturnCode,
+                    item.OrderCode,
+                    item.ReturnDate.ToString("dd/MM/yyyy"),
+                    item.CustomerName,
+                    item.TotalRefundAmount.ToString("N0") + " đ",
+                    item.Note,
+                    item.ReturnStatus,
+                    "" // action placeholder
+                );
             }
 
-            // Next button
-            Button btnNext = CreatePageButton(">", _currentPage < totalPages);
-            btnNext.Click += (s, e) => { if (_currentPage < totalPages) { _currentPage++; UpdateGrid(); } };
-            flpPagination.Controls.Add(btnNext);
-            
-            flpPagination.Left = pnlPagination.Width - flpPagination.Width - 15;
+            pagination.UpdatePagination(_filteredRefunds.Count, _currentPage, _dynamicPageSize);
         }
 
-        private Button CreatePageButton(string text, bool enabled, bool isActive = false)
+        // ═════════════════════════════════════════════════════════════════════
+        // CELL PAINTING
+        // ═════════════════════════════════════════════════════════════════════
+        private void Dgv_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            Button btn = new Button
-            {
-                Text = text,
-                Size = new Size(32, 32),
-                Margin = new Padding(2),
-                FlatStyle = FlatStyle.Flat,
-                Enabled = enabled,
-                Cursor = enabled ? Cursors.Hand : Cursors.Default,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
-            };
+            if (e.RowIndex < 0) return;
 
-            if (isActive)
-            {
-                btn.BackColor = ThemeManager.ButtonFill;
-                btn.ForeColor = Color.White;
-                btn.FlatAppearance.BorderSize = 0;
-            }
-            else
-            {
-                btn.BackColor = ThemeManager.CardBackground;
-                btn.ForeColor = ThemeManager.TextPrimary;
-                btn.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
-            }
-
-            return btn;
-        }
-
-        private int hoveredRow = -1;
-        private int hoveredCol = -1;
-
-        private void DgvRefunds_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
-            {
-                hoveredRow = e.RowIndex;
-                hoveredCol = e.ColumnIndex;
-                dgvRefunds.InvalidateCell(e.ColumnIndex, e.RowIndex);
-            }
-        }
-
-        private void DgvRefunds_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
-            {
-                hoveredRow = -1;
-                hoveredCol = -1;
-                dgvRefunds.InvalidateCell(e.ColumnIndex, e.RowIndex);
-            }
-        }
-
-        private void DgvRefunds_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colStatus"].Index)
+            if (dgv.Columns[e.ColumnIndex].Name == "Status")
             {
                 e.PaintBackground(e.CellBounds, true);
-                
                 string status = e.Value?.ToString() ?? "";
-                Color bgColor = Color.LightGray;
-                Color txtColor = Color.DarkGray;
 
-                if (status == "Đang xử lý") { bgColor = Color.FromArgb(255, 243, 224); txtColor = Color.FromArgb(230, 81, 0); }
-                else if (status == "Đã hoàn tiền") { bgColor = Color.FromArgb(232, 245, 233); txtColor = Color.FromArgb(46, 125, 50); }
-                else if (status == "Đã duyệt") { bgColor = Color.FromArgb(227, 242, 253); txtColor = Color.FromArgb(21, 101, 192); }
-                else if (status == "Từ chối") { bgColor = Color.FromArgb(255, 218, 214); txtColor = Color.FromArgb(186, 26, 26); }
+                Color bg, fg;
+                if      (status == "Đang xử lý")   { bg = Color.FromArgb(35, 243, 156, 18); fg = Color.FromArgb(200, 120, 0); }
+                else if (status == "Đã duyệt")      { bg = Color.FromArgb(35, 41, 128, 185); fg = Color.FromArgb(21, 101, 192); }
+                else if (status == "Đã hoàn tiền")  { bg = Color.FromArgb(35, 46, 204, 113); fg = Color.FromArgb(39, 174, 96); }
+                else if (status == "Từ chối")        { bg = Color.FromArgb(35, 231, 76,  60); fg = Color.FromArgb(186, 26, 26); }
+                else                                 { bg = Color.FromArgb(35, 120, 120, 120); fg = Color.FromArgb(100, 100, 100); }
 
-                Rectangle badgeRect = new Rectangle(e.CellBounds.X + 10, e.CellBounds.Y + 12, e.CellBounds.Width - 20, e.CellBounds.Height - 24);
-                
-                using (SolidBrush bgBrush = new SolidBrush(bgColor))
+                bool sel = (e.State & DataGridViewElementStates.Selected) != 0;
+                if (sel) fg = Color.White;
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                using var font = new Font("Segoe UI", 8F, FontStyle.Bold);
+                SizeF sz = g.MeasureString(status, font);
+                var badgeRect = new RectangleF(
+                    e.CellBounds.X + (e.CellBounds.Width  - sz.Width  - 20) / 2f,
+                    e.CellBounds.Y + (e.CellBounds.Height - sz.Height -  8) / 2f,
+                    sz.Width + 20, sz.Height + 8);
+
+                using (var brush = new SolidBrush(bg))
+                    g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
+                using (var brush = new SolidBrush(fg))
                 {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.FillRectangle(bgBrush, badgeRect);
-                }
-
-                using (var font = new Font("Segoe UI", 9F, FontStyle.Bold))
-                {
-                TextRenderer.DrawText(e.Graphics, status, font, badgeRect, txtColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    var fmt = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    g.DrawString(status, font, brush, badgeRect, fmt);
                 }
                 e.Handled = true;
             }
-            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
+            else if (dgv.Columns[e.ColumnIndex].Name == "Action")
             {
                 e.PaintBackground(e.CellBounds, true);
 
-                // Edit/View icon
-                Rectangle viewRect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width / 2) - 25, e.CellBounds.Y + 10, 24, 24);
-                Color viewColor = (hoveredRow == e.RowIndex && viewRect.Contains(dgvRefunds.PointToClient(Cursor.Position))) ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
-                DrawIcon(e.Graphics, viewRect, "\ue8f4", viewColor); // visibility
+                Rectangle viewRect = new Rectangle(
+                    e.CellBounds.X + e.CellBounds.Width / 2 - 26, e.CellBounds.Y + 12, 22, 22);
+                Rectangle delRect = new Rectangle(
+                    e.CellBounds.X + e.CellBounds.Width / 2 + 4,  e.CellBounds.Y + 12, 22, 22);
 
-                // Delete icon
-                Rectangle deleteRect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width / 2) + 5, e.CellBounds.Y + 10, 24, 24);
-                Color delColor = (hoveredRow == e.RowIndex && deleteRect.Contains(dgvRefunds.PointToClient(Cursor.Position))) ? Color.Red : ThemeManager.TextSecondary;
-                DrawIcon(e.Graphics, deleteRect, "\ue872", delColor); // delete
+                Color viewColor = (hoveredRow == e.RowIndex && viewRect.Contains(dgv.PointToClient(Cursor.Position)))
+                    ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
+                Color delColor  = (hoveredRow == e.RowIndex && delRect.Contains(dgv.PointToClient(Cursor.Position)))
+                    ? Color.FromArgb(186, 26, 26) : ThemeManager.TextSecondary;
 
+                DrawIcon(e.Graphics, viewRect, "\ue8f4", viewColor);
+                DrawIcon(e.Graphics, delRect,  "\ue872", delColor);
                 e.Handled = true;
             }
         }
 
-        private void DrawIcon(Graphics g, Rectangle rect, string iconCode, Color color)
+        private static void DrawIcon(Graphics g, Rectangle rect, string iconCode, Color color)
         {
-            using (Font iconFont = new Font("Material Symbols Outlined", 14F, FontStyle.Regular, GraphicsUnit.Point))
-            {
-                TextRenderer.DrawText(g, iconCode, iconFont, rect, color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-            }
+            using var iconFont = new Font("Material Symbols Outlined", 13F, FontStyle.Regular, GraphicsUnit.Point);
+            TextRenderer.DrawText(g, iconCode, iconFont, rect, color,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
 
-        private async void DgvRefunds_CellClick(object sender, DataGridViewCellEventArgs e)
+        private async void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvRefunds.Columns["colAction"].Index)
-            {
-                Rectangle viewRect = new Rectangle(dgvRefunds.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).X + (dgvRefunds.Columns[e.ColumnIndex].Width / 2) - 25, dgvRefunds.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).Y + 10, 24, 24);
-                Rectangle deleteRect = new Rectangle(dgvRefunds.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).X + (dgvRefunds.Columns[e.ColumnIndex].Width / 2) + 5, dgvRefunds.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false).Y + 10, 24, 24);
-                
-                Point mousePos = dgvRefunds.PointToClient(Cursor.Position);
-                
-                var rowData = dgvRefunds.Rows[e.RowIndex].DataBoundItem as ReturnReceiptListViewModel;
-                if (rowData == null) return;
+            if (e.RowIndex < 0 || dgv.Columns[e.ColumnIndex].Name != "Action") return;
 
-                if (viewRect.Contains(mousePos))
+            var cellRect = dgv.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+            Rectangle viewRect = new Rectangle(cellRect.X + cellRect.Width / 2 - 26, cellRect.Y + 12, 22, 22);
+            Rectangle delRect  = new Rectangle(cellRect.X + cellRect.Width / 2 + 4,  cellRect.Y + 12, 22, 22);
+
+            Point mousePos = dgv.PointToClient(Cursor.Position);
+
+            int id = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["Id"].Value);
+            var rowData = _filteredRefunds.FirstOrDefault(r => r.Id == id);
+            if (rowData == null) return;
+
+            if (viewRect.Contains(mousePos))
+            {
+                var form = new RefundForm(rowData.Id);
+                if (form.ShowDialog() == DialogResult.OK)
+                    await LoadDataAsync();
+            }
+            else if (delRect.Contains(mousePos))
+            {
+                if (MessageBox.Show($"Bạn có chắc muốn xóa phiếu trả hàng {rowData.ReturnCode}?",
+                    "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
-                    // Edit/View
-                    var form = new RefundForm(rowData.Id);
-                    if (form.ShowDialog() == DialogResult.OK)
-                    {
-                        await LoadData();
-                    }
-                }
-                else if (deleteRect.Contains(mousePos))
-                {
-                    // Delete
-                    if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phiếu trả hàng {rowData.ReturnCode}?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                    {
-                        await _returnRepo.DeleteAsync(rowData.Id);
-                        MessageBox.Show("Đã xóa thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        await LoadData();
-                    }
+                    await _returnRepo.DeleteAsync(rowData.Id);
+                    MessageBox.Show("Đã xóa thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadDataAsync();
                 }
             }
         }
@@ -607,9 +564,72 @@ namespace BookStoreManagement.UserControls
         {
             var form = new RefundForm(0);
             if (form.ShowDialog() == DialogResult.OK)
+                LoadDataAsync().ConfigureAwait(false);
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // THEME
+        // ═════════════════════════════════════════════════════════════════════
+        private void ApplyTheme()
+        {
+            this.BackColor        = ThemeManager.Background;
+            pnlContent.BackColor  = ThemeManager.Background;
+
+            lblTitle.ForeColor    = ThemeManager.TextPrimary;
+            lblSubTitle.ForeColor = ThemeManager.TextSecondary;
+
+            btnAdd.FillColor   = ThemeManager.ButtonFill;
+            btnAdd.ForeColor   = ThemeManager.ButtonText;
+            btnAdd.BorderColor = ThemeManager.ButtonFill;
+
+            // Filter bar
+            foreach (Control c in pnlFilters.Controls)
             {
-                LoadData().ConfigureAwait(false);
+                if (c is Label lbl)                    lbl.ForeColor = ThemeManager.TextSecondary;
+                if (c is Guna2TextBox tb)
+                {
+                    tb.FillColor   = ThemeManager.TextBoxBackground;
+                    tb.ForeColor   = ThemeManager.TextPrimary;
+                    tb.BorderColor = ThemeManager.TextBoxBorder;
+                }
+                if (c is Guna2DateTimePicker dtp)
+                {
+                    dtp.FillColor   = ThemeManager.TextBoxBackground;
+                    dtp.ForeColor   = ThemeManager.TextPrimary;
+                    dtp.BorderColor = ThemeManager.TextBoxBorder;
+                }
             }
+            btnFilter.FillColor   = ThemeManager.ButtonFill;
+            btnFilter.ForeColor   = ThemeManager.ButtonText;
+            btnFilter.BorderColor = ThemeManager.ButtonFill;
+
+            // KPI cards
+            foreach (Control c in pnlKpi.Controls)
+            {
+                if (c is Guna2Panel card)
+                {
+                    card.FillColor         = ThemeManager.CardBackground;
+                    card.CustomBorderColor = ThemeManager.TextBoxBorder;
+                    foreach (Control cc in card.Controls)
+                        if (cc.Tag?.ToString() == "KpiTitle")
+                            cc.ForeColor = ThemeManager.TextSecondary;
+                }
+            }
+
+            // Grid container
+            pnlGridContainer.FillColor         = ThemeManager.CardBackground;
+            pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
+            ThemeManager.ApplyDataGridViewStyle(dgv);
+
+            // Active status button reset
+            SetActiveStatusBtn(btnAll);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                ThemeManager.ThemeChanged -= (s, e) => ApplyTheme();
+            base.Dispose(disposing);
         }
     }
 }

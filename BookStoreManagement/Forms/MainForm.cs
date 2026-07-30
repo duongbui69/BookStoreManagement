@@ -25,7 +25,7 @@ namespace BookStoreManagement.Forms
             // Initialize Dynamic Accordion Sidebar
             InitializeAccordionSidebar();
 
-            btnSettings.Click += BtnSettings_Click;
+            btnLogout.Click += btnLogout_Click;
             btnThemeToggle.Click += BtnThemeToggle_Click;
 
 
@@ -68,9 +68,9 @@ namespace BookStoreManagement.Forms
             }
         }
 
-        private void BtnStockCard_Click(object sender, EventArgs e)
+        private void BtnInventoryLedger_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.StockCardControl(), "Tìm kiếm thẻ kho...");
+            LoadControl(new UserControls.InventoryLedgerControl(), "Sổ kho — nhật ký nhập xuất...");
         }
 
         private void BtnPurchaseReceipts_Click(object sender, EventArgs e)
@@ -83,10 +83,6 @@ namespace BookStoreManagement.Forms
             LoadControl(new UserControls.ExportReceiptControl(), "Tìm kiếm phiếu xuất...");
         }
 
-        private void BtnVoucherTypes_Click(object sender, EventArgs e)
-        {
-            LoadControl(new UserControls.VoucherTypeControl(), "Tìm theo loại phiếu...");
-        }
 
         private void BtnCatalog_Click(object sender, EventArgs e)
         {
@@ -169,12 +165,6 @@ namespace BookStoreManagement.Forms
         {
 
             LoadControl(new UserControls.StoresControl(), "Search stores...");
-        }
-
-        private void BtnSettings_Click(object sender, EventArgs e)
-        {
-
-            LoadControl(new UserControls.SettingsControl(), "Search system logs or settings...");
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)
@@ -284,10 +274,9 @@ namespace BookStoreManagement.Forms
 
                 var inventorySub = new Dictionary<string, EventHandler>
                 {
-                    { "Thẻ kho", BtnStockCard_Click },
+                    { "Sổ kho", BtnInventoryLedger_Click },
                     { "Nhập kho", BtnPurchaseReceipts_Click },
                     { "Xuất kho", BtnExportReceipts_Click },
-                    { "Loại phiếu", BtnVoucherTypes_Click },
                     { "Thống kê kho", BtnInventory_Click }
                 };
                 AddAccordionMenu("Quản lý Kho", "inventory_2", inventorySub);
@@ -506,8 +495,6 @@ namespace BookStoreManagement.Forms
             }
             
             // Re-apply footer styling
-            btnSettings.ForeColor = Themes.ThemeManager.TextSecondary;
-            btnSettings.HoverState.FillColor = Themes.ThemeManager.HoverColor;
             btnLogout.ForeColor = Themes.ThemeManager.TextSecondary;
             btnLogout.HoverState.FillColor = Themes.ThemeManager.HoverColor;
             if (panelUserProfile.Controls.ContainsKey("FooterSep"))
@@ -586,8 +573,6 @@ namespace BookStoreManagement.Forms
 
         private void InitializeSidebarFooter()
         {
-            panelSidebar.Controls.Remove(btnSettings);
-            
             panelUserProfile.Dock = DockStyle.Top;
             panelUserProfile.Height = 80;
             
@@ -607,7 +592,7 @@ namespace BookStoreManagement.Forms
             {
                 Name = "panelFooter",
                 Dock = DockStyle.Bottom,
-                Height = 100,
+                Height = 60,
                 BackColor = Color.Transparent
             };
             panelSidebar.Controls.Add(panelFooter);
@@ -620,21 +605,8 @@ namespace BookStoreManagement.Forms
                 FillColor = Themes.ThemeManager.TextBoxBorder 
             };
             panelFooter.Controls.Add(sep);
-
-            btnSettings.Parent = panelFooter;
-            btnSettings.Location = new Point(0, 10);
-            btnSettings.Size = new Size(260, 40);
-            btnSettings.Text = "⚙   Cài đặt";
-            btnSettings.TextAlign = HorizontalAlignment.Left;
-            btnSettings.TextOffset = new Point(20, 0);
-            btnSettings.FillColor = Color.Transparent;
-            btnSettings.Font = new Font("Segoe UI", 10F);
-            btnSettings.ForeColor = Themes.ThemeManager.TextSecondary;
-            btnSettings.HoverState.FillColor = Themes.ThemeManager.HoverColor;
-            btnSettings.CustomBorderThickness = new Padding(0);
-
             btnLogout.Parent = panelFooter;
-            btnLogout.Location = new Point(0, 50);
+            btnLogout.Location = new Point(0, 10);
             btnLogout.Size = new Size(260, 40);
             btnLogout.Text = "🚪   Đăng xuất";
             btnLogout.TextAlign = HorizontalAlignment.Left;

@@ -5,28 +5,29 @@ using System.Windows.Forms;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.Forms
 {
     public class BookForm : Form
     {
-        private CatalogService _catalogService;
+        private BookService _bookService;
         private CategoryService _categoryService;
         private AuthorService _authorService;
         private PublisherService _publisherService;
 
-        private TextBox txtBookCode, txtISBN, txtTitle, txtPublishYear, txtPageCount, txtSellingPrice, txtQuantity, txtMinStock, txtDescription;
-        private ComboBox cbCategory, cbAuthor, cbPublisher;
-        private CheckBox chkIsActive;
-        private PictureBox pbImage;
-        private Button btnBrowseImg, btnSave, btnCancel;
+        private Guna2TextBox txtBookCode, txtISBN, txtTitle, txtPublishYear, txtPageCount, txtSellingPrice, txtQuantity, txtMinStock, txtDescription;
+        private Guna2ComboBox cbCategory, cbAuthor, cbPublisher;
+        private Guna2CheckBox chkIsActive;
+        private Guna2PictureBox pbImage;
+        private Guna2Button btnBrowseImg, btnSave, btnCancel;
 
         private string _imagePath = "";
         public Book? BookModel { get; private set; }
 
         public BookForm(Book? bookToEdit = null)
         {
-            _catalogService = new CatalogService();
+            _bookService = new BookService();
             _categoryService = new CategoryService();
             _authorService = new AuthorService();
             _publisherService = new PublisherService();
@@ -37,7 +38,6 @@ namespace BookStoreManagement.Forms
             
             if (BookModel != null) BindData();
             
-            // Fix: Reset author and publisher when category is manually changed by the user
             cbCategory.SelectedIndexChanged += (s, e) => {
                 if (cbCategory.Focused || cbCategory.ContainsFocus)
                 {
@@ -51,68 +51,71 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = BookModel == null ? "Add New Book" : "Edit Book";
-            this.Size = new Size(800, 650);
+            this.Text = BookModel == null ? "Thêm Sách mới" : "Chỉnh sửa Sách";
+            this.Size = new Size(860, 680);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
 
-            Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 16F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
+            Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 18F, FontStyle.Bold), Location = new Point(24, 20), AutoSize = true };
             this.Controls.Add(lblTitle);
 
-            // Left Col
-            int y = 70;
-            txtBookCode = CreateInput("Mã Sách", 20, ref y);
-            txtISBN = CreateInput("ISBN", 20, ref y);
-            txtTitle = CreateInput("Tiêu đề", 20, ref y);
-            txtPublishYear = CreateInput("Publish Year", 20, ref y);
-            txtPageCount = CreateInput("Page Count", 20, ref y);
+            // Left Col (X = 24)
+            int yLeft = 70;
+            txtBookCode = CreateInput("Mã sách", 24, ref yLeft);
+            txtISBN = CreateInput("Mã ISBN", 24, ref yLeft);
+            txtTitle = CreateInput("Tiêu đề sách", 24, ref yLeft);
+            txtPublishYear = CreateInput("Năm xuất bản", 24, ref yLeft);
+            txtPageCount = CreateInput("Số trang", 24, ref yLeft);
             
-            Label lblCat = new Label { Text = "Danh mục", Location = new Point(20, y), AutoSize = true };
-            cbCategory = new ComboBox { Location = new Point(20, y + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
+            Label lblCat = new Label { Text = "Danh mục", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbCategory = new Guna2ComboBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lblCat, cbCategory });
-            y += 60;
+            yLeft += 75;
 
-            Label lblAuth = new Label { Text = "Tác giả", Location = new Point(20, y), AutoSize = true };
-            cbAuthor = new ComboBox { Location = new Point(20, y + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
+            Label lblAuth = new Label { Text = "Tác giả", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbAuthor = new Guna2ComboBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lblAuth, cbAuthor });
-            y += 60;
 
-            // Right Col
+            // Right Col (X = 400)
             int yRight = 70;
-            Label lblPub = new Label { Text = "Nhà xuất bản", Location = new Point(350, yRight), AutoSize = true };
-            cbPublisher = new ComboBox { Location = new Point(350, yRight + 20), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F) };
+            Label lblPub = new Label { Text = "Nhà xuất bản", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbPublisher = new Guna2ComboBox { Location = new Point(400, yRight + 25), Width = 280, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lblPub, cbPublisher });
-            yRight += 60;
+            yRight += 75;
 
-            txtSellingPrice = CreateInput("Selling Price", 350, ref yRight);
-            txtQuantity = CreateInput("Initial Quantity (Global)", 350, ref yRight);
-            txtMinStock = CreateInput("Min Stock", 350, ref yRight);
-            txtDescription = CreateInput("Mô tả", 350, ref yRight);
+            txtSellingPrice = CreateInput("Giá bán (VNĐ)", 400, ref yRight, 280);
+            txtQuantity = CreateInput("Số lượng tồn kho ban đầu", 400, ref yRight, 280);
+            txtMinStock = CreateInput("Tồn kho tối thiểu", 400, ref yRight, 280);
+            
+            Label lblDesc = new Label { Text = "Mô tả / Giới thiệu sách", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            txtDescription = new Guna2TextBox { Location = new Point(400, yRight + 25), Width = 400, Height = 80, Font = new Font("Segoe UI", 10F), Multiline = true, BorderRadius = 4 };
+            this.Controls.AddRange(new Control[] { lblDesc, txtDescription });
+            yRight += 115;
 
-            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(350, yRight), AutoSize = true, Checked = true };
+            chkIsActive = new Guna2CheckBox { Text = "Đang mở bán (Hoạt động)", Location = new Point(400, yRight), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
-            yRight += 40;
-
+            
             // Image Upload
-            pbImage = new PictureBox { Location = new Point(670, 70), Width = 100, Height = 130, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.Zoom };
-            btnBrowseImg = new Button { Text = "Duyệt...", Location = new Point(670, 210), Width = 100, Height = 30, FlatStyle = FlatStyle.Flat };
+            pbImage = new Guna2PictureBox { Location = new Point(700, 70), Width = 100, Height = 130, BorderRadius = 4, SizeMode = PictureBoxSizeMode.Zoom };
+            btnBrowseImg = new Guna2Button { Text = "Chọn ảnh", Location = new Point(700, 210), Width = 100, Height = 36, BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnBrowseImg.Click += BtnBrowseImg_Click;
             this.Controls.AddRange(new Control[] { pbImage, btnBrowseImg });
 
             // Buttons
-            btnSave = new Button { Text = "Lưu (Save)", Location = new Point(280, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnSave = new Guna2Button { Text = "Lưu thông tin", Location = new Point(300, 580), Width = 130, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Hủy bỏ", Location = new Point(400, 550), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(450, 580), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
             btnCancel.Click += (s, e) => this.Close();
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }
 
-        private TextBox CreateInput(string label, int x, ref int y)
+        private Guna2TextBox CreateInput(string label, int x, ref int y, int width = 340)
         {
-            Label lbl = new Label { Text = label, Location = new Point(x, y), AutoSize = true };
-            TextBox txt = new TextBox { Location = new Point(x, y + 20), Width = 300, Font = new Font("Segoe UI", 10F) };
+            Label lbl = new Label { Text = label, Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Guna2TextBox txt = new Guna2TextBox { Location = new Point(x, y + 25), Width = width, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lbl, txt });
-            y += 60;
+            y += 75;
             return txt;
         }
 
@@ -123,12 +126,12 @@ namespace BookStoreManagement.Forms
                 cbCategory.DisplayMember = "CategoryName"; cbCategory.ValueMember = "Id";
                 
                 var authors = _authorService.Search("");
-                authors.Insert(0, new Author { Id = 0, AuthorName = "--- Select ---" });
+                authors.Insert(0, new Author { Id = 0, AuthorName = "--- Chọn Tác Giả ---" });
                 cbAuthor.DataSource = authors;
                 cbAuthor.DisplayMember = "AuthorName"; cbAuthor.ValueMember = "Id";
 
                 var publishers = _publisherService.Search("");
-                publishers.Insert(0, new Publisher { Id = 0, PublisherName = "--- Select ---" });
+                publishers.Insert(0, new Publisher { Id = 0, PublisherName = "--- Chọn Nhà Xuất Bản ---" });
                 cbPublisher.DataSource = publishers;
                 cbPublisher.DisplayMember = "PublisherName"; cbPublisher.ValueMember = "Id";
             } catch {}
@@ -199,29 +202,28 @@ namespace BookStoreManagement.Forms
                 if (int.TryParse(txtQuantity.Text, out int q)) BookModel.Quantity = q;
                 if (int.TryParse(txtMinStock.Text, out int ms)) BookModel.MinStock = ms;
                 BookModel.Description = txtDescription.Text.Trim();
-                BookModel.ImagePath = _imagePath;
                 BookModel.IsActive = chkIsActive.Checked;
-                
-                if (cbCategory.SelectedValue != null) BookModel.CategoryId = (int)cbCategory.SelectedValue;
+                BookModel.CategoryId = (int)cbCategory.SelectedValue;
                 
                 int authId = (int)cbAuthor.SelectedValue;
                 BookModel.AuthorId = authId > 0 ? authId : (int?)null;
-                
+
                 int pubId = (int)cbPublisher.SelectedValue;
                 BookModel.PublisherId = pubId > 0 ? pubId : (int?)null;
 
-                BookService _bookService = new BookService(); // Missing instance
+                BookModel.ImagePath = _imagePath;
+
                 if (BookModel.Id == 0) {
                     _bookService.Add(BookModel);
-                    MessageBox.Show("Đã thêm sách.");
+                    MessageBox.Show("Đã thêm sách thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 } else {
                     _bookService.Update(BookModel);
-                    MessageBox.Show("Đã cập nhật sách.");
+                    MessageBox.Show("Đã cập nhật sách thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             } catch (Exception ex) {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -230,14 +232,27 @@ namespace BookStoreManagement.Forms
             this.BackColor = ThemeManager.CardBackground;
             foreach (Control c in this.Controls) {
                 if (c is Label l) l.ForeColor = ThemeManager.TextPrimary;
-                if (c is TextBox t) { t.BackColor = ThemeManager.TextBoxBackground; t.ForeColor = ThemeManager.TextPrimary; }
-                if (c is CheckBox cb) cb.ForeColor = ThemeManager.TextPrimary;
+                if (c is Guna2TextBox t) { 
+                    t.FillColor = ThemeManager.TextBoxBackground; 
+                    t.ForeColor = ThemeManager.TextPrimary; 
+                    t.BorderColor = ThemeManager.TextBoxBorder; 
+                }
+                if (c is Guna2ComboBox cb) {
+                    cb.FillColor = ThemeManager.TextBoxBackground;
+                    cb.ForeColor = ThemeManager.TextPrimary;
+                    cb.BorderColor = ThemeManager.TextBoxBorder;
+                }
+                if (c is Guna2CheckBox chk) chk.ForeColor = ThemeManager.TextPrimary;
             }
-            btnBrowseImg.BackColor = ThemeManager.HoverColor; btnBrowseImg.ForeColor = ThemeManager.TextPrimary; btnBrowseImg.FlatAppearance.BorderSize=0;
-            btnSave.BackColor = ThemeManager.ButtonFill; btnSave.ForeColor = ThemeManager.ButtonText; btnSave.FlatAppearance.BorderSize = 0;
-            btnCancel.BackColor = ThemeManager.HoverColor; btnCancel.ForeColor = ThemeManager.TextPrimary; btnCancel.FlatAppearance.BorderSize = 0;
+            
+            btnBrowseImg.FillColor = ThemeManager.ButtonFill;
+            btnBrowseImg.ForeColor = ThemeManager.ButtonText;
+            
+            btnSave.FillColor = ThemeManager.ButtonFill; 
+            btnSave.ForeColor = ThemeManager.ButtonText; 
+            
+            btnCancel.BorderColor = ThemeManager.TextBoxBorder; 
+            btnCancel.ForeColor = ThemeManager.TextPrimary; 
         }
     }
 }
-
-

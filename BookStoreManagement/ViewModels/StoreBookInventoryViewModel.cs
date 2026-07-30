@@ -22,6 +22,7 @@ namespace BookStoreManagement.ViewModels
         public string StockStatus { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string? ShelfLocation { get; set; }
+        public string? ImagePath { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

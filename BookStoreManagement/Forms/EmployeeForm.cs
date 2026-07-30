@@ -1,23 +1,23 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
+using BookStoreManagement.Models;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.Forms
 {
-    public class EmployeeForm : Form
+    public partial class EmployeeForm : Form
     {
-        private HRService _hrService;
-        private RoleService _roleService;
-        private StoreService _storeService;
+        private readonly HRService _hrService;
+        private readonly RoleService _roleService;
+        private readonly StoreService _storeService;
 
-        private TextBox txtUserCode, txtUsername, txtPassword, txtFullName, txtPhone, txtEmail, txtAddress, txtIdentity;
-        private ComboBox cbRole, cbStore;
-        private CheckBox chkIsActive;
-        private Button btnSave, btnCancel;
+        private Guna2TextBox txtUserCode, txtUsername, txtPassword, txtFullName, txtIdentity, txtPhone, txtEmail, txtAddress;
+        private Guna2ComboBox cbRole, cbStore;
+        private Guna2CheckBox chkIsActive;
+        private Guna2Button btnSave, btnCancel;
 
         public User? EmployeeModel { get; private set; }
 
@@ -37,58 +37,62 @@ namespace BookStoreManagement.Forms
 
         private void InitializeComponent()
         {
-            this.Text = EmployeeModel == null ? "Add New Employee" : "Edit Employee";
-            this.Size = new Size(500, 650);
+            this.Text = EmployeeModel == null ? "Thêm nhân viên mới" : "Chỉnh sửa nhân viên";
+            this.Size = new Size(800, 520);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 16F, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
+            Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 18F, FontStyle.Bold), Location = new Point(24, 20), AutoSize = true };
             this.Controls.Add(lblTitle);
 
-            int y = 70;
-            txtUserCode = CreateInput("User Code", ref y);
-            txtUsername = CreateInput("Tên đăng nhập", ref y);
+            // Left Col (X = 24)
+            int yLeft = 70;
+            txtUserCode = CreateInput("Mã nhân viên", 24, ref yLeft);
+            txtUsername = CreateInput("Tên đăng nhập", 24, ref yLeft);
             
-            Label lblPass = new Label { Text = "Mật khẩu (Để trống nếu không đổi)", Location = new Point(20, y), AutoSize = true };
+            Label lblPass = new Label { Text = "Mật khẩu (Để trống nếu không đổi)", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             this.Controls.Add(lblPass);
-            txtPassword = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F), PasswordChar = '*' };
+            txtPassword = new Guna2TextBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), PasswordChar = '*', BorderRadius = 4 };
             this.Controls.Add(txtPassword);
-            y += 60;
+            yLeft += 75;
 
-            txtFullName = CreateInput("Họ và Tên", ref y);
-            txtIdentity = CreateInput("Identity Number", ref y);
-            txtPhone = CreateInput("SĐT", ref y);
-            txtEmail = CreateInput("Email", ref y);
-            txtAddress = CreateInput("Địa chỉ", ref y);
+            txtFullName = CreateInput("Họ và Tên", 24, ref yLeft);
+            txtIdentity = CreateInput("CCCD / CMND", 24, ref yLeft);
 
-            Label lblRole = new Label { Text = "Vai trò", Location = new Point(20, y), AutoSize = true };
-            cbRole = new ComboBox { Location = new Point(20, y + 20), Width = 210, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
+            // Right Col (X = 400)
+            int yRight = 70;
+            txtPhone = CreateInput("Số điện thoại", 400, ref yRight);
+            txtEmail = CreateInput("Email", 400, ref yRight);
+            txtAddress = CreateInput("Địa chỉ", 400, ref yRight);
+
+            Label lblRole = new Label { Text = "Vai trò", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbRole = new Guna2ComboBox { Location = new Point(400, yRight + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lblRole, cbRole });
+            yRight += 75;
 
-            Label lblStore = new Label { Text = "Chi nhánh", Location = new Point(250, y), AutoSize = true };
-            cbStore = new ComboBox { Location = new Point(250, y + 20), Width = 210, Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
+            Label lblStore = new Label { Text = "Chi nhánh", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            cbStore = new Guna2ComboBox { Location = new Point(400, yRight + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lblStore, cbStore });
-            y += 60;
+            yRight += 75;
 
-            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(20, y), AutoSize = true, Checked = true };
+            chkIsActive = new Guna2CheckBox { Text = "Đang hoạt động", Location = new Point(24, 430), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
-            y += 40;
 
-            btnSave = new Button { Text = "Lưu (Save)", Location = new Point(130, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnSave = new Guna2Button { Text = "Lưu (Save)", Location = new Point(280, 420), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Button { Text = "Hủy bỏ", Location = new Point(250, y), Width = 100, Height = 40, FlatStyle = FlatStyle.Flat };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(410, 420), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }
 
-        private TextBox CreateInput(string label, ref int y)
+        private Guna2TextBox CreateInput(string label, int x, ref int y)
         {
-            Label lbl = new Label { Text = label, Location = new Point(20, y), AutoSize = true };
-            TextBox txt = new TextBox { Location = new Point(20, y + 20), Width = 440, Font = new Font("Segoe UI", 10F) };
+            Label lbl = new Label { Text = label, Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Guna2TextBox txt = new Guna2TextBox { Location = new Point(x, y + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
             this.Controls.AddRange(new Control[] { lbl, txt });
-            y += 60;
+            y += 75;
             return txt;
         }
 
@@ -106,7 +110,7 @@ namespace BookStoreManagement.Forms
                 cbRole.ValueMember = "Id";
 
                 var stores = _storeService.GetAll();
-                stores.Insert(0, new Store { Id = 0, StoreName = "--- All Stores (Admin) ---" });
+                stores.Insert(0, new Store { Id = 0, StoreName = "--- Tất cả chi nhánh (Admin) ---" });
                 cbStore.DataSource = stores;
                 cbStore.DisplayMember = "StoreName";
                 cbStore.ValueMember = "Id";
@@ -154,22 +158,22 @@ namespace BookStoreManagement.Forms
             try {
                 if (EmployeeModel.Id == 0) {
                     if (string.IsNullOrEmpty(txtPassword.Text)) {
-                        MessageBox.Show("Vui lòng nhập mật khẩu cho nhân viên mới.");
+                        MessageBox.Show("Vui lòng nhập mật khẩu cho nhân viên mới.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
                     _hrService.CreateUser(EmployeeModel, txtPassword.Text);
-                    MessageBox.Show("Đã tạo nhân viên.");
+                    MessageBox.Show("Đã tạo nhân viên thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 } else {
                     _hrService.UpdateUser(EmployeeModel);
                     if (!string.IsNullOrEmpty(txtPassword.Text)) {
                         _hrService.ResetPassword(EmployeeModel.Id, txtPassword.Text);
                     }
-                    MessageBox.Show("Đã cập nhật nhân viên.");
+                    MessageBox.Show("Đã cập nhật nhân viên thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             } catch (Exception ex) {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -178,12 +182,24 @@ namespace BookStoreManagement.Forms
             this.BackColor = ThemeManager.CardBackground;
             foreach (Control c in this.Controls) {
                 if (c is Label l) l.ForeColor = ThemeManager.TextPrimary;
-                if (c is TextBox t) { t.BackColor = ThemeManager.TextBoxBackground; t.ForeColor = ThemeManager.TextPrimary; }
-                if (c is CheckBox cb) cb.ForeColor = ThemeManager.TextPrimary;
+                if (c is Guna2TextBox t) { 
+                    t.FillColor = ThemeManager.TextBoxBackground; 
+                    t.ForeColor = ThemeManager.TextPrimary; 
+                    t.BorderColor = ThemeManager.TextBoxBorder; 
+                    t.FocusedState.BorderColor = ThemeManager.ButtonFill;
+                }
+                if (c is Guna2ComboBox cb) {
+                    cb.FillColor = ThemeManager.TextBoxBackground; 
+                    cb.ForeColor = ThemeManager.TextPrimary; 
+                    cb.BorderColor = ThemeManager.TextBoxBorder;
+                }
+                if (c is Guna2CheckBox chk) chk.ForeColor = ThemeManager.TextPrimary;
             }
-            btnSave.BackColor = ThemeManager.ButtonFill; btnSave.ForeColor = ThemeManager.ButtonText; btnSave.FlatAppearance.BorderSize = 0;
-            btnCancel.BackColor = ThemeManager.HoverColor; btnCancel.ForeColor = ThemeManager.TextPrimary; btnCancel.FlatAppearance.BorderSize = 0;
+            btnSave.FillColor = ThemeManager.ButtonFill; 
+            btnSave.ForeColor = ThemeManager.ButtonText; 
+            
+            btnCancel.BorderColor = ThemeManager.TextBoxBorder; 
+            btnCancel.ForeColor = ThemeManager.TextPrimary; 
         }
     }
 }
-

@@ -23,6 +23,7 @@ namespace BookStoreManagement.UserControls
         private Guna2HtmlLabel lblSubtitle;
         private Guna2TextBox txtSearch;
         private Guna2Button btnFilter;
+        private Guna2Panel pnlFilters;
 
         private Guna2Panel pnlGridContainer;
         private Guna2DataGridView dgvInventory;
@@ -52,60 +53,65 @@ namespace BookStoreManagement.UserControls
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(24); // container-padding
+            this.Padding = new Padding(32);
 
             // Header Section
             pnlHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(0, 0, 0, 16)
+                Height = 100,
+                BackColor = Color.Transparent
             };
-            this.Controls.Add(pnlHeader);
 
             lblTitle = new Guna2HtmlLabel
             {
                 Text = "Tra cứu kho",
-                Font = new Font("Inter", 18F, FontStyle.Bold),
-                Location = new Point(0, 10)
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                Location = new Point(0, 0)
             };
             pnlHeader.Controls.Add(lblTitle);
 
             lblSubtitle = new Guna2HtmlLabel
             {
                 Text = "Xem trạng thái sách tại chi nhánh.",
-                Font = new Font("Inter", 10F),
-                Location = new Point(0, 55)
+                Font = new Font("Segoe UI", 11F),
+                Location = new Point(0, 45)
             };
             pnlHeader.Controls.Add(lblSubtitle);
 
-            btnFilter = new Guna2Button
-            {
-                Text = "Lọc",
-                BorderRadius = 4,
-                BorderThickness = 1,
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Size = new Size(100, 40),
-                Location = new Point(pnlHeader.Width - 100, 16),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Cursor = Cursors.Hand
+            // Filters Section
+            pnlFilters = new Guna2Panel 
+            { 
+                Dock = DockStyle.Top, 
+                Height = 70, 
+                CustomBorderThickness = new Padding(1), 
+                Margin = new Padding(0, 0, 0, 20), 
+                BorderRadius = 8 
             };
-            pnlHeader.Controls.Add(btnFilter);
 
             txtSearch = new Guna2TextBox
             {
                 PlaceholderText = "Tìm theo mã, tên, tác giả...",
-                BorderRadius = 4,
-                Size = new Size(300, 40),
-                Location = new Point(pnlHeader.Width - 410, 16),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F),
+                Size = new Size(300, 36),
+                Location = new Point(20, 16)
             };
             txtSearch.KeyDown += TxtSearch_KeyDown;
-            pnlHeader.Controls.Add(txtSearch);
+            
+            btnFilter = new Guna2Button
+            {
+                Text = "Lọc",
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Size = new Size(100, 36),
+                Cursor = Cursors.Hand
+            };
 
-            pnlHeader.Resize += (s, e) => {
-                btnFilter.Left = pnlHeader.Width - 100;
-                txtSearch.Left = pnlHeader.Width - 410;
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnFilter });
+            pnlFilters.Resize += (s, e) => 
+            {
+                btnFilter.Location = new Point(pnlFilters.Width - 120, 16);
             };
 
             // Grid Container
@@ -116,8 +122,6 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1,
                 Padding = new Padding(1)
             };
-            this.Controls.Add(pnlGridContainer);
-            pnlGridContainer.BringToFront();
 
             paginationControl = new PaginationControl 
             { 
@@ -138,31 +142,29 @@ namespace BookStoreManagement.UserControls
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowTemplate = { Height = 48 },
+                RowTemplate = { Height = 50 },
                 BorderStyle = BorderStyle.None,
-                ScrollBars = ScrollBars.None, // NO SCROLLBAR
+                ScrollBars = ScrollBars.None,
                 ThemeStyle = {
-                    HeaderStyle = { Font = new Font("Inter", 9F, FontStyle.Bold), Height = 48 },
-                    RowsStyle = { Font = new Font("Inter", 10F) },
-                    AlternatingRowsStyle = { Font = new Font("Inter", 10F) }
+                    HeaderStyle = { Font = new Font("Segoe UI", 9F, FontStyle.Bold), Height = 50 },
+                    RowsStyle = { Font = new Font("Segoe UI", 10F) },
+                    AlternatingRowsStyle = { Font = new Font("Segoe UI", 10F) }
                 }
             };
 
-            dgvInventory.Columns.Add("BookCode", "Mã Sách");
+            dgvInventory.Columns.Add("BookCode", "MÃ SÁCH");
             dgvInventory.Columns["BookCode"].Width = 100;
-
-            dgvInventory.Columns.Add("Tiêu đề", "Tên Sách");
+            dgvInventory.Columns.Add("Tiêu đề", "TÊN SÁCH");
             dgvInventory.Columns["Tiêu đề"].FillWeight = 200;
-
-            dgvInventory.Columns.Add("Tác giả", "Tác giả");
-            dgvInventory.Columns.Add("Danh mục", "Danh mục");
-            dgvInventory.Columns.Add("Shelf", "Vị Trí Kệ");
+            dgvInventory.Columns.Add("Tác giả", "TÁC GIẢ");
+            dgvInventory.Columns.Add("Danh mục", "DANH MỤC");
+            dgvInventory.Columns.Add("Shelf", "VỊ TRÍ KỆ");
             
-            dgvInventory.Columns.Add("Tồn kho", "Tồn Kho");
+            dgvInventory.Columns.Add("Tồn kho", "TỒN KHO");
             dgvInventory.Columns["Tồn kho"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInventory.Columns["Tồn kho"].Width = 100;
 
-            dgvInventory.Columns.Add("Trạng thái", "Trạng thái");
+            dgvInventory.Columns.Add("Trạng thái", "TRẠNG THÁI");
             dgvInventory.Columns["Trạng thái"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvInventory.Columns["Trạng thái"].Width = 120;
 
@@ -171,6 +173,13 @@ namespace BookStoreManagement.UserControls
             
             pnlGridContainer.Controls.Add(dgvInventory);
             dgvInventory.BringToFront();
+
+            var spacer = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+
+            this.Controls.Add(pnlGridContainer);
+            this.Controls.Add(spacer);
+            this.Controls.Add(pnlFilters);
+            this.Controls.Add(pnlHeader);
         }
 
         private void ApplyTheme()
@@ -179,6 +188,13 @@ namespace BookStoreManagement.UserControls
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
+            if (pnlFilters != null)
+            {
+                pnlFilters.BackColor = ThemeManager.CardBackground;
+                pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+                pnlFilters.FillColor = ThemeManager.CardBackground;
+            }
+
             txtSearch.FillColor = ThemeManager.TextBoxBackground;
             txtSearch.ForeColor = ThemeManager.TextPrimary;
             txtSearch.BorderColor = ThemeManager.TextBoxBorder;

@@ -18,11 +18,15 @@ namespace BookStoreManagement.UserControls
         private readonly CustomerService _service;
 
         private Panel pnlContent;
-        private TableLayoutPanel tlpHeader;
+        private Guna.UI2.WinForms.Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
-        private Button btnDeleteMultiple;
-        private Button btnAdd;
+        
+        private Guna.UI2.WinForms.Guna2Panel pnlFilters;
+        private Guna.UI2.WinForms.Guna2TextBox txtSearch;
+        private Guna.UI2.WinForms.Guna2ComboBox cboStatus;
+        private Guna.UI2.WinForms.Guna2Button btnDeleteMultiple;
+        private Guna.UI2.WinForms.Guna2Button btnAdd;
 
         private Panel pnlGridContainer;
         private DataGridView dgvCustomers;
@@ -59,37 +63,49 @@ namespace BookStoreManagement.UserControls
 
             pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(20), AutoScroll = false };
 
-            // 1. Header & Toolbar
-            tlpHeader = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                ColumnCount = 3,
-                RowCount = 2,
-                Height = 80,
-                Margin = new Padding(0, 0, 0, 20)
-            };
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            // 1. Header
+            pnlPageHeader = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, 20) };
 
-            lblTitle = new Label { Text = "Quản lý Khách hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Quản lý khách hàng, điểm thưởng và trạng thái.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
+            lblTitle = new Label { Text = "Quản lý Khách hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Quản lý khách hàng, điểm thưởng và trạng thái.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
+
+            // 2. Filters Bar
+            pnlFilters = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0) };
             
-            btnDeleteMultiple = new Button { Text = "Xóa mục đã chọn", Size = new Size(130, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 15, 0), Visible = false };
+            txtSearch = new Guna.UI2.WinForms.Guna2TextBox
+            {
+                PlaceholderText = "Tìm theo tên, email, sđt...",
+                Size = new Size(250, 36),
+                Location = new Point(0, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+            txtSearch.TextChanged += (s, e) => { PerformSearch(txtSearch.Text); };
+
+            cboStatus = new Guna.UI2.WinForms.Guna2ComboBox
+            {
+                Size = new Size(160, 36),
+                Location = new Point(260, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+            cboStatus.Items.AddRange(new string[] { "Tất cả trạng thái", "Đang hoạt động", "Ngừng hoạt động" });
+            cboStatus.SelectedIndex = 0;
+            cboStatus.SelectedIndexChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
+
+            btnDeleteMultiple = new Guna.UI2.WinForms.Guna2Button { Text = "Xóa mục đã chọn", Size = new Size(140, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Button { Text = "+ Thêm Khách hàng", Size = new Size(160, 40), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 10, 0, 0) };
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Thêm Khách hàng", Size = new Size(160, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            tlpHeader.Controls.Add(lblTitle, 0, 0);
-            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
-            
-            tlpHeader.Controls.Add(btnDeleteMultiple, 1, 0);
-            tlpHeader.SetRowSpan(btnDeleteMultiple, 2);
-            tlpHeader.Controls.Add(btnAdd, 2, 0);
-            tlpHeader.SetRowSpan(btnAdd, 2);
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, cboStatus, btnDeleteMultiple, btnAdd });
+            pnlFilters.Resize += (s, e) =>
+            {
+                btnAdd.Location = new Point(pnlFilters.Width - 160, 12);
+                btnDeleteMultiple.Location = new Point(pnlFilters.Width - 310, 12);
+            };
 
             // 3. Grid Container
             pnlGridContainer = new Panel { Dock = DockStyle.Fill, Padding = new Padding(1) };
@@ -158,17 +174,15 @@ namespace BookStoreManagement.UserControls
             pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
             pagination.PageChanged += async (s, args) => { _currentPage = args.NewPage; await LoadDataAsync(); };
 
-            Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
-
+            // Layout assembly
             pnlGridContainer.Controls.Add(dgvCustomers);
             
             pnlContent.Controls.Add(pnlGridContainer);
-            pnlContent.Controls.Add(spacer1);
-            pnlContent.Controls.Add(tlpHeader);
+            pnlContent.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 10 }); // Spacer
+            pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(pnlPageHeader);
             pnlContent.Controls.Add(pagination);
             
-            tlpHeader.BringToFront();
-            spacer1.BringToFront();
             pnlGridContainer.BringToFront();
 
             this.Controls.Add(pnlContent);
@@ -189,16 +203,30 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
+            pnlPageHeader.BackColor = ThemeManager.Background;
+            pnlFilters.BackColor = ThemeManager.Background;
+
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
             
-            btnAdd.BackColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = Color.White;
-            btnAdd.FlatAppearance.BorderSize = 0;
+            if (txtSearch != null)
+            {
+                txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                txtSearch.ForeColor = ThemeManager.TextPrimary;
+                txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
+            if (cboStatus != null)
+            {
+                cboStatus.FillColor = ThemeManager.TextBoxBackground;
+                cboStatus.ForeColor = ThemeManager.TextPrimary;
+                cboStatus.BorderColor = ThemeManager.TextBoxBorder;
+            }
 
-            btnDeleteMultiple.BackColor = Color.Red;
+            btnAdd.FillColor = ThemeManager.ButtonFill;
+            btnAdd.ForeColor = ThemeManager.ButtonText;
+
+            btnDeleteMultiple.FillColor = Color.Red;
             btnDeleteMultiple.ForeColor = Color.White;
-            btnDeleteMultiple.FlatAppearance.BorderSize = 0;
 
             pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
@@ -210,6 +238,15 @@ namespace BookStoreManagement.UserControls
             try
             {
                 var customers = await _service.SearchAsync(_currentSearchTerm);
+                
+                if (cboStatus != null)
+                {
+                    if (cboStatus.SelectedIndex == 1) // Đang hoạt động
+                        customers = customers.Where(c => c.IsActive).ToList();
+                    else if (cboStatus.SelectedIndex == 2) // Ngừng hoạt động
+                        customers = customers.Where(c => !c.IsActive).ToList();
+                }
+
                 int totalRecords = customers.Count;
                 int totalPages = (int)Math.Ceiling(totalRecords / (double)_pageSize);
                 

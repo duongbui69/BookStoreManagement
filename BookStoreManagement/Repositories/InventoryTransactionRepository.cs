@@ -11,6 +11,7 @@ namespace BookStoreManagement.Repositories
         public int Id { get; set; }
         public DateTime CreatedAt { get; set; }
         public string VoucherNo { get; set; } = string.Empty;
+        public string ReferenceType { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int ImportQty { get; set; }
@@ -19,14 +20,23 @@ namespace BookStoreManagement.Repositories
         public int BookId { get; set; }
     }
 
+    public class LedgerSummary
+    {
+        public int TotalIn { get; set; }
+        public int TotalOut { get; set; }
+        public int EndBalance { get; set; }
+    }
+
     public class InventoryTransactionRepository : RepositoryBase
     {
         public async Task<(List<InventoryTransactionDto> Items, int TotalCount)> GetPagedTransactionsAsync(
-            int page, int pageSize, DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0)
+            int page, int pageSize, DateTime fromDate, DateTime toDate,
+            int bookId = 0, int storeId = 0, string referenceType = "")
         {
             var filters = new List<string> { "t.CreatedAt >= @FromDate", "t.CreatedAt <= @ToDate" };
             if (bookId > 0) filters.Add("t.BookId = @BookId");
             if (storeId > 0) filters.Add("t.StoreId = @StoreId");
+            if (!string.IsNullOrEmpty(referenceType)) filters.Add("t.ReferenceType = @ReferenceType");
 
             string whereClause = "WHERE " + string.Join(" AND ", filters);
 
@@ -35,6 +45,7 @@ namespace BookStoreManagement.Repositories
                 ToDate = toDate.Date.AddDays(1).AddSeconds(-1),
                 BookId = bookId,
                 StoreId = storeId,
+                ReferenceType = referenceType,
                 Offset = (page - 1) * pageSize,
                 PageSize = pageSize
             };
@@ -66,9 +77,9 @@ namespace BookStoreManagement.Repositories
                 string voucher = refType switch
                 {
                     "PurchaseReceipt" => $"PNK-{r.CreatedAt:yyMM}-{refId:D2}",
-                    "SalesOrder" => $"PXK-{r.CreatedAt:yyMM}-{refId:D2}",
-                    "ReturnReceipt" => $"PNT-{r.CreatedAt:yyMM}-{refId:D2}",
-                    _ => $"{refType}-{refId}"
+                    "SalesOrder"      => $"PXK-{r.CreatedAt:yyMM}-{refId:D2}",
+                    "ReturnReceipt"   => $"PNT-{r.CreatedAt:yyMM}-{refId:D2}",
+                    _                 => $"{refType}-{refId}"
                 };
 
                 list.Add(new InventoryTransactionDto
@@ -76,6 +87,7 @@ namespace BookStoreManagement.Repositories
                     Id = r.Id,
                     CreatedAt = r.CreatedAt,
                     VoucherNo = voucher,
+                    ReferenceType = refType,
                     ProductName = r.ProductName ?? "",
                     Description = r.Description ?? "",
                     ImportQty = r.QuantityChange > 0 ? r.QuantityChange : 0,
@@ -86,6 +98,37 @@ namespace BookStoreManagement.Repositories
             }
 
             return (list, totalCount);
+        }
+
+        public async Task<LedgerSummary> GetLedgerSummaryAsync(
+            DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0, string referenceType = "")
+        {
+            var filters = new List<string> { "t.CreatedAt >= @FromDate", "t.CreatedAt <= @ToDate" };
+            if (bookId > 0) filters.Add("t.BookId = @BookId");
+            if (storeId > 0) filters.Add("t.StoreId = @StoreId");
+            if (!string.IsNullOrEmpty(referenceType)) filters.Add("t.ReferenceType = @ReferenceType");
+
+            string whereClause = "WHERE " + string.Join(" AND ", filters);
+
+            var parameters = new
+            {
+                FromDate = fromDate.Date,
+                ToDate = toDate.Date.AddDays(1).AddSeconds(-1),
+                BookId = bookId,
+                StoreId = storeId,
+                ReferenceType = referenceType
+            };
+
+            string sql = $@"
+                SELECT 
+                    ISNULL(SUM(CASE WHEN t.QuantityChange > 0 THEN t.QuantityChange ELSE 0 END), 0) AS TotalIn,
+                    ISNULL(SUM(CASE WHEN t.QuantityChange < 0 THEN ABS(t.QuantityChange) ELSE 0 END), 0) AS TotalOut,
+                    ISNULL(SUM(t.QuantityChange), 0) AS EndBalance
+                FROM InventoryTransactions t
+                {whereClause}";
+
+            return await QueryFirstOrDefaultAsync<LedgerSummary>(sql, parameters)
+                   ?? new LedgerSummary();
         }
 
         private class RawTransactionDto
@@ -102,7 +145,6 @@ namespace BookStoreManagement.Repositories
             public int StoreId { get; set; }
             public int Balance { get; set; }
         }
-
 
         public InventoryTransaction? GetById(int id)
         {
@@ -140,7 +182,6 @@ namespace BookStoreManagement.Repositories
 
         public bool Delete(int id)
         {
-            // Note: Deleting a transaction should ideally adjust the actual Book Quantity, but for simplicity we just remove the log.
             return ExecuteNonQuery("DELETE FROM InventoryTransactions WHERE Id = @Id", p => AddParameter(p, "@Id", id)) > 0;
         }
 
@@ -158,7 +199,6 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
         {
-            // Note: Deleting a transaction should ideally adjust the actual Book Quantity, but for simplicity we just remove the log.
             const string sql = "DELETE FROM InventoryTransactions WHERE Id = @Id";
             return await ExecuteAsync(sql, new { Id = id }) > 0;
         }

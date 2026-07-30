@@ -25,6 +25,7 @@ namespace BookStoreManagement.UserControls
         private Guna2HtmlLabel lblSubtitle;
         private Guna2TextBox txtSearch;
         private Guna2Button btnFilter;
+        private Guna2Panel pnlFilters;
 
         private Guna2Panel pnlCards;
         private SummaryCard cardTotal;
@@ -59,86 +60,97 @@ namespace BookStoreManagement.UserControls
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(24);
+            this.Padding = new Padding(32);
 
             // 1. Header Section
             pnlHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(0, 0, 0, 16)
+                Height = 100,
+                BackColor = Color.Transparent
             };
-            this.Controls.Add(pnlHeader);
 
             lblTitle = new Guna2HtmlLabel
             {
                 Text = "Lịch sử hóa đơn",
-                Font = new Font("Inter", 18F, FontStyle.Bold),
-                Location = new Point(0, 10)
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                Location = new Point(0, 0)
             };
             pnlHeader.Controls.Add(lblTitle);
 
             lblSubtitle = new Guna2HtmlLabel
             {
                 Text = $"Ca làm việc hiện tại: Hôm nay ({DateTime.Today:dd/MM/yyyy})",
-                Font = new Font("Inter", 10F),
-                Location = new Point(0, 55)
+                Font = new Font("Segoe UI", 11F),
+                Location = new Point(0, 45)
             };
             pnlHeader.Controls.Add(lblSubtitle);
 
-            btnFilter = new Guna2Button
-            {
-                Text = "Lọc",
-                BorderRadius = 4,
-                BorderThickness = 1,
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Size = new Size(100, 40),
-                Location = new Point(pnlHeader.Width - 100, 16),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Cursor = Cursors.Hand
+            // Filters Section
+            pnlFilters = new Guna2Panel 
+            { 
+                Dock = DockStyle.Top, 
+                Height = 70, 
+                CustomBorderThickness = new Padding(1), 
+                Margin = new Padding(0, 0, 0, 20), 
+                BorderRadius = 8 
             };
-            pnlHeader.Controls.Add(btnFilter);
 
             txtSearch = new Guna2TextBox
             {
                 PlaceholderText = "Tìm theo mã hóa đơn...",
-                BorderRadius = 4,
-                Size = new Size(250, 40),
-                Location = new Point(pnlHeader.Width - 360, 16),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 9F),
+                Size = new Size(250, 36),
+                Location = new Point(20, 16)
             };
             txtSearch.KeyDown += TxtSearch_KeyDown;
-            pnlHeader.Controls.Add(txtSearch);
+            
+            btnFilter = new Guna2Button
+            {
+                Text = "Lọc",
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Size = new Size(100, 36),
+                Cursor = Cursors.Hand
+            };
 
-            pnlHeader.Resize += (s, e) => {
-                btnFilter.Left = pnlHeader.Width - 100;
-                txtSearch.Left = pnlHeader.Width - 360;
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnFilter });
+            pnlFilters.Resize += (s, e) => 
+            {
+                btnFilter.Location = new Point(pnlFilters.Width - 120, 16);
             };
 
             // 2. Cards Section
-            pnlCards = new Guna2Panel
+            TableLayoutPanel tlpCards = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
                 Height = 110,
-                Padding = new Padding(0, 0, 0, 20)
+                Padding = new Padding(0, 0, 0, 20),
+                ColumnCount = 3,
+                RowCount = 1
             };
-            this.Controls.Add(pnlCards);
+            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            
+            pnlCards = new Guna2Panel(); 
 
             cardTotal = new SummaryCard("Tổng số HĐ", "0", "receipt", Color.FromArgb(43, 73, 103)); 
             cardRevenue = new SummaryCard("Doanh thu ca", "0 đ", "payments", Color.FromArgb(0, 186, 97)); 
             cardTransfer = new SummaryCard("Chuyển khoản", "0 đ", "credit_card", Color.FromArgb(115, 69, 182)); 
 
-            pnlCards.Controls.Add(cardTotal);
-            pnlCards.Controls.Add(cardRevenue);
-            pnlCards.Controls.Add(cardTransfer);
+            cardTotal.Dock = DockStyle.Fill;
+            cardRevenue.Dock = DockStyle.Fill;
+            cardTransfer.Dock = DockStyle.Fill;
 
-            pnlCards.Resize += (s, e) =>
-            {
-                int cardWidth = (pnlCards.Width - 40) / 3; // 20px gap between cards
-                cardTotal.Bounds = new Rectangle(0, 0, cardWidth, 80);
-                cardRevenue.Bounds = new Rectangle(cardWidth + 20, 0, cardWidth, 80);
-                cardTransfer.Bounds = new Rectangle(cardWidth * 2 + 40, 0, cardWidth, 80);
-            };
+            cardTotal.Margin = new Padding(0, 0, 16, 0);
+            cardRevenue.Margin = new Padding(0, 0, 16, 0);
+            cardTransfer.Margin = new Padding(0, 0, 0, 0);
+
+            tlpCards.Controls.Add(cardTotal, 0, 0);
+            tlpCards.Controls.Add(cardRevenue, 1, 0);
+            tlpCards.Controls.Add(cardTransfer, 2, 0);
 
             // 3. Grid Container
             pnlGridContainer = new Guna2Panel
@@ -148,8 +160,6 @@ namespace BookStoreManagement.UserControls
                 BorderThickness = 1,
                 Padding = new Padding(1)
             };
-            this.Controls.Add(pnlGridContainer);
-            pnlGridContainer.BringToFront();
 
             paginationControl = new PaginationControl 
             { 
@@ -172,18 +182,18 @@ namespace BookStoreManagement.UserControls
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowTemplate = { Height = 48 },
                 BorderStyle = BorderStyle.None,
-                ScrollBars = ScrollBars.None, // NO SCROLLBAR
+                ScrollBars = ScrollBars.None,
                 ThemeStyle = {
-                    HeaderStyle = { Font = new Font("Inter", 9F, FontStyle.Bold), Height = 48 },
-                    RowsStyle = { Font = new Font("Inter", 10F) },
-                    AlternatingRowsStyle = { Font = new Font("Inter", 10F) }
+                    HeaderStyle = { Font = new Font("Segoe UI", 9F, FontStyle.Bold), Height = 48 },
+                    RowsStyle = { Font = new Font("Segoe UI", 10F) },
+                    AlternatingRowsStyle = { Font = new Font("Segoe UI", 10F) }
                 }
             };
 
             dgvInvoices.Columns.Add("Id", "Id"); // Hidden
             dgvInvoices.Columns["Id"].Visible = false;
 
-            dgvInvoices.Columns.Add("OrderCode", "Mã HĐ");
+            dgvInvoices.Columns.Add("OrderCode", "MÃ HĐ");
             dgvInvoices.Columns["OrderCode"].Width = 120;
 
             dgvInvoices.Columns.Add("OrderDate", "Thời gian");
@@ -215,9 +225,15 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.Controls.Add(dgvInvoices);
             dgvInvoices.BringToFront();
 
-            // Fix z-order so grid is below cards and header
-            pnlCards.BringToFront();
-            pnlHeader.BringToFront();
+            var spacer1 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+            var spacer2 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+
+            this.Controls.Add(pnlGridContainer);
+            this.Controls.Add(spacer1);
+            this.Controls.Add(tlpCards);
+            this.Controls.Add(spacer2);
+            this.Controls.Add(pnlFilters);
+            this.Controls.Add(pnlHeader);
         }
 
         private void ApplyTheme()
@@ -226,6 +242,13 @@ namespace BookStoreManagement.UserControls
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
+            if (pnlFilters != null)
+            {
+                pnlFilters.BackColor = ThemeManager.CardBackground;
+                pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+                pnlFilters.FillColor = ThemeManager.CardBackground;
+            }
+
             txtSearch.FillColor = ThemeManager.TextBoxBackground;
             txtSearch.ForeColor = ThemeManager.TextPrimary;
             txtSearch.BorderColor = ThemeManager.TextBoxBorder;

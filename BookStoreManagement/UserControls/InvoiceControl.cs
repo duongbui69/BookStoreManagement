@@ -19,12 +19,16 @@ namespace BookStoreManagement.UserControls
         private readonly SalesOrderService _service;
 
         private Panel pnlContent;
-        private TableLayoutPanel tlpHeader;
+        private Guna.UI2.WinForms.Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
-        private Button btnFilter;
-        private Button btnAdd;
-        private TextBox txtSearch;
+        
+        private Guna.UI2.WinForms.Guna2Panel pnlFilters;
+        private Guna.UI2.WinForms.Guna2TextBox txtSearch;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpFrom;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpTo;
+        private Guna.UI2.WinForms.Guna2Button btnFilter;
+        private Guna.UI2.WinForms.Guna2Button btnAdd;
 
         private Panel pnlGridContainer;
         private DataGridView dgvInvoices;
@@ -82,52 +86,69 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(30), AutoScroll = false };
 
             // 1. Header
-            tlpHeader = new TableLayoutPanel
+            pnlPageHeader = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, 20) };
+
+            lblTitle = new Label { Text = "Quản lý hóa đơn", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Danh sách hóa đơn bán hàng", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
+
+            // 2. Filters Bar
+            pnlFilters = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0) };
+            
+            txtSearch = new Guna.UI2.WinForms.Guna2TextBox
             {
-                Dock = DockStyle.Top,
-                ColumnCount = 4,
-                RowCount = 2,
-                Height = 80,
-                Margin = new Padding(0, 0, 0, 20)
+                PlaceholderText = "Tìm hóa đơn...",
+                Size = new Size(250, 36),
+                Location = new Point(0, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
             };
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-
-            lblTitle = new Label { Text = "Quản lý hóa đơn", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Danh sách hóa đơn bán hàng", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 5, 0, 0) };
-            
-            txtSearch = new TextBox { Width = 250, Font = new Font("Segoe UI", 11F), Margin = new Padding(0, 15, 10, 0), BorderStyle = BorderStyle.FixedSingle };
-            txtSearch.PlaceholderText = "Tìm hóa đơn...";
-            txtSearch.KeyDown += async (s, e) => {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    e.SuppressKeyPress = true;
-                    _currentSearchTerm = txtSearch.Text;
-                    _currentPage = 1;
-                    await LoadDataAsync();
-                }
+            txtSearch.TextChanged += async (s, e) => {
+                _currentSearchTerm = txtSearch.Text;
+                _currentPage = 1;
+                await LoadDataAsync();
             };
 
-            btnFilter = new Button { Text = " Lọc", Size = new Size(100, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 10, 0) };
-            
-            btnAdd = new Button { Text = "+ Tạo Hóa Đơn", Size = new Size(160, 36), Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 12, 0, 0) };
+            dtpFrom = new Guna.UI2.WinForms.Guna2DateTimePicker
+            {
+                Size = new Size(140, 36),
+                Location = new Point(260, 12),
+                BorderRadius = 6,
+                Format = DateTimePickerFormat.Short,
+                Font = new Font("Segoe UI", 9F)
+            };
+            // Default to 1st of current month
+            dtpFrom.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+            dtpTo = new Guna.UI2.WinForms.Guna2DateTimePicker
+            {
+                Size = new Size(140, 36),
+                Location = new Point(410, 12),
+                BorderRadius = 6,
+                Format = DateTimePickerFormat.Short,
+                Font = new Font("Segoe UI", 9F)
+            };
+            dtpTo.Value = DateTime.Now;
+
+            btnFilter = new Guna.UI2.WinForms.Guna2Button
+            {
+                Text = "Lọc",
+                Size = new Size(80, 36),
+                Location = new Point(560, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnFilter.Click += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
+
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ Tạo Hóa Đơn", Size = new Size(160, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            tlpHeader.Controls.Add(lblTitle, 0, 0);
-            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
-            
-            tlpHeader.Controls.Add(txtSearch, 1, 0);
-            tlpHeader.SetRowSpan(txtSearch, 2);
-            
-            tlpHeader.Controls.Add(btnFilter, 2, 0);
-            tlpHeader.SetRowSpan(btnFilter, 2);
-            
-            tlpHeader.Controls.Add(btnAdd, 3, 0);
-            tlpHeader.SetRowSpan(btnAdd, 2);
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, dtpFrom, dtpTo, btnFilter, btnAdd });
+            pnlFilters.Resize += (s, e) =>
+            {
+                btnAdd.Location = new Point(pnlFilters.Width - 160, 12);
+            };
 
             // 2. Grid Container
             pnlGridContainer = new Panel { Dock = DockStyle.Fill, Padding = new Padding(1) };
@@ -188,11 +209,16 @@ namespace BookStoreManagement.UserControls
 
             dgvInvoices.Resize += DgvInvoices_Resize;
 
+            // Layout assembly
             pnlGridContainer.Controls.Add(dgvInvoices);
             
             pnlContent.Controls.Add(pnlGridContainer);
-            pnlContent.Controls.Add(tlpHeader);
+            pnlContent.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 10 }); // Spacer
+            pnlContent.Controls.Add(pnlFilters);
+            pnlContent.Controls.Add(pnlPageHeader);
             pnlContent.Controls.Add(pagination);
+            
+            pnlGridContainer.BringToFront();
 
             this.Controls.Add(pnlContent);
             ApplyTheme();
@@ -212,19 +238,33 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
+            pnlPageHeader.BackColor = ThemeManager.Background;
+            pnlFilters.BackColor = ThemeManager.Background;
+
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
             
-            txtSearch.BackColor = ThemeManager.CardBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            
-            btnAdd.BackColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = Color.White;
-            btnAdd.FlatAppearance.BorderSize = 0;
+            if (txtSearch != null)
+            {
+                txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                txtSearch.ForeColor = ThemeManager.TextPrimary;
+                txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
+            if (dtpFrom != null)
+            {
+                dtpFrom.FillColor = ThemeManager.TextBoxBackground;
+                dtpFrom.ForeColor = ThemeManager.TextPrimary;
+                dtpTo.FillColor = ThemeManager.TextBoxBackground;
+                dtpTo.ForeColor = ThemeManager.TextPrimary;
+            }
+            if (btnFilter != null)
+            {
+                btnFilter.FillColor = ThemeManager.ButtonFill;
+                btnFilter.ForeColor = ThemeManager.ButtonText;
+            }
 
-            btnFilter.BackColor = ThemeManager.CardBackground;
-            btnFilter.ForeColor = ThemeManager.TextPrimary;
-            btnFilter.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            btnAdd.FillColor = ThemeManager.ButtonFill;
+            btnAdd.ForeColor = ThemeManager.ButtonText;
 
             pnlGridContainer.BackColor = ThemeManager.TextBoxBorder;
 
@@ -236,6 +276,13 @@ namespace BookStoreManagement.UserControls
             try
             {
                 var orders = await _service.GetAllAsync(); // Retrieve all or apply date filters as needed
+                
+                if (dtpFrom != null && dtpTo != null)
+                {
+                    DateTime fromDate = dtpFrom.Value.Date;
+                    DateTime toDate = dtpTo.Value.Date.AddDays(1).AddTicks(-1);
+                    orders = orders.Where(o => o.OrderDate >= fromDate && o.OrderDate <= toDate).ToList();
+                }
 
                 if (!string.IsNullOrWhiteSpace(_currentSearchTerm))
                 {

@@ -15,15 +15,25 @@ namespace BookStoreManagement.Services
         }
 
         public (List<InventoryTransactionDto> Items, int TotalCount) GetPagedTransactions(
-            int page, int pageSize, DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0)
+            int page, int pageSize, DateTime fromDate, DateTime toDate,
+            int bookId = 0, int storeId = 0, string referenceType = "")
         {
-            return System.Threading.Tasks.Task.Run(() => _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId)).GetAwaiter().GetResult();
+            return System.Threading.Tasks.Task.Run(() =>
+                _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId, referenceType))
+                .GetAwaiter().GetResult();
         }
 
         public async System.Threading.Tasks.Task<(List<InventoryTransactionDto> Items, int TotalCount)> GetPagedTransactionsAsync(
-            int page, int pageSize, DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0)
+            int page, int pageSize, DateTime fromDate, DateTime toDate,
+            int bookId = 0, int storeId = 0, string referenceType = "")
         {
-            return await _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId);
+            return await _repo.GetPagedTransactionsAsync(page, pageSize, fromDate, toDate, bookId, storeId, referenceType);
+        }
+
+        public async System.Threading.Tasks.Task<LedgerSummary> GetLedgerSummaryAsync(
+            DateTime fromDate, DateTime toDate, int bookId = 0, int storeId = 0, string referenceType = "")
+        {
+            return await _repo.GetLedgerSummaryAsync(fromDate, toDate, bookId, storeId, referenceType);
         }
 
         public InventoryTransaction? GetById(int id)

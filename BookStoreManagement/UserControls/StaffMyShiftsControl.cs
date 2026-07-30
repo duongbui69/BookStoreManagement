@@ -82,15 +82,15 @@ namespace BookStoreManagement.UserControls
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(24);
+            this.Padding = new Padding(32);
 
             // Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 100 };
             lblTitle = new Guna2HtmlLabel
             {
-                Text = "Ca của tôi",
-                Font = new Font("Inter", 18F, FontStyle.Bold),
-                Location = new Point(0, 10)
+                Text = "Ca làm việc của tôi",
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                Location = new Point(0, 0)
             };
             pnlHeader.Controls.Add(lblTitle);
             this.Controls.Add(pnlHeader);

@@ -1,33 +1,34 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.Forms
 {
-    public partial class AuthorForm : Form
+    public class AuthorForm : Form
     {
         private AuthorRepository _authorRepository;
-        private Author? _currentAuthor;
-        public bool IsDataSaved { get; private set; }
+        private Author _currentAuthor;
+        public bool IsDataSaved { get; private set; } = false;
 
-        private Label lblTitle, lblId, lblName, lblNationality, lblDescription, lblStatus;
-        private TextBox txtId, txtName, txtNationality, txtDescription;
-        private CheckBox chkIsActive;
-        private Button btnSave, btnCancel;
+        private Label lblTitle;
+        private Guna2TextBox txtId, txtName, txtNationality, txtDescription;
+        private Guna2CheckBox chkIsActive;
+        private Guna2Button btnSave, btnCancel;
 
         public AuthorForm(int? authorId = null)
         {
-            InitializeComponentLayout();
             _authorRepository = new AuthorRepository();
+            InitializeComponentLayout();
             ApplyTheme();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
 
             if (authorId.HasValue)
             {
-                lblTitle.Text = "Sửa Tác giả";
+                lblTitle.Text = "Chỉnh sửa Tác giả";
                 LoadAuthorData(authorId.Value);
             }
             else
@@ -42,63 +43,66 @@ namespace BookStoreManagement.Forms
         private void InitializeComponentLayout()
         {
             this.Text = "Cập nhật Tác giả";
-            this.Size = new Size(500, 550);
+            this.Size = new Size(500, 580);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            lblTitle = new Label { Location = new Point(24, 24), AutoSize = true, Font = new Font("Segoe UI", 16, FontStyle.Bold) };
+            lblTitle = new Label { Location = new Point(24, 20), AutoSize = true, Font = new Font("Segoe UI", 18F, FontStyle.Bold) };
             this.Controls.Add(lblTitle);
 
-            int startY = 80;
-            int padding = 20;
+            int startY = 70;
 
-            lblId = new Label { Text = "Mã tác giả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            txtId = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10), ReadOnly = true, Enabled = false };
-            this.Controls.AddRange(new Control[] { lblId, txtId });
-            startY += 70;
+            txtId = CreateInput("Mã tác giả", ref startY);
+            txtId.ReadOnly = true;
+            txtId.Enabled = false;
 
-            lblName = new Label { Text = "Tên Tác giả (*)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            txtName = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
-            this.Controls.AddRange(new Control[] { lblName, txtName });
-            startY += 70;
+            txtName = CreateInput("Tên Tác giả (*)", ref startY);
+            txtNationality = CreateInput("Quốc tịch", ref startY);
+            
+            Label lblDesc = new Label { Text = "Mô tả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            txtDescription = new Guna2TextBox { Location = new Point(24, startY + 25), Width = 436, Height = 80, Multiline = true, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            this.Controls.AddRange(new Control[] { lblDesc, txtDescription });
+            startY += 120;
 
-            lblNationality = new Label { Text = "Quốc tịch", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            txtNationality = new TextBox { Location = new Point(24, startY + 25), Width = 436, Font = new Font("Segoe UI", 10) };
-            this.Controls.AddRange(new Control[] { lblNationality, txtNationality });
-            startY += 70;
+            chkIsActive = new Guna2CheckBox { Text = "Đang hoạt động", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10F) };
+            this.Controls.Add(chkIsActive);
 
-            lblDescription = new Label { Text = "Mô tả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            txtDescription = new TextBox { Location = new Point(24, startY + 25), Width = 436, Height = 60, Multiline = true, Font = new Font("Segoe UI", 10) };
-            this.Controls.AddRange(new Control[] { lblDescription, txtDescription });
-            startY += 100;
-
-            lblStatus = new Label { Text = "Trạng thái", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            chkIsActive = new CheckBox { Text = "Đang hoạt động", Location = new Point(24, startY + 25), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            this.Controls.AddRange(new Control[] { lblStatus, chkIsActive });
-
-            btnCancel = new Button
+            btnCancel = new Guna2Button
             {
                 Text = "Hủy bỏ",
-                Size = new Size(100, 36),
-                Location = new Point(this.Width - 250, this.Height - 80),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10)
+                Size = new Size(100, 45),
+                Location = new Point(this.Width - 140, this.Height - 100),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                FillColor = Color.Transparent,
+                BorderThickness = 1
             };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
-            btnSave = new Button
+            btnSave = new Guna2Button
             {
                 Text = "Lưu thay đổi",
-                Size = new Size(120, 36),
-                Location = new Point(this.Width - 140, this.Height - 80),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10)
+                Size = new Size(130, 45),
+                Location = new Point(this.Width - 280, this.Height - 100),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
             btnSave.Click += BtnSave_Click;
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
+        }
+
+        private Guna2TextBox CreateInput(string label, ref int y)
+        {
+            Label lbl = new Label { Text = label, Location = new Point(24, y), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            Guna2TextBox txt = new Guna2TextBox { Location = new Point(24, y + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            this.Controls.AddRange(new Control[] { lbl, txt });
+            y += 75;
+            return txt;
         }
 
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
@@ -110,30 +114,31 @@ namespace BookStoreManagement.Forms
         {
             this.BackColor = ThemeManager.CardBackground;
             lblTitle.ForeColor = ThemeManager.TextPrimary;
-            
-            Label[] labels = { lblId, lblName, lblNationality, lblDescription, lblStatus };
-            foreach (var lbl in labels)
-            {
-                lbl.ForeColor = ThemeManager.TextSecondary;
-            }
 
-            TextBox[] textBoxes = { txtId, txtName, txtNationality, txtDescription };
-            foreach (var txt in textBoxes)
+            foreach (Control control in this.Controls)
             {
-                txt.BackColor = ThemeManager.TextBoxBackground;
-                txt.ForeColor = ThemeManager.TextPrimary;
-                txt.BorderStyle = BorderStyle.FixedSingle;
+                if (control is Label lbl && lbl != lblTitle)
+                {
+                    lbl.ForeColor = ThemeManager.TextPrimary;
+                }
+                else if (control is Guna2TextBox txt)
+                {
+                    txt.FillColor = ThemeManager.TextBoxBackground;
+                    txt.ForeColor = ThemeManager.TextPrimary;
+                    txt.BorderColor = ThemeManager.TextBoxBorder;
+                    txt.FocusedState.BorderColor = ThemeManager.ButtonFill;
+                }
+                else if (control is Guna2CheckBox chk)
+                {
+                    chk.ForeColor = ThemeManager.TextPrimary;
+                }
             }
 
             btnCancel.ForeColor = ThemeManager.TextPrimary;
-            btnCancel.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
-            btnCancel.BackColor = ThemeManager.CardBackground;
+            btnCancel.BorderColor = ThemeManager.TextBoxBorder;
 
-            btnSave.BackColor = ThemeManager.ButtonFill;
+            btnSave.FillColor = ThemeManager.ButtonFill;
             btnSave.ForeColor = ThemeManager.ButtonText;
-            btnSave.FlatAppearance.BorderSize = 0;
-            
-            chkIsActive.ForeColor = ThemeManager.TextPrimary;
         }
 
         private async void LoadAuthorData(int id)
@@ -188,10 +193,12 @@ namespace BookStoreManagement.Forms
                 if (_currentAuthor.Id == 0)
                 {
                     await _authorRepository.AddAsync(_currentAuthor);
+                    MessageBox.Show("Thêm mới thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
                     await _authorRepository.UpdateAsync(_currentAuthor);
+                    MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
                 IsDataSaved = true;
@@ -199,9 +206,8 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi lưu dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi khi lưu dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
 }
-

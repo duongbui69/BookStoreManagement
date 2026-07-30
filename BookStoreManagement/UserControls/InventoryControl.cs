@@ -52,8 +52,10 @@ namespace BookStoreManagement.UserControls
         
         private int _currentPage = 1;
         private int _pageSize = 10;
-        private bool _isCalculatingPageSize = false;
         private string _currentSearchTerm = "";
+        
+        private bool _isCalculatingPageSize = false;
+        private System.Windows.Forms.Timer _resizeTimer;
         
         private int _hoveredRowIndex = -1;
         private int _hoveredAction = 0; // 1 = View/Edit, 2 = Delete
@@ -68,27 +70,32 @@ namespace BookStoreManagement.UserControls
 
         public InventoryControl()
         {
+            _resizeTimer = new System.Windows.Forms.Timer { Interval = 150 };
+            _resizeTimer.Tick += ResizeTimer_Tick;
+
             _inventoryService = new InventoryService();
             _categoryService = new CategoryService();
             _storeService = new StoreService();
             
             InitializeUI();
-            LoadFilters();
             ApplyTheme();
             
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Load += (s, e) => { LoadData(); };
+            this.Load += async (s, e) => { 
+                await LoadFiltersAsync();
+                LoadData(); 
+            };
         }
         
-        private void LoadFilters()
+        private async System.Threading.Tasks.Task LoadFiltersAsync()
         {
-            var categories = _categoryService.GetActive();
+            var categories = await _categoryService.GetActiveAsync();
             categories.Insert(0, new Models.Category { Id = 0, CategoryName = "Tất cả Danh mục" });
             cbCategory.DataSource = categories;
             cbCategory.DisplayMember = "CategoryName";
             cbCategory.ValueMember = "CategoryName";
             
-            var stores = _storeService.GetActive();
+            var stores = await _storeService.GetActiveAsync();
             stores.Insert(0, new Models.Store { Id = 0, StoreName = "Cửa hàng: Tất cả" });
             cbWarehouse.DataSource = stores;
             cbWarehouse.DisplayMember = "StoreName";
@@ -107,26 +114,32 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(30) };
             
             // 1. Header
-            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80 };
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 76 };
             lblTitle = new Label { Text = "Thống kê kho", Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu kho hiện tại.", Font = new Font("Segoe UI", 14), AutoSize = true, Location = new Point(0, 55) };
-            lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(700, 20) };
+            lblSubTitle = new Label { Text = "Tổng quan và phân tích dữ liệu kho hiện tại.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(2, 44) };
+            lblLastUpdated = new Label { Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(700, 20) };
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle, lblLastUpdated });
             
+            // Spacer between header and KPI cards
+            var spacerKpi = new Panel { Dock = DockStyle.Top, Height = 16, BackColor = Color.Transparent };
+
             // 2. KPI Cards
-            pnlKpiContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(0, 20, 0, 20) };
+            pnlKpiContainer = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(0) };
             
             cardTotalStock = CreateKpiCard("Tổng tồn kho", "0", 0);
             cardCriticalStock = CreateKpiCard("Sách sắp hết (Critical)", "0", 1);
             cardStockValue = CreateKpiCard("Giá trị tồn kho", "0 ₫", 2);
             
             pnlKpiContainer.Controls.AddRange(new Control[] { cardTotalStock, cardCriticalStock, cardStockValue });
+            // set card heights properly inside the container
             pnlKpiContainer.Resize += (s, e) => 
             {
+                if (pnlKpiContainer.Width <= 0) return; // Guard: tránh set size âm khi chưa layout
                 int cardWidth = (pnlKpiContainer.Width - 40) / 3;
-                cardTotalStock.Width = cardWidth; cardTotalStock.Left = 0;
-                cardCriticalStock.Width = cardWidth; cardCriticalStock.Left = cardWidth + 20;
-                cardStockValue.Width = cardWidth; cardStockValue.Left = (cardWidth + 20) * 2;
+                int cardH = pnlKpiContainer.Height;
+                cardTotalStock.Width = cardWidth; cardTotalStock.Height = cardH; cardTotalStock.Left = 0; cardTotalStock.Top = 0;
+                cardCriticalStock.Width = cardWidth; cardCriticalStock.Height = cardH; cardCriticalStock.Left = cardWidth + 20; cardCriticalStock.Top = 0;
+                cardStockValue.Width = cardWidth; cardStockValue.Height = cardH; cardStockValue.Left = (cardWidth + 20) * 2; cardStockValue.Top = 0;
             };
             
             // 3. Toolbar (Filters)
@@ -183,20 +196,25 @@ namespace BookStoreManagement.UserControls
             
             dgvInventory.Resize += DgvInventory_Resize;
 
-            // Assemble layout
-            pnlContent.Controls.Add(pnlGridContainer);
-            pnlContent.Controls.Add(pnlToolbar);
-            pnlContent.Controls.Add(pnlKpiContainer);
-            pnlContent.Controls.Add(pnlPageHeader);
+            // Đảm bảo Z-order chuẩn (Top to Bottom, then Fill)
+            pnlContent.Controls.AddRange(new Control[] {
+                pnlPageHeader, pnlKpiContainer, spacerKpi, pnlToolbar, pnlGridContainer
+            });
+
+            pnlPageHeader.BringToFront();
+            pnlKpiContainer.BringToFront();
+            spacerKpi.BringToFront();
+            pnlToolbar.BringToFront();
+            pnlGridContainer.BringToFront();
             
             this.Controls.Add(pnlContent);
         }
         
         private Guna2Panel CreateKpiCard(string title, string value, int type)
         {
-            var card = new Guna2Panel { BorderRadius = 8, BorderThickness = 1 };
-            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 11, FontStyle.Bold), AutoSize = true, Location = new Point(20, 20) };
-            var lblV = new Label { Text = value, Font = new Font("Segoe UI", 24, FontStyle.Bold), AutoSize = true, Location = new Point(20, 45) };
+            var card = new Guna2Panel { BorderRadius = 10, BorderThickness = 1 };
+            var lblT = new Label { Text = title.ToUpper(), Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 14) };
+            var lblV = new Label { Text = value, Font = new Font("Segoe UI", 22F, FontStyle.Bold), AutoSize = true, Location = new Point(18, 32) };
             card.Controls.AddRange(new Control[] { lblT, lblV });
             
             // Add a reference to the value label so we can update it
@@ -233,8 +251,14 @@ namespace BookStoreManagement.UserControls
 
         private void DgvInventory_Resize(object sender, EventArgs e)
         {
-            if (_isCalculatingPageSize) return;
-            _isCalculatingPageSize = true;
+            _resizeTimer.Stop();
+            _resizeTimer.Start();
+        }
+
+        private void ResizeTimer_Tick(object sender, EventArgs e)
+        {
+            _resizeTimer.Stop();
+            if (this.IsDisposed) return;
             
             if (dgvInventory.Height > 0)
             {
@@ -249,13 +273,14 @@ namespace BookStoreManagement.UserControls
                     LoadData();
                 }
             }
-            _isCalculatingPageSize = false;
         }
 
-        private void LoadData()
+        private async void LoadData()
         {
+            if (this.IsDisposed) return;
             // Load KPIs
-            var stats = _inventoryService.GetStats();
+            var stats = await _inventoryService.GetStatsAsync();
+            if (this.IsDisposed) return;
             lblTotalStockValue.Text = stats.TotalItems.ToString("N0");
             lblCriticalStockValue.Text = stats.OutOfStock.ToString("N0");
             lblStockValue.Text = stats.StockValue.ToString("N0") + " ₫";
@@ -264,8 +289,9 @@ namespace BookStoreManagement.UserControls
             string wFilter = cbWarehouse.SelectedIndex > 0 ? cbWarehouse.SelectedValue.ToString() : "";
             string cFilter = cbCategory.SelectedIndex > 0 ? cbCategory.SelectedValue.ToString() : "";
             
-            var result = _inventoryService.GetPagedInventoryItems(_currentPage, _pageSize, _currentSearchTerm, wFilter, cFilter);
+            var result = await _inventoryService.GetPagedInventoryItemsAsync(_currentPage, _pageSize, _currentSearchTerm, wFilter, cFilter);
             
+            if (this.IsDisposed) return;
             dgvInventory.Rows.Clear();
             int index = (_currentPage - 1) * _pageSize + 1;
             foreach (var item in result.Items)
@@ -477,20 +503,23 @@ namespace BookStoreManagement.UserControls
             lblLastUpdated.ForeColor = ThemeManager.TextSecondary;
             
             // Cards
+            cardTotalStock.BackColor = Color.Transparent;
             cardTotalStock.FillColor = ThemeManager.CardBackground;
             cardTotalStock.BorderColor = ThemeManager.TextBoxBorder;
             lblTotalStockTitle.ForeColor = ThemeManager.TextSecondary;
-            lblTotalStockValue.ForeColor = ThemeManager.TextPrimary;
+            lblTotalStockValue.ForeColor = Color.FromArgb(41, 128, 185);
             
+            cardCriticalStock.BackColor = Color.Transparent;
             cardCriticalStock.FillColor = ThemeManager.CardBackground;
-            cardCriticalStock.BorderColor = Color.FromArgb(231, 76, 60);
-            lblCriticalStockTitle.ForeColor = Color.FromArgb(231, 76, 60);
+            cardCriticalStock.BorderColor = ThemeManager.TextBoxBorder;
+            lblCriticalStockTitle.ForeColor = ThemeManager.TextSecondary;
             lblCriticalStockValue.ForeColor = Color.FromArgb(231, 76, 60);
             
+            cardStockValue.BackColor = Color.Transparent;
             cardStockValue.FillColor = ThemeManager.CardBackground;
             cardStockValue.BorderColor = ThemeManager.TextBoxBorder;
             lblStockValueTitle.ForeColor = ThemeManager.TextSecondary;
-            lblStockValue.ForeColor = ThemeManager.TextPrimary;
+            lblStockValue.ForeColor = Color.FromArgb(0, 186, 97);
             
             // Toolbar
             pnlToolbar.FillColor = ThemeManager.Background;

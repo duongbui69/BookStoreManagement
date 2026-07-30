@@ -47,6 +47,7 @@ namespace BookStoreManagement.Repositories
                 ShelfLocation = GetNullableString(reader, "ShelfLocation"),
                 StockStatus = GetString(reader, "StockStatus"),
                 IsActive = GetBool(reader, "IsActive"),
+                ImagePath = GetNullableString(reader, "ImagePath"),
                 CreatedAt = GetDateTime(reader, "CreatedAt"),
                 UpdatedAt = GetNullableDateTime(reader, "UpdatedAt")
             };

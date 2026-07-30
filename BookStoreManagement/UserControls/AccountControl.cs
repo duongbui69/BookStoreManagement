@@ -26,7 +26,7 @@ namespace BookStoreManagement.UserControls
 
         // Toolbar
         private Guna2Panel pnlToolbar;
-        private Guna2Button btnFilter;
+        private Guna2TextBox txtSearch;
         private Guna2Button btnAdd;
 
         // Grid
@@ -84,17 +84,31 @@ namespace BookStoreManagement.UserControls
                 RowCount = 1,
                 Margin = new Padding(0)
             };
+            tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // txtSearch
             tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F)); // Spacer
-            tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tlpToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // btnAdd
 
-            btnFilter = new Guna2Button { Text = "Lọc", Size = new Size(100, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, BorderThickness = 1, Margin = new Padding(0, 0, 15, 0) };
-            btnAdd = new Guna2Button { Text = "+ Thêm Người dùng", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0) };
+            txtSearch = new Guna2TextBox
+            {
+                PlaceholderText = "Tìm theo tên, username...",
+                Size = new Size(250, 36),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 9F),
+                Margin = new Padding(0, 0, 15, 0)
+            };
+            txtSearch.TextChanged += (s, e) => { 
+                _currentSearchTerm = txtSearch.Text.Trim(); 
+                _currentPage = 1; 
+                LoadData(); 
+            };
+            txtSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.Handled = true; e.SuppressKeyPress = true; } };
+
+            btnAdd = new Guna2Button { Text = "+ Thêm Người", Size = new Size(130, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0) };
             
             btnAdd.Click += BtnAdd_Click;
 
-            tlpToolbar.Controls.Add(new Panel(), 0, 0); // Empty panel to fill space
-            tlpToolbar.Controls.Add(btnFilter, 1, 0);
+            tlpToolbar.Controls.Add(txtSearch, 0, 0);
+            tlpToolbar.Controls.Add(new Panel(), 1, 0); // Empty panel to fill space
             tlpToolbar.Controls.Add(btnAdd, 2, 0);
             
             pnlToolbar.Controls.Add(tlpToolbar);
@@ -110,46 +124,36 @@ namespace BookStoreManagement.UserControls
                 ReadOnly = true,
                 RowHeadersVisible = false,
                 AllowUserToResizeRows = false,
-                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle(), // Keep same as default to avoid zebra striping
+                AlternatingRowsDefaultCellStyle = { BackColor = Color.Empty }, // Disable alternating colors
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                RowTemplate = { Height = 50 },
+                RowTemplate = { Height = 60 },
                 ColumnHeadersHeight = 45,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                GridColor = Color.LightGray
             };
             dgvAccounts.SetDoubleBuffered(true);
 
             // Set up columns
-            dgvAccounts.Columns.Add("Id", "Id");
-            dgvAccounts.Columns["Id"].Visible = false;
-            
-            dgvAccounts.Columns.Add("Tên đăng nhập", "Tên đăng nhập");
-            dgvAccounts.Columns.Add("FullName", "Họ và Tên");
-            dgvAccounts.Columns.Add("Email", "Email");
-            dgvAccounts.Columns.Add("RoleName", "Vai trò");
-            dgvAccounts.Columns.Add("StoreName", "Chi Nhánh");
-            dgvAccounts.Columns.Add("LastUpdate", "Lần Cập Nhật");
-            dgvAccounts.Columns.Add("Trạng thái", "Trạng thái");
-            dgvAccounts.Columns.Add("Actions", "Thao tác");
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Avatar", HeaderText = "ẢNH ĐẠI DIỆN", Width = 80, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Tên đăng nhập", HeaderText = "TÊN ĐĂNG NHẬP", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 120 });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "FullName", HeaderText = "HỌ VÀ TÊN", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Email", HeaderText = "EMAIL", Visible = false });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "RoleName", HeaderText = "VAI TRÒ", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "StoreName", HeaderText = "CHI NHÁNH", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "LastUpdate", HeaderText = "CẬP NHẬT", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Trạng thái", HeaderText = "TRẠNG THÁI", HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } }, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, Width = 150 });
+            dgvAccounts.Columns.Add(new DataGridViewTextBoxColumn { Name = "Actions", HeaderText = "THAO TÁC", Width = 100, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
             
             // Disable alternating rows colors explicitly by making it same as default
             dgvAccounts.AlternatingRowsDefaultCellStyle.BackColor = Color.Empty;
 
-            foreach (DataGridViewColumn col in dgvAccounts.Columns)
-            {
-                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                if (col.Name == "Actions")
-                {
-                    col.Width = 100;
-                }
-            }
-
             dgvAccounts.CellPainting += DgvAccounts_CellPainting;
-            dgvAccounts.CellMouseEnter += DgvAccounts_CellMouseEnter;
+            dgvAccounts.CellMouseMove += DgvAccounts_CellMouseMove;
             dgvAccounts.CellMouseLeave += DgvAccounts_CellMouseLeave;
-            dgvAccounts.CellClick += DgvAccounts_CellClick;
+            dgvAccounts.CellMouseClick += DgvAccounts_CellMouseClick;
             
             // 4. Pagination
             pagination = new PaginationControl { Dock = DockStyle.Bottom, Height = 50 };
@@ -185,13 +189,14 @@ namespace BookStoreManagement.UserControls
                 {
                     int rowIndex = dgvAccounts.Rows.Add(
                         item.Id,
+                        "",
                         item.Username,
                         item.FullName,
                         item.Email,
                         item.RoleName,
                         item.StoreName,
                         item.LastUpdate.ToString("dd/MM/yyyy HH:mm"),
-                        item.IsActive ? "Đang hoạt động" : "Đã khóa",
+                        item.IsActive ? "ĐANG HOẠT ĐỘNG" : "ĐÃ KHÓA",
                         ""
                     );
                     dgvAccounts.Rows[rowIndex].Tag = item;
@@ -214,48 +219,61 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void DgvAccounts_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        private void DgvAccounts_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["Actions"].Index)
+            if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "Actions")
             {
-                _hoveredRowIndex = e.RowIndex;
-                Rectangle cellBounds = dgvAccounts.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-                int mouseX = dgvAccounts.PointToClient(Cursor.Position).X - cellBounds.X;
+                int action = (e.X < dgvAccounts.Columns[e.ColumnIndex].Width / 2) ? 1 : 2;
                 
-                int totalWidth = 60; // 24 + 12 + 24
-                int startX = (cellBounds.Width - totalWidth) / 2;
-                
-                if (mouseX >= startX && mouseX <= startX + 24) _hoveredAction = 1; // Edit
-                else if (mouseX >= startX + 36 && mouseX <= startX + 60) _hoveredAction = 2; // Delete
-                else _hoveredAction = 0;
-                
-                dgvAccounts.InvalidateCell(e.ColumnIndex, e.RowIndex);
+                if (_hoveredRowIndex != e.RowIndex || _hoveredAction != action)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = e.RowIndex;
+                    _hoveredAction = action;
+                    
+                    if (oldRow >= 0) dgvAccounts.InvalidateCell(e.ColumnIndex, oldRow);
+                    dgvAccounts.InvalidateCell(e.ColumnIndex, _hoveredRowIndex);
+                }
+                dgvAccounts.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                if (_hoveredRowIndex >= 0)
+                {
+                    int oldRow = _hoveredRowIndex;
+                    _hoveredRowIndex = -1;
+                    _hoveredAction = 0;
+                    if (e.ColumnIndex >= 0) dgvAccounts.InvalidateCell(dgvAccounts.Columns["Actions"].Index, oldRow);
+                }
+                dgvAccounts.Cursor = Cursors.Default;
             }
         }
 
         private void DgvAccounts_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["Actions"].Index)
+            if (_hoveredRowIndex >= 0)
             {
+                int oldRow = _hoveredRowIndex;
                 _hoveredRowIndex = -1;
                 _hoveredAction = 0;
-                dgvAccounts.InvalidateCell(e.ColumnIndex, e.RowIndex);
+                dgvAccounts.InvalidateCell(dgvAccounts.Columns["Actions"].Index, oldRow);
             }
+            dgvAccounts.Cursor = Cursors.Default;
         }
 
-        private void DgvAccounts_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void DgvAccounts_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["Actions"].Index)
+            if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "Actions")
             {
                 if (dgvAccounts.Rows[e.RowIndex].Tag is AccountItem item)
                 {
-                    if (_hoveredAction == 1) // Edit
+                    if (e.X < dgvAccounts.Columns[e.ColumnIndex].Width / 2) // Edit
                     {
                         var user = _userService.GetById(item.Id);
                         var frm = new Forms.AccountForm(user);
                         if (frm.ShowDialog() == DialogResult.OK) LoadData();
                     }
-                    else if (_hoveredAction == 2) // Delete
+                    else // Delete
                     {
                         if (MessageBox.Show($"Bạn có chắc chắn muốn vô hiệu hóa/xóa tài khoản {item.Username}?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
@@ -276,66 +294,134 @@ namespace BookStoreManagement.UserControls
 
         private void DgvAccounts_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["Actions"].Index)
+            if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "Actions")
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
 
-                int iconSize = 24;
-                int spacing = 12;
-                int totalWidth = (iconSize * 2) + spacing;
-                int startX = e.CellBounds.X + (e.CellBounds.Width - totalWidth) / 2;
-                int y = e.CellBounds.Y + (e.CellBounds.Height - iconSize) / 2;
+                var rect = e.CellBounds;
+                var editRect = new Rectangle(rect.X, rect.Y, rect.Width / 2, rect.Height);
+                var delRect = new Rectangle(rect.X + rect.Width / 2, rect.Y, rect.Width / 2, rect.Height);
 
-                bool isHoveredRow = (e.RowIndex == _hoveredRowIndex);
-                Color editColor = (isHoveredRow && _hoveredAction == 1) ? ThemeManager.ButtonFill : ThemeManager.TextSecondary;
-                Color deleteColor = (isHoveredRow && _hoveredAction == 2) ? Color.FromArgb(231, 76, 60) : ThemeManager.TextSecondary;
-
-                using (Font iconFont = new Font("Segoe UI Emoji", 12f))
+                if (e.RowIndex == _hoveredRowIndex)
                 {
-                    TextRenderer.DrawText(e.Graphics, "✏️", iconFont, new Rectangle(startX, y, iconSize, iconSize), editColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                    TextRenderer.DrawText(e.Graphics, "🗑️", iconFont, new Rectangle(startX + iconSize + spacing, y, iconSize, iconSize), deleteColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    if (_hoveredAction == 1)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, ThemeManager.ButtonFill)))
+                            e.Graphics.FillRectangle(brush, editRect);
+                    }
+                    else if (_hoveredAction == 2)
+                    {
+                        using (var brush = new SolidBrush(Color.FromArgb(30, Color.FromArgb(231, 76, 60))))
+                            e.Graphics.FillRectangle(brush, delRect);
+                    }
+                }
+
+                int editFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 1) ? 14 : 12;
+                int delFontSize = (_hoveredRowIndex == e.RowIndex && _hoveredAction == 2) ? 14 : 12;
+
+                using (var font = new Font("Segoe UI Emoji", editFontSize)) { TextRenderer.DrawText(e.Graphics, "✏️", font, editRect, ThemeManager.TextPrimary, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+                using (var font = new Font("Segoe UI Emoji", delFontSize)) { TextRenderer.DrawText(e.Graphics, "🗑️", font, delRect, Color.FromArgb(231, 76, 60), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter); }
+
+                using (var pen = new Pen(Color.LightGray))
+                {
+                    e.Graphics.DrawLine(pen, rect.X + rect.Width / 2, rect.Y + 8, rect.X + rect.Width / 2, rect.Bottom - 8);
                 }
 
                 e.Handled = true;
             }
-            else if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["Trạng thái"].Index)
+            else if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "Avatar")
             {
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+                e.PaintBackground(e.CellBounds, true);
                 
-                string status = e.Value?.ToString() ?? "";
-                bool isActive = status == "Đang hoạt động";
-                
-                Color bgColor = isActive ? Color.FromArgb(40, 46, 204, 113) : Color.FromArgb(40, 231, 76, 60);
-                Color textColor = isActive ? Color.FromArgb(39, 174, 96) : Color.FromArgb(192, 57, 43);
-                Color dotColor = isActive ? Color.FromArgb(46, 204, 113) : Color.FromArgb(231, 76, 60);
-                
-                using (GraphicsPath path = new GraphicsPath())
+                string name = dgvAccounts.Rows[e.RowIndex].Cells["FullName"].Value?.ToString() ?? "";
+                string initials = "U";
+                if (!string.IsNullOrEmpty(name))
                 {
-                    int h = 24;
-                    int w = 90;
-                    int x = e.CellBounds.X + (e.CellBounds.Width - w) / 2;
-                    int y = e.CellBounds.Y + (e.CellBounds.Height - h) / 2;
-                    
-                    path.AddArc(x, y, h, h, 90, 180);
-                    path.AddArc(x + w - h, y, h, h, 270, 180);
-                    path.CloseFigure();
-                    
-                    using (SolidBrush bgBrush = new SolidBrush(bgColor))
+                    var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 1) initials = $"{parts[0][0]}{parts[parts.Length-1][0]}".ToUpper();
+                    else initials = name.Substring(0, 1).ToUpper();
+                }
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                int size = 32;
+                Rectangle badgeRect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - size) / 2, e.CellBounds.Y + (e.CellBounds.Height - size) / 2, size, size);
+
+                using (var brush = new SolidBrush(Color.FromArgb(237, 220, 255))) // secondary-fixed
+                {
+                    g.FillEllipse(brush, badgeRect);
+                }
+
+                using (var brush = new SolidBrush(Color.FromArgb(40, 0, 86))) // on-secondary-fixed
+                {
+                    var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    using (var font = new Font("Segoe UI", 9F, FontStyle.Bold))
                     {
-                        e.Graphics.FillPath(bgBrush, path);
-                    }
-                    
-                    using (SolidBrush dotBrush = new SolidBrush(dotColor))
-                    {
-                        e.Graphics.FillEllipse(dotBrush, x + 8, y + 9, 6, 6);
-                    }
-                    
-                    using (Font f = new Font("Segoe UI", 9f, FontStyle.Bold))
-                    {
-                        TextRenderer.DrawText(e.Graphics, status, f, new Rectangle(x + 18, y, w - 18, h), textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+                        g.DrawString(initials, font, brush, badgeRect, format);
                     }
                 }
+
+                using (var pen = new Pen(ThemeManager.TextBoxBorder))
+                {
+                    g.DrawEllipse(pen, badgeRect);
+                }
+
+                e.Handled = true;
+            }
+            else if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "FullName")
+            {
+                e.PaintBackground(e.CellBounds, true);
+
+                string name = e.Value?.ToString() ?? "Unknown";
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
                 
+                using (var brush = new SolidBrush(ThemeManager.TextPrimary))
+                {
+                    using (var font = new Font("Segoe UI", 9.5F, FontStyle.Bold))
+                    {
+                        g.DrawString(name, font, brush, e.CellBounds, format);
+                    }
+                }
+
+                e.Handled = true;
+            }
+            else if (e.RowIndex >= 0 && dgvAccounts.Columns[e.ColumnIndex].Name == "Trạng thái")
+            {
+                e.PaintBackground(e.CellBounds, true);
+                string status = e.Value?.ToString() ?? "";
+
+                Color bgColor = ThemeManager.TextBoxBorder;
+                Color textColor = ThemeManager.TextPrimary;
+
+                if (status.ToUpper() == "ĐANG HOẠT ĐỘNG") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
+                else if (status.ToUpper() == "ĐÃ KHÓA" || status.ToUpper() == "INACTIVE") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
+                else { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
+
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                using (var statusFont = new Font("Segoe UI", 8F, FontStyle.Bold))
+                {
+                    SizeF textSize = g.MeasureString(status, statusFont);
+                    RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
+
+                    using (var brush = new SolidBrush(bgColor))
+                    {
+                        g.FillRoundedRectangle(brush, badgeRect.X, badgeRect.Y, badgeRect.Width, badgeRect.Height, 10);
+                    }
+
+                    using (var brush = new SolidBrush(textColor))
+                    {
+                        var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                        g.DrawString(status, statusFont, brush, badgeRect, format);
+                    }
+                }
+
                 e.Handled = true;
             }
             else if (e.RowIndex >= 0 && e.ColumnIndex == dgvAccounts.Columns["RoleName"].Index)
@@ -384,12 +470,15 @@ namespace BookStoreManagement.UserControls
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
             
-            btnFilter.FillColor = ThemeManager.Background;
-            btnFilter.ForeColor = ThemeManager.TextPrimary;
-            btnFilter.BorderColor = ThemeManager.TextBoxBorder;
-            
+            if (txtSearch != null)
+            {
+                txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                txtSearch.ForeColor = ThemeManager.TextPrimary;
+                txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
+
             btnAdd.FillColor = ThemeManager.ButtonFill;
-            btnAdd.ForeColor = Color.White;
+            btnAdd.ForeColor = ThemeManager.ButtonText;
             
             pnlGridContainer.FillColor = ThemeManager.CardBackground;
             pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;

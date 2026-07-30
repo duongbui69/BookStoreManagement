@@ -417,19 +417,24 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
-        
         private Guna2Panel CreateStatCard(string title, string value, string iconText, Color color)
         {
-            var pnl = new Guna2Panel { Dock = DockStyle.Fill, CustomBorderThickness = new Padding(1), Margin = new Padding(0,0,20,0), BorderRadius = 12 };
+            var pnl = new Guna2Panel 
+            { 
+                Dock = DockStyle.Fill, 
+                BorderThickness = 1, 
+                Margin = new Padding(0,0,20,0), 
+                BorderRadius = 10 
+            };
             
             // Icon
-            var pnlIcon = new Guna2Panel { Size = new Size(48, 48), Location = new Point(20, 26), BorderRadius = 24, FillColor = Color.FromArgb(30, color) };
-            Label lblIcon = new Label { Text = iconText == "category" ? "📑" : (iconText == "active" ? "✨" : "⚠️"), Font = new Font("Segoe UI Emoji", 16F), AutoSize = false, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
+            var pnlIcon = new Guna2Panel { Size = new Size(48, 48), Location = new Point(20, 15), BorderRadius = 24, FillColor = Color.FromArgb(30, color) };
+            Label lblIcon = new Label { Text = iconText == "category" ? "📂" : (iconText == "active" ? "✅" : "🔒"), Font = new Font("Segoe UI Emoji", 16F), AutoSize = false, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
             pnlIcon.Controls.Add(lblIcon);
             
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 26) };
+            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 8F, FontStyle.Bold), AutoSize = true, Location = new Point(80, 14) };
             lblTitle.Tag = "CardTitle";
-            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 45), ForeColor = color };
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 22F, FontStyle.Bold), AutoSize = true, Location = new Point(78, 32), ForeColor = color };
             lblValue.Tag = "CardValue";
 
             pnl.Controls.Add(pnlIcon);
@@ -437,7 +442,8 @@ namespace BookStoreManagement.UserControls
             pnl.Controls.Add(lblValue);
             return pnl;
         }
-private void ApplyTheme()
+
+        private void ApplyTheme()
         {
             bool isDark = ThemeManager.IsDarkMode;
             
@@ -474,8 +480,8 @@ private void ApplyTheme()
         
         private void ApplyThemeToCard(Guna2Panel card)
         {
-            card.BackColor = ThemeManager.CardBackground;
-            card.CustomBorderColor = ThemeManager.TextBoxBorder;
+            card.BackColor = Color.Transparent;
+            card.BorderColor = ThemeManager.TextBoxBorder;
             card.FillColor = ThemeManager.CardBackground;
             foreach (Control c in card.Controls)
             {

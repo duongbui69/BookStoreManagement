@@ -80,10 +80,13 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
+        private Guna2Panel pnlHeader;
+        private Guna2HtmlLabel lblTitle;
+
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(24); // container-padding
+            this.Padding = new Padding(32); // container-padding
 
             pnlContent = new Guna2Panel
             {
@@ -100,6 +103,39 @@ namespace BookStoreManagement.UserControls
 
             // 3. Grid Panel (Dock Fill)
             InitializeGridPanel();
+
+            // Spacer
+            Panel spacer = new Panel { Dock = DockStyle.Top, Height = 24, BackColor = Color.Transparent };
+            pnlContent.Controls.Add(spacer);
+
+            // Header
+            pnlHeader = new Guna2Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 100,
+                BackColor = Color.Transparent
+            };
+            lblTitle = new Guna2HtmlLabel
+            {
+                Text = "Xử lý trả hàng",
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                Location = new Point(0, 0)
+            };
+            pnlHeader.Controls.Add(lblTitle);
+
+            var lblSubtitle = new Guna2HtmlLabel
+            {
+                Text = "Tìm kiếm hóa đơn và thực hiện hoàn trả cho khách hàng.",
+                Font = new Font("Segoe UI", 11F),
+                Location = new Point(0, 45)
+            };
+            pnlHeader.Controls.Add(lblSubtitle);
+            pnlContent.Controls.Add(pnlHeader);
+
+            pnlFooter.BringToFront();
+            pnlGrid.BringToFront();
+            spacer.BringToFront();
+            // We need to bring Bento Box to front before Header
         }
 
         private void InitializeBentoBox()
@@ -472,6 +508,7 @@ namespace BookStoreManagement.UserControls
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
+            if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
             
             pnlSearch.FillColor = ThemeManager.CardBackground;
             pnlSearch.BorderColor = ThemeManager.TextBoxBorder;

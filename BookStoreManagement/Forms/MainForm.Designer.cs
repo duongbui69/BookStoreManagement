@@ -12,7 +12,7 @@ namespace BookStoreManagement.Forms
         private Guna.UI2.WinForms.Guna2Button btnOrders;
         private Guna.UI2.WinForms.Guna2Button btnHR;
         private Guna.UI2.WinForms.Guna2Button btnReports;
-        private Guna.UI2.WinForms.Guna2Button btnSettings;
+
         private System.Windows.Forms.Label lblBrand;
         private System.Windows.Forms.Label lblSubBrand;
         
@@ -82,7 +82,7 @@ namespace BookStoreManagement.Forms
             lblRole = new System.Windows.Forms.Label();
             lblUsername = new System.Windows.Forms.Label();
             btnAvatar = new Guna.UI2.WinForms.Guna2CircleButton();
-            btnSettings = new Guna.UI2.WinForms.Guna2Button();
+
             btnReports = new Guna.UI2.WinForms.Guna2Button();
             btnHR = new Guna.UI2.WinForms.Guna2Button();
             btnOrders = new Guna.UI2.WinForms.Guna2Button();
@@ -108,7 +108,7 @@ namespace BookStoreManagement.Forms
             // 
             panelSidebar.BackColor = System.Drawing.Color.FromArgb(24, 25, 32);
             panelSidebar.Controls.Add(panelUserProfile);
-            panelSidebar.Controls.Add(btnSettings);
+
             panelSidebar.Controls.Add(btnReports);
             panelSidebar.Controls.Add(btnHR);
             panelSidebar.Controls.Add(btnOrders);
@@ -193,22 +193,7 @@ namespace BookStoreManagement.Forms
             btnAvatar.TabIndex = 0;
             btnAvatar.Text = "AD";
             // 
-            // btnSettings
-            // 
-            btnSettings.CustomizableEdges = customizableEdges32;
-            btnSettings.FillColor = System.Drawing.Color.Transparent;
-            btnSettings.Font = new System.Drawing.Font("Segoe UI", 10F);
-            btnSettings.ForeColor = System.Drawing.Color.FromArgb(180, 185, 200);
-            btnSettings.HoverState.FillColor = System.Drawing.Color.FromArgb(35, 35, 45);
-            btnSettings.Location = new System.Drawing.Point(0, 380);
-            btnSettings.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            btnSettings.Name = "btnSettings";
-            btnSettings.ShadowDecoration.CustomizableEdges = customizableEdges33;
-            btnSettings.Size = new System.Drawing.Size(260, 45);
-            btnSettings.TabIndex = 7;
-            btnSettings.Text = "⚙   Cài đặt";
-            btnSettings.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            btnSettings.TextOffset = new System.Drawing.Point(20, 0);
+
             // 
             // btnReports
             // 

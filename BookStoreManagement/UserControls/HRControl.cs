@@ -20,13 +20,14 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlContent;
 
         // Header & Toolbar
-        private TableLayoutPanel tlpHeader;
+        private Guna2Panel pnlPageHeader;
         private Label lblTitle;
         private Label lblSubTitle;
         private Guna2Button btnAdd;
 
         // Filters Bar
         private Guna2Panel pnlFilters;
+        private Guna2TextBox txtSearch;
         private Guna2ComboBox cbBranch;
         private Guna2ComboBox cbRole;
         private Guna2Button btnPayroll;
@@ -72,58 +73,55 @@ namespace BookStoreManagement.UserControls
             pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(gutter), AutoScroll = true };
 
             // 1. Header & Toolbar
-            tlpHeader = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                ColumnCount = 2,
-                RowCount = 2,
-                Height = 80,
-                Margin = new Padding(0, 0, 0, gutter)
-            };
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            pnlPageHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, gutter) };
 
-            lblTitle = new Label { Text = "Quản lý Nhân viên", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Margin = new Padding(0) };
-            lblSubTitle = new Label { Text = "Quản lý nhân viên, vai trò, và chi nhánh.", Font = new Font("Segoe UI", 11F), AutoSize = true, Margin = new Padding(2, 0, 0, 0) };
-            
-            btnAdd = new Guna2Button { Text = "+ Thêm Nhân viên", Size = new Size(160, 40), BorderRadius = 4, Font = new Font("Segoe UI", 10, FontStyle.Bold), Cursor = Cursors.Hand, Margin = new Padding(0, 10, 0, 0) };
-            btnAdd.Click += async (s, e) => {
-                var frm = new Forms.EmployeeForm(null);
-                if (frm.ShowDialog() == DialogResult.OK)
-                {
-                    await LoadDataAsync();
-                }
-            };
-
-            tlpHeader.Controls.Add(lblTitle, 0, 0);
-            tlpHeader.Controls.Add(lblSubTitle, 0, 1);
-            tlpHeader.Controls.Add(btnAdd, 1, 0);
-            tlpHeader.SetRowSpan(btnAdd, 2);
+            lblTitle = new Label { Text = "Quản lý Nhân viên", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Quản lý nhân viên, vai trò, và chi nhánh.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
             // 2. Filters Bar
-            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1, 1, 1, 0), Margin = new Padding(0), BorderRadius = 6 };
-            pnlFilters.CustomizableEdges.BottomLeft = false;
-            pnlFilters.CustomizableEdges.BottomRight = false;
+            pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0) };
+            
+            txtSearch = new Guna2TextBox
+            {
+                PlaceholderText = "Tìm theo mã, tên...",
+                Size = new Size(220, 36),
+                Location = new Point(0, 12),
+                BorderRadius = 6,
+                Font = new Font("Segoe UI", 9F)
+            };
+            txtSearch.TextChanged += async (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; await LoadDataAsync(); };
 
-            cbBranch = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(20, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
+            cbBranch = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(230, 12), BorderRadius = 6, Font = new Font("Segoe UI", 9F) };
             cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Doanh số" });
             cbBranch.SelectedIndex = 0;
             cbBranch.SelectedIndexChanged += async (s, e) => { _currentBranch = cbBranch.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
 
-            cbRole = new Guna2ComboBox { Size = new Size(180, 36), Location = new Point(220, 17), BorderRadius = 4, Font = new Font("Segoe UI", 9F) };
-            cbRole.Items.AddRange(new object[] { "Status: All", "ĐANG HOẠT ĐỘNG", "INACTIVE" });
+            cbRole = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(400, 12), BorderRadius = 6, Font = new Font("Segoe UI", 9F) };
+            cbRole.Items.AddRange(new object[] { "Tất cả trạng thái", "ACTIVE", "INACTIVE", "ON LEAVE" });
             cbRole.SelectedIndex = 0;
-            cbRole.SelectedIndexChanged += async (s, e) => { _currentRole = cbRole.SelectedItem.ToString(); _currentPage = 1; await LoadDataAsync(); };
+            cbRole.SelectedIndexChanged += async (s, e) =>
+            {
+                string selected = cbRole.SelectedItem?.ToString() ?? "";
+                _currentRole = (selected == "Tất cả trạng thái") ? "Status: All" : selected;
+                _currentPage = 1;
+                await LoadDataAsync();
+            };
 
-            btnPayroll = new Guna2Button { Text = "Tính lương", Size = new Size(120, 36), BorderRadius = 4, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
+            btnPayroll = new Guna2Button { Text = "Tính lương", Size = new Size(100, 36), BorderRadius = 6, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnPayroll.Click += (s, e) => MessageBox.Show("Tính năng tính lương đang phát triển.", "Thông tin");
+            
+            btnAdd = new Guna2Button { Text = "+ Thêm Nhân viên", Size = new Size(150, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd.Click += async (s, e) => {
+                var frm = new Forms.EmployeeForm(null);
+                if (frm.ShowDialog() == DialogResult.OK) await LoadDataAsync();
+            };
 
-            pnlFilters.Controls.AddRange(new Control[] { cbBranch, cbRole, btnPayroll });
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, cbBranch, cbRole, btnPayroll, btnAdd });
             pnlFilters.Resize += (s, e) =>
             {
-                btnPayroll.Location = new Point(pnlFilters.Width - 140, 17);
+                btnAdd.Location = new Point(pnlFilters.Width - 150, 12);
+                btnPayroll.Location = new Point(pnlFilters.Width - 260, 12);
             };
 
             // 3. Grid Container
@@ -172,10 +170,12 @@ namespace BookStoreManagement.UserControls
             paginationControl.PageChanged += async (s, e) => { _currentPage = e.NewPage; await LoadDataAsync(); };
             pnlGridContainer.Controls.Add(paginationControl);
 
+            // Assemble layout
             pnlContent.Controls.Add(pnlGridContainer);
+            pnlContent.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 10 }); // Spacer
             pnlContent.Controls.Add(pnlFilters);
-            pnlContent.Controls.Add(tlpHeader);
-
+            pnlContent.Controls.Add(pnlPageHeader);
+            
             this.Controls.Add(pnlContent);
 
             ApplyTheme();
@@ -401,22 +401,50 @@ namespace BookStoreManagement.UserControls
             else if (dgvEmployees.Columns[e.ColumnIndex].Name == "Trạng thái")
             {
                 e.PaintBackground(e.CellBounds, true);
-                string status = e.Value?.ToString() ?? "";
+                string statusRaw = e.Value?.ToString() ?? "";
 
-                Color bgColor = ThemeManager.TextBoxBorder;
-                Color textColor = ThemeManager.TextPrimary;
+                // Translate DB status to Vietnamese display text
+                string statusDisplay;
+                Color bgColor, textColor;
+                switch (statusRaw.ToUpper())
+                {
+                    case "ACTIVE":
+                        statusDisplay = "Đang hoạt động";
+                        bgColor = Color.FromArgb(40, 46, 204, 113);
+                        textColor = Color.FromArgb(46, 204, 113);
+                        break;
+                    case "INACTIVE":
+                    case "TERMINATED":
+                        statusDisplay = statusRaw.ToUpper() == "TERMINATED" ? "Đã nghỉ" : "Ngừng hoạt động";
+                        bgColor = Color.FromArgb(40, 231, 76, 60);
+                        textColor = Color.FromArgb(231, 76, 60);
+                        break;
+                    case "ON LEAVE":
+                        statusDisplay = "Nghỉ phép";
+                        bgColor = Color.FromArgb(40, 243, 156, 18);
+                        textColor = Color.FromArgb(243, 156, 18);
+                        break;
+                    default:
+                        statusDisplay = statusRaw;
+                        bgColor = Color.FromArgb(40, 41, 128, 185);
+                        textColor = Color.FromArgb(41, 128, 185);
+                        break;
+                }
 
-                if (status.ToUpper() == "ĐANG HOẠT ĐỘNG") { bgColor = Color.FromArgb(40, 46, 204, 113); textColor = Color.FromArgb(46, 204, 113); }
-                else if (status.ToUpper() == "INACTIVE" || status.ToUpper() == "TERMINATED") { bgColor = Color.FromArgb(40, 231, 76, 60); textColor = Color.FromArgb(231, 76, 60); }
-                else { bgColor = Color.FromArgb(40, 41, 128, 185); textColor = Color.FromArgb(41, 128, 185); }
+                // When row is selected, override badge text to white so it stays readable
+                bool isSelected = (e.State & DataGridViewElementStates.Selected) != 0;
+                if (isSelected) textColor = Color.White;
 
                 var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
                 using (var statusFont = new Font("Segoe UI", 8F, FontStyle.Bold))
                 {
-                    SizeF textSize = g.MeasureString(status, statusFont);
-                    RectangleF badgeRect = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2, e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2, textSize.Width + 20, textSize.Height + 10);
+                    SizeF textSize = g.MeasureString(statusDisplay, statusFont);
+                    RectangleF badgeRect = new RectangleF(
+                        e.CellBounds.X + (e.CellBounds.Width - textSize.Width - 20) / 2,
+                        e.CellBounds.Y + (e.CellBounds.Height - textSize.Height - 10) / 2,
+                        textSize.Width + 20, textSize.Height + 10);
 
                     using (var brush = new SolidBrush(bgColor))
                     {
@@ -426,7 +454,7 @@ namespace BookStoreManagement.UserControls
                     using (var brush = new SolidBrush(textColor))
                     {
                         var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                        g.DrawString(status, statusFont, brush, badgeRect, format);
+                        g.DrawString(statusDisplay, statusFont, brush, badgeRect, format);
                     }
                 }
 
@@ -443,7 +471,7 @@ namespace BookStoreManagement.UserControls
         {
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
-            tlpHeader.BackColor = ThemeManager.Background;
+            pnlPageHeader.BackColor = ThemeManager.Background;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
@@ -458,7 +486,14 @@ namespace BookStoreManagement.UserControls
             // Filters
             pnlFilters.BackColor = ThemeManager.Background;
             pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
-            pnlFilters.FillColor = ThemeManager.CardBackground;
+            pnlFilters.FillColor = ThemeManager.Background;
+            
+            if (txtSearch != null)
+            {
+                txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                txtSearch.ForeColor = ThemeManager.TextPrimary;
+                txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
 
             cbBranch.FillColor = ThemeManager.TextBoxBackground;
             cbBranch.ForeColor = ThemeManager.TextPrimary;
@@ -467,6 +502,13 @@ namespace BookStoreManagement.UserControls
             cbRole.FillColor = ThemeManager.TextBoxBackground;
             cbRole.ForeColor = ThemeManager.TextPrimary;
             cbRole.BorderColor = ThemeManager.TextBoxBorder;
+            
+            btnPayroll.FillColor = ThemeManager.CardBackground;
+            btnPayroll.ForeColor = ThemeManager.TextPrimary;
+            btnPayroll.BorderColor = ThemeManager.TextBoxBorder;
+            
+            btnAdd.FillColor = ThemeManager.ButtonFill;
+            btnAdd.ForeColor = ThemeManager.ButtonText;
 
             // Grid
             pnlGridContainer.CustomBorderColor = ThemeManager.TextBoxBorder;
