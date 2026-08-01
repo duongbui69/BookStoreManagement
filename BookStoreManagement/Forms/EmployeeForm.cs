@@ -14,7 +14,7 @@ namespace BookStoreManagement.Forms
         private readonly RoleService _roleService;
         private readonly StoreService _storeService;
 
-        private Guna2TextBox txtUserCode, txtUsername, txtPassword, txtFullName, txtIdentity, txtPhone, txtEmail, txtAddress;
+        private Guna2TextBox txtUserCode, txtUsername, txtPassword, txtFullName, txtIdentity, txtPhone, txtEmail, txtAddress, txtHourlyRate;
         private Guna2ComboBox cbRole, cbStore;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
@@ -38,10 +38,11 @@ namespace BookStoreManagement.Forms
         private void InitializeComponent()
         {
             this.Text = EmployeeModel == null ? "Thêm nhân viên mới" : "Chỉnh sửa nhân viên";
-            this.Size = new Size(800, 520);
+            this.Size = new Size(800, 650);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.ControlBox = false;
 
             Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 18F, FontStyle.Bold), Location = new Point(24, 20), AutoSize = true };
             this.Controls.Add(lblTitle);
@@ -59,6 +60,7 @@ namespace BookStoreManagement.Forms
 
             txtFullName = CreateInput("Họ và Tên", 24, ref yLeft);
             txtIdentity = CreateInput("CCCD / CMND", 24, ref yLeft);
+            txtHourlyRate = CreateInput("Lương theo giờ (VNĐ)", 24, ref yLeft);
 
             // Right Col (X = 400)
             int yRight = 70;
@@ -76,12 +78,12 @@ namespace BookStoreManagement.Forms
             this.Controls.AddRange(new Control[] { lblStore, cbStore });
             yRight += 75;
 
-            chkIsActive = new Guna2CheckBox { Text = "Đang hoạt động", Location = new Point(24, 430), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
+            chkIsActive = new Guna2CheckBox { Text = "Đang hoạt động", Location = new Point(24, 520), AutoSize = true, Checked = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
 
-            btnSave = new Guna2Button { Text = "Lưu (Save)", Location = new Point(280, 420), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "Lưu (Save)", Location = new Point(240, 560), Width = 140, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(410, 420), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(420, 560), Width = 140, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
             btnCancel.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
@@ -128,6 +130,7 @@ namespace BookStoreManagement.Forms
             txtUsername.Text = EmployeeModel.Username;
             txtFullName.Text = EmployeeModel.FullName;
             txtIdentity.Text = EmployeeModel.IdentityNumber;
+            txtHourlyRate.Text = EmployeeModel.HourlyRate.ToString();
             txtPhone.Text = EmployeeModel.Phone;
             txtEmail.Text = EmployeeModel.Email;
             txtAddress.Text = EmployeeModel.Address;
@@ -147,6 +150,11 @@ namespace BookStoreManagement.Forms
             EmployeeModel.Phone = txtPhone.Text.Trim();
             EmployeeModel.Email = txtEmail.Text.Trim();
             EmployeeModel.Address = txtAddress.Text.Trim();
+            if (decimal.TryParse(txtHourlyRate.Text.Trim(), out decimal hr)) {
+                EmployeeModel.HourlyRate = hr;
+            } else {
+                EmployeeModel.HourlyRate = 0;
+            }
             EmployeeModel.IsActive = chkIsActive.Checked;
             
             if (cbRole.SelectedValue != null) EmployeeModel.RoleId = (int)cbRole.SelectedValue;

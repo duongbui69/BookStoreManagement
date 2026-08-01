@@ -82,7 +82,7 @@ namespace BookStoreManagement.UserControls
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold), 
                 Cursor = Cursors.Hand 
             };
-            btnExportExcel.Click += (s, e) => MessageBox.Show("Tính năng đang được phát triển!");
+            btnExportExcel.Click += BtnExport_Click;
 
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, btnExportExcel });
             pnlHeader.Resize += (s, e) => { btnExportExcel.Location = new Point(pnlHeader.Width - 130, 22); };
@@ -234,6 +234,7 @@ namespace BookStoreManagement.UserControls
         private async System.Threading.Tasks.Task LoadDataAsync()
         {
             _stats = await _service.GetFinancialReportsAsync();
+            if (this.IsDisposed) return;
             if (_stats == null) return;
             
 
@@ -261,16 +262,27 @@ namespace BookStoreManagement.UserControls
 
         private void UpdateGrids()
         {
-            dgvTopSelling.Rows.Clear();
-            foreach (var item in _stats.TopSellingBooks)
+            if (this.IsDisposed) return;
+            try
             {
-                dgvTopSelling.Rows.Add(item.Rank, item.Title, item.QuantitySold, $"{item.Revenue:N0} đ");
-            }
+                if (dgvTopSelling.Columns.Count == 0) return;
+                
+                dgvTopSelling.Rows.Clear();
+                foreach (var item in _stats.TopSellingBooks)
+                {
+                    dgvTopSelling.Rows.Add(item.Rank, item.Title, item.QuantitySold, $"{item.Revenue:N0} đ");
+                }
 
-            dgvWarnings.Rows.Clear();
-            foreach (var item in _stats.InventoryWarnings)
+                dgvWarnings.Rows.Clear();
+                foreach (var item in _stats.InventoryWarnings)
+                {
+                    dgvWarnings.Rows.Add(item.Sku, item.Title, item.CurrentStock, item.Status);
+                }
+            }
+            catch (Exception ex)
             {
-                dgvWarnings.Rows.Add(item.Sku, item.Title, item.CurrentStock, item.Status);
+                Helpers.Logger.Error(ex, $"UpdateGrids failed. dgvTopSelling columns: {dgvTopSelling?.Columns.Count}, dgvWarnings columns: {dgvWarnings?.Columns.Count}");
+                throw; // rethrow to keep original behavior or we can swallow it
             }
         }
 
@@ -367,23 +379,23 @@ namespace BookStoreManagement.UserControls
                 {
                     PointF[] points = new PointF[numPoints];
                     int idx = 0;
-                    string[] monthNames = { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12" };
+                    float stepX = (float)chartWidth / (numPoints - 1);
 
                     foreach (var kvp in _stats.MonthlyRevenue.OrderBy(k => k.Key))
                     {
-                        int m = kvp.Key;
+                        DateTime m = kvp.Key;
                         decimal rev = kvp.Value;
                         
-                        int x = paddingX + (idx * chartWidth / (numPoints - 1));
-                        int hRev = (int)((rev / maxVal) * chartHeight);
-                        int y = pnlChart.Height - paddingY - hRev;
+                        float x = paddingX + idx * stepX;
+                        float y = pnlChart.Height - paddingY - (float)(rev / maxVal) * chartHeight;
                         
                         points[idx] = new PointF(x, y);
 
                         using (var b = new SolidBrush(ThemeManager.TextSecondary))
                         {
-                            var size = g.MeasureString(monthNames[m - 1], font2);
-                            g.DrawString(monthNames[m - 1], font2, b, x - size.Width / 2, pnlChart.Height - paddingY + 10);
+                            string lbl = m.ToString("MM/yy");
+                            var size = g.MeasureString(lbl, font2);
+                            g.DrawString(lbl, font2, b, x - size.Width / 2, pnlChart.Height - paddingY + 10);
                         }
                         idx++;
                     }
@@ -502,6 +514,25 @@ namespace BookStoreManagement.UserControls
                 BookStoreManagement.Themes.ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
             }
             base.Dispose(disposing);
+        }
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "BaoCaoDoanhThu.xlsx" })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvTopSelling, sfd.FileName, "Báo Cáo");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

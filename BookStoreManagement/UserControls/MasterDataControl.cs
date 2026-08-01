@@ -458,7 +458,10 @@ namespace BookStoreManagement.UserControls
                     Color fgColor = isActive ? Color.FromArgb(22, 163, 74) : Color.FromArgb(220, 38, 38);
 
                     // Draw pill
-                    Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - 80) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, 80, 24);
+                                          var badgeFont = new Font("Segoe UI", 8F, FontStyle.Bold);
+                      var size = e.Graphics.MeasureString(text.ToUpper(), badgeFont);
+                      int badgeWidth = (int)size.Width + 24;
+                      Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - badgeWidth) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, badgeWidth, 24);
                     using (GraphicsPath path = new GraphicsPath())
                     {
                         int radius = 12;

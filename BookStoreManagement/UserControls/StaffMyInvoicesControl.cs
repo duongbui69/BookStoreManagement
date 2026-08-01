@@ -22,10 +22,12 @@ namespace BookStoreManagement.UserControls
         // UI Components
         private Guna2Panel pnlHeader;
         private Guna2HtmlLabel lblTitle;
+        private Guna.UI2.WinForms.Guna2Panel pnlFilters;
+        private Guna.UI2.WinForms.Guna2TextBox txtSearch;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpFrom;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpTo;
+        private Guna.UI2.WinForms.Guna2Button btnFilter;
         private Guna2HtmlLabel lblSubtitle;
-        private Guna2TextBox txtSearch;
-        private Guna2Button btnFilter;
-        private Guna2Panel pnlFilters;
 
         private Guna2Panel pnlCards;
         private SummaryCard cardTotal;
@@ -57,215 +59,230 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
+        
+        private Guna.UI2.WinForms.Guna2Button btnExport;
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(32);
+            this.Padding = new Padding(24);
 
-            // 1. Header Section
-            pnlHeader = new Guna2Panel
+            pnlHeader = new Guna.UI2.WinForms.Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 100,
+                Height = 80,
                 BackColor = Color.Transparent
             };
 
-            lblTitle = new Guna2HtmlLabel
+            lblTitle = new Guna.UI2.WinForms.Guna2HtmlLabel
             {
-                Text = "Lịch sử hóa đơn",
+                Text = "Hóa đơn của tôi",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 Location = new Point(0, 0)
             };
             pnlHeader.Controls.Add(lblTitle);
 
-            lblSubtitle = new Guna2HtmlLabel
+            lblSubtitle = new Guna.UI2.WinForms.Guna2HtmlLabel
             {
-                Text = $"Ca làm việc hiện tại: Hôm nay ({DateTime.Today:dd/MM/yyyy})",
+                Text = "Lịch sử bán hàng trong ca làm việc.",
                 Font = new Font("Segoe UI", 11F),
                 Location = new Point(0, 45)
             };
             pnlHeader.Controls.Add(lblSubtitle);
 
-            // Filters Section
-            pnlFilters = new Guna2Panel 
+            pnlFilters = new Guna.UI2.WinForms.Guna2Panel 
             { 
                 Dock = DockStyle.Top, 
                 Height = 70, 
                 CustomBorderThickness = new Padding(1), 
-                Margin = new Padding(0, 0, 0, 20), 
+                Margin = new Padding(0, 0, 0, 24), 
                 BorderRadius = 8 
             };
 
-            txtSearch = new Guna2TextBox
+            txtSearch = new Guna.UI2.WinForms.Guna2TextBox
             {
-                PlaceholderText = "Tìm theo mã hóa đơn...",
-                BorderRadius = 8,
+                PlaceholderText = "Mã hóa đơn, SĐT khách...",
+                BorderRadius = 6,
                 Font = new Font("Segoe UI", 9F),
                 Size = new Size(250, 36),
                 Location = new Point(20, 16)
             };
-            txtSearch.KeyDown += TxtSearch_KeyDown;
-            
-            btnFilter = new Guna2Button
+            txtSearch.TextChanged += async (s, e) => {
+                _currentPage = 1;
+                await LoadDataAsync();
+            };
+
+            dtpFrom = new Guna.UI2.WinForms.Guna2DateTimePicker
             {
-                Text = "Lọc",
-                BorderRadius = 8,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Size = new Size(140, 36),
+                Location = new Point(280, 16),
+                BorderRadius = 6,
+                Format = DateTimePickerFormat.Short,
+                Font = new Font("Segoe UI", 9F)
+            };
+            dtpFrom.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+            dtpTo = new Guna.UI2.WinForms.Guna2DateTimePicker
+            {
+                Size = new Size(140, 36),
+                Location = new Point(430, 16),
+                BorderRadius = 6,
+                Format = DateTimePickerFormat.Short,
+                Font = new Font("Segoe UI", 9F)
+            };
+
+            btnFilter = new Guna.UI2.WinForms.Guna2Button
+            {
+                Text = "LỌC",
+                BorderRadius = 6,
                 Size = new Size(100, 36),
+                Location = new Point(580, 16),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
-
-            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnFilter });
-            pnlFilters.Resize += (s, e) => 
-            {
-                btnFilter.Location = new Point(pnlFilters.Width - 120, 16);
-            };
-
-            // 2. Cards Section
-            TableLayoutPanel tlpCards = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                Height = 110,
-                Padding = new Padding(0, 0, 0, 20),
-                ColumnCount = 3,
-                RowCount = 1
-            };
-            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            btnFilter.Click += async (s, e) => await LoadDataAsync();
             
-            pnlCards = new Guna2Panel(); 
+            btnExport = new Guna.UI2.WinForms.Guna2Button
+            {
+                Text = "XUẤT EXCEL",
+                BorderRadius = 6,
+                Size = new Size(120, 36),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnExport.Click += BtnExport_Click;
+            
+            pnlFilters.Resize += (s, e) => {
+                btnExport.Location = new Point(pnlFilters.Width - 140, 16);
+            };
 
-            cardTotal = new SummaryCard("Tổng số HĐ", "0", "receipt", Color.FromArgb(43, 73, 103)); 
-            cardRevenue = new SummaryCard("Doanh thu ca", "0 đ", "payments", Color.FromArgb(0, 186, 97)); 
-            cardTransfer = new SummaryCard("Chuyển khoản", "0 đ", "credit_card", Color.FromArgb(115, 69, 182)); 
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, dtpFrom, dtpTo, btnFilter, btnExport });
 
-            cardTotal.Dock = DockStyle.Fill;
-            cardRevenue.Dock = DockStyle.Fill;
-            cardTransfer.Dock = DockStyle.Fill;
-
-            cardTotal.Margin = new Padding(0, 0, 16, 0);
-            cardRevenue.Margin = new Padding(0, 0, 16, 0);
-            cardTransfer.Margin = new Padding(0, 0, 0, 0);
-
-            tlpCards.Controls.Add(cardTotal, 0, 0);
-            tlpCards.Controls.Add(cardRevenue, 1, 0);
-            tlpCards.Controls.Add(cardTransfer, 2, 0);
-
-            // 3. Grid Container
-            pnlGridContainer = new Guna2Panel
+            pnlGridContainer = new Guna.UI2.WinForms.Guna2Panel
             {
                 Dock = DockStyle.Fill,
                 BorderRadius = 8,
-                BorderThickness = 1,
-                Padding = new Padding(1)
+                CustomBorderThickness = new Padding(1)
             };
 
-            paginationControl = new PaginationControl 
-            { 
-                Dock = DockStyle.Bottom 
+            paginationControl = new PaginationControl
+            {
+                Dock = DockStyle.Bottom,
+                Height = 50
             };
-            paginationControl.PageChanged += (s, e) => { 
-                _currentPage = e.NewPage; 
-                RenderCurrentPage(); 
+            paginationControl.PageChanged += async (s, e) => 
+            {
+                _currentPage = e.NewPage;
+                RenderCurrentPage();
             };
             pnlGridContainer.Controls.Add(paginationControl);
 
-            dgvInvoices = new Guna2DataGridView
+            dgvInvoices = new Guna.UI2.WinForms.Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                AllowUserToResizeRows = false,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowTemplate = { Height = 48 },
+                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
-                ScrollBars = ScrollBars.None,
-                ThemeStyle = {
-                    HeaderStyle = { Font = new Font("Segoe UI", 9F, FontStyle.Bold), Height = 48 },
-                    RowsStyle = { Font = new Font("Segoe UI", 10F) },
-                    AlternatingRowsStyle = { Font = new Font("Segoe UI", 10F) }
-                }
+                RowTemplate = { Height = 50 }
             };
 
-            dgvInvoices.Columns.Add("Id", "Id"); // Hidden
-            dgvInvoices.Columns["Id"].Visible = false;
-
-            dgvInvoices.Columns.Add("OrderCode", "MÃ HĐ");
-            dgvInvoices.Columns["OrderCode"].Width = 120;
-
-            dgvInvoices.Columns.Add("OrderDate", "Thời gian");
-            dgvInvoices.Columns["OrderDate"].Width = 150;
-
-            dgvInvoices.Columns.Add("CustomerName", "Khách hàng");
-            
-            dgvInvoices.Columns.Add("TotalAmount", "Tổng tiền");
-            dgvInvoices.Columns["TotalAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dgvInvoices.Columns["TotalAmount"].Width = 120;
-
-            dgvInvoices.Columns.Add("PaymentMethod", "Thanh toán");
-            dgvInvoices.Columns["PaymentMethod"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvInvoices.Columns["PaymentMethod"].Width = 120;
+            dgvInvoices.Columns.Add("Code", "MÃ HÓA ĐƠN");
+            dgvInvoices.Columns.Add("Date", "NGÀY BÁN");
+            dgvInvoices.Columns.Add("Customer", "KHÁCH HÀNG");
+            dgvInvoices.Columns.Add("Amount", "TỔNG TIỀN");
+            dgvInvoices.Columns["Amount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvInvoices.Columns["Amount"].DefaultCellStyle.Format = "N0";
 
             var actionCol = new DataGridViewTextBoxColumn
             {
                 Name = "Thao tác",
-                HeaderText = "Thao tác",
+                HeaderText = "THAO TÁC",
                 Width = 100,
                 DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             dgvInvoices.Columns.Add(actionCol);
 
             dgvInvoices.CellPainting += DgvInvoices_CellPainting;
-            dgvInvoices.CellContentClick += DgvInvoices_CellContentClick;
+            
             dgvInvoices.Resize += DgvInvoices_Resize;
             
             pnlGridContainer.Controls.Add(dgvInvoices);
             dgvInvoices.BringToFront();
 
-            var spacer1 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
-            var spacer2 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+            var spacer = new Panel { Dock = DockStyle.Top, Height = 24, BackColor = Color.Transparent };
 
             this.Controls.Add(pnlGridContainer);
-            this.Controls.Add(spacer1);
-            this.Controls.Add(tlpCards);
-            this.Controls.Add(spacer2);
+            this.Controls.Add(spacer);
             this.Controls.Add(pnlFilters);
             this.Controls.Add(pnlHeader);
         }
 
-        private void ApplyTheme()
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (var sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "HoaDon_" + DateTime.Now.ToString("yyyyMMdd") })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvInvoices, sfd.FileName, "Hoa Don");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            lblTitle.ForeColor = ThemeManager.TextPrimary;
-            lblSubtitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
+            if (lblSubtitle != null) lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
             if (pnlFilters != null)
             {
-                pnlFilters.BackColor = ThemeManager.CardBackground;
-                pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
-                pnlFilters.FillColor = ThemeManager.CardBackground;
+                if (pnlFilters != null) pnlFilters.BackColor = ThemeManager.CardBackground;
+                if (pnlFilters != null) pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+                if (pnlFilters != null) pnlFilters.FillColor = ThemeManager.CardBackground;
             }
 
-            txtSearch.FillColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
-            txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
+            if (txtSearch != null) txtSearch.FillColor = ThemeManager.TextBoxBackground;
+            if (txtSearch != null) txtSearch.ForeColor = ThemeManager.TextPrimary;
+            if (txtSearch != null) txtSearch.BorderColor = ThemeManager.TextBoxBorder;
 
-            btnFilter.FillColor = ThemeManager.CardBackground;
-            btnFilter.ForeColor = ThemeManager.TextSecondary;
-            btnFilter.BorderColor = ThemeManager.TextBoxBorder;
+            if (dtpFrom != null) {
+                dtpFrom.FillColor = ThemeManager.TextBoxBackground;
+                dtpFrom.ForeColor = ThemeManager.TextPrimary;
+            }
+            if (dtpTo != null) {
+                dtpTo.FillColor = ThemeManager.TextBoxBackground;
+                dtpTo.ForeColor = ThemeManager.TextPrimary;
+            }
+            if (txtSearch != null) txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
 
-            cardTotal.ApplyTheme();
-            cardRevenue.ApplyTheme();
-            cardTransfer.ApplyTheme();
+            if (btnFilter != null) btnFilter.FillColor = ThemeManager.CardBackground;
+            if (btnFilter != null) btnFilter.ForeColor = ThemeManager.TextSecondary;
+            if (btnFilter != null) btnFilter.BorderColor = ThemeManager.TextBoxBorder;
 
-            pnlGridContainer.FillColor = ThemeManager.CardBackground;
-            pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+
+                        if (pnlGridContainer != null) pnlGridContainer.FillColor = ThemeManager.CardBackground;
+            if (pnlGridContainer != null) pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+            
+            if (btnExport != null)
+            {
+                if (btnExport != null) btnExport.FillColor = ThemeManager.CardBackground;
+                if (btnExport != null) btnExport.ForeColor = ThemeManager.TextPrimary;
+                if (btnExport != null) btnExport.BorderColor = ThemeManager.TextBoxBorder;
+                if (btnExport != null) btnExport.BorderThickness = 1;
+            }
 
             ThemeManager.ApplyDataGridViewStyle(dgvInvoices);
+
         }
 
         private void DgvInvoices_Resize(object? sender, EventArgs e)
@@ -301,14 +318,7 @@ namespace BookStoreManagement.UserControls
             await LoadDataAsync();
         }
 
-        private async void TxtSearch_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                await LoadDataAsync();
-            }
-        }
+
 
         private async Task LoadDataAsync()
         {
@@ -346,9 +356,9 @@ namespace BookStoreManagement.UserControls
             decimal shiftRevenue = _allItems.Sum(x => x.TotalAmount);
             decimal bankTransfer = _allItems.Where(x => x.PaymentMethod == AppConstants.PaymentMethods.Banking).Sum(x => x.TotalAmount);
 
-            cardTotal.SetValue(totalInvoices.ToString("N0"));
-            cardRevenue.SetValue(shiftRevenue.ToString("N0") + " ₫");
-            cardTransfer.SetValue(bankTransfer.ToString("N0") + " ₫");
+            if (cardTotal != null) cardTotal.SetValue(totalInvoices.ToString("N0"));
+            if (cardRevenue != null) cardRevenue.SetValue(shiftRevenue.ToString("N0") + " ₫");
+            if (cardTransfer != null) cardTransfer.SetValue(bankTransfer.ToString("N0") + " ₫");
         }
 
         private void RenderCurrentPage()

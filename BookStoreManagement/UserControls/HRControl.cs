@@ -109,7 +109,10 @@ namespace BookStoreManagement.UserControls
             };
 
             btnPayroll = new Guna2Button { Text = "Tính lương", Size = new Size(100, 36), BorderRadius = 6, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
-            btnPayroll.Click += (s, e) => MessageBox.Show("Tính năng tính lương đang phát triển.", "Thông tin");
+            btnPayroll.Click += (s, e) => {
+                var frm = new Forms.SalaryForm();
+                frm.ShowDialog();
+            };
             
             btnAdd = new Guna2Button { Text = "+ Thêm Nhân viên", Size = new Size(150, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += async (s, e) => {
@@ -159,6 +162,7 @@ namespace BookStoreManagement.UserControls
             dgvEmployees.Columns.Add(actionCol);
 
             dgvEmployees.CellPainting += DgvEmployees_CellPainting;
+            dgvEmployees.CellDoubleClick += DgvEmployees_CellDoubleClick;
             dgvEmployees.CellMouseClick += DgvEmployees_CellMouseClick;
             dgvEmployees.CellMouseMove += DgvEmployees_CellMouseMove;
             dgvEmployees.CellMouseLeave += DgvEmployees_CellMouseLeave;
@@ -467,6 +471,15 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
+        private void DgvEmployees_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                int empId = Convert.ToInt32(dgvEmployees.Rows[e.RowIndex].Cells["Id"].Value);
+                var detailsForm = new BookStoreManagement.Forms.EmployeeDetailsForm(empId);
+                detailsForm.ShowDialog(this.FindForm());
+            }
+        }
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;

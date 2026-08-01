@@ -38,6 +38,7 @@ namespace BookStoreManagement.Forms
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.ControlBox = false;
 
             Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 18F, FontStyle.Bold), Location = new Point(24, 20), AutoSize = true };
             this.Controls.Add(lblTitle);

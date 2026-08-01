@@ -72,13 +72,7 @@ namespace BookStoreManagement.UserControls
                 AutoSize = true 
             };
             
-            lblSubtitle = new Label 
-            { 
-                Text = "Manage supplier information and contacts.", 
-                Font = new Font("Segoe UI", 11F), 
-                Location = new Point(0, 45), 
-                AutoSize = true 
-            };
+            lblSubtitle = new Label { Text = "Quản lý thông tin và liên hệ của các nhà cung cấp.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
 
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
 
@@ -111,7 +105,7 @@ namespace BookStoreManagement.UserControls
                 FillColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
-            btnExport.Click += (s, e) => MessageBox.Show("Tính năng đang phát triển!");
+            btnExport.Click += BtnExport_Click;
 
             pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnExport, btnAdd });
             pnlFilters.Resize += (s, e) => 
@@ -360,7 +354,10 @@ namespace BookStoreManagement.UserControls
                     Color bgColor = isActive ? Color.FromArgb(220, 252, 231) : Color.FromArgb(254, 226, 226);
                     Color fgColor = isActive ? Color.FromArgb(22, 163, 74) : Color.FromArgb(220, 38, 38);
 
-                    Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - 110) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, 110, 24);
+                                          var badgeFont = new Font("Segoe UI", 8F, FontStyle.Bold);
+                      var size = e.Graphics.MeasureString(text.ToUpper(), badgeFont);
+                      int badgeWidth = (int)size.Width + 24;
+                      Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - badgeWidth) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, badgeWidth, 24);
                     
                     using (GraphicsPath path = new GraphicsPath())
                     {
@@ -514,6 +511,25 @@ namespace BookStoreManagement.UserControls
                         }
                     }
                 }
+            }
+        }
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "DanhSachNhaCungCap.xlsx" })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvData, sfd.FileName, "Nhà Cung Cấp");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

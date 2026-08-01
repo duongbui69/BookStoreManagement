@@ -115,5 +115,73 @@ namespace BookStoreManagement.Repositories
             }
             return list;
         }
-    }
+    
+        public Shift? GetShiftById(int id)
+        {
+            Shift? shift = null;
+            string query = @"SELECT Id, StaffId, StoreId, ShiftName, StartTime, EndTime, InitialCash, Revenue, TotalOrders, Status 
+                             FROM Shifts 
+                             WHERE Id = @Id";
+
+            using (var conn = DbConnectionFactory.CreateConnection())
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@Id", id);
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        shift = new Shift
+                        {
+                            Id = reader.GetInt32(0),
+                            StaffId = reader.GetInt32(1),
+                            StoreId = reader.GetInt32(2),
+                            ShiftName = reader.GetString(3),
+                            StartTime = reader.GetDateTime(4),
+                            EndTime = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5),
+                            InitialCash = reader.GetDecimal(6),
+                            Revenue = reader.GetDecimal(7),
+                            TotalOrders = reader.GetInt32(8),
+                            Status = reader.GetString(9)
+                        };
+                    }
+                }
+            }
+            return shift;
+        }
+
+        public List<ShiftViewModel> GetAllShifts()
+        {
+            var list = new List<ShiftViewModel>();
+            string query = @"SELECT Id, StaffId as StaffId, ShiftName, StartTime, EndTime, InitialCash, Revenue, TotalOrders, Status 
+                             FROM Shifts 
+                             ORDER BY StartTime DESC";
+
+            using (var conn = DbConnectionFactory.CreateConnection())
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new ShiftViewModel
+                        {
+                            Id = reader.GetInt32(0),
+                            StaffId = reader.GetInt32(1),
+                            ShiftName = reader.GetString(2),
+                            StartTime = reader.GetDateTime(3),
+                            EndTime = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
+                            InitialCash = reader.GetDecimal(5),
+                            Revenue = reader.GetDecimal(6),
+                            TotalOrders = reader.GetInt32(7),
+                            Status = reader.GetString(8)
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+}
 }

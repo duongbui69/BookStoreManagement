@@ -70,8 +70,8 @@ namespace BookStoreManagement.UserControls
             // 1. Header
             pnlPageHeader = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 80, Margin = new Padding(0, 0, 0, 20) };
 
-            lblTitle = new Label { Text = "Quản lý Đơn hàng", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
-            lblSubTitle = new Label { Text = "Danh sách tất cả các đơn hàng.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
+            lblTitle = new Label { Text = "Quản lý Giao dịch", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
+            lblSubTitle = new Label { Text = "Danh sách tất cả các đơn hàng và hóa đơn bán hàng.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(2, 40) };
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
             // 2. Filters Bar
@@ -425,7 +425,7 @@ namespace BookStoreManagement.UserControls
                 }
 
                 Rectangle textRect = new Rectangle(e.CellBounds.Left + 45, e.CellBounds.Top, e.CellBounds.Width - 45, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, name, e.CellStyle.Font, textRect, e.CellStyle.ForeColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, name, e.CellStyle.Font, textRect, BookStoreManagement.Themes.ThemeManager.TextPrimary, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
                 
                 e.Handled = true;
             }
@@ -447,7 +447,7 @@ namespace BookStoreManagement.UserControls
                 DrawIcon(e.Graphics, new Rectangle(iconX, iconY, iconSize, iconSize), icon, ThemeManager.TextSecondary);
 
                 Rectangle textRect = new Rectangle(iconX + iconSize + 5, e.CellBounds.Top, e.CellBounds.Width - iconSize - 15, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, payment, e.CellStyle.Font, textRect, e.CellStyle.ForeColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, payment, e.CellStyle.Font, textRect, BookStoreManagement.Themes.ThemeManager.TextPrimary, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
 
                 e.Handled = true;
             }

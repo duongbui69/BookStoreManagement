@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -46,6 +46,17 @@ namespace BookStoreManagement.Forms
 
         private void LoadControl(Control newControl, string placeholder)
         {
+            if (CurrentSession.IsStaff && !(newControl is UserControls.StaffMyShiftsControl))
+            {
+                var shiftService = new BookStoreManagement.Services.ShiftService();
+                if (shiftService.GetActiveShift() == null)
+                {
+                    MessageBox.Show("Vui lòng bắt đầu ca làm việc trước khi thực hiện các thao tác khác!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    newControl = new UserControls.StaffMyShiftsControl();
+                    placeholder = "Ca của tôi";
+                }
+            }
+
             foreach (Control c in panelMain.Controls)
             {
                 c.Dispose();
@@ -99,7 +110,7 @@ namespace BookStoreManagement.Forms
         private void BtnInvoices_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.InvoiceControl(), "Search invoices...");
+            LoadControl(new UserControls.OrdersControl(), "Search invoices...");
         }
 
         private void BtnRefunds_Click(object sender, EventArgs e)
@@ -125,7 +136,7 @@ namespace BookStoreManagement.Forms
         {
             if (CurrentSession.IsAdmin)
             {
-                LoadControl(new UserControls.InvoiceControl(), "Search my invoices...");
+                LoadControl(new UserControls.OrdersControl(), "Search my invoices...");
             }
             else
             {
@@ -292,8 +303,7 @@ namespace BookStoreManagement.Forms
                 var customerSub = new Dictionary<string, EventHandler>
                 {
                     { "Quản lý Khách hàng", BtnCustomer_Click },
-                    { "Quản lý Đơn hàng", BtnOrders_Click },
-                    { "Quản lý Hóa đơn", BtnInvoices_Click },
+                    { "Quản lý Giao dịch (Đơn/Hóa đơn)", BtnOrders_Click },
                     { "Quản lý Đổi/Trả", BtnRefunds_Click }
                 };
                 AddAccordionMenu("Quản lý Khách hàng", "groups", customerSub);
@@ -556,12 +566,10 @@ namespace BookStoreManagement.Forms
             }
         }
 
-        private void btnLogout_Click(object sender, EventArgs e)
+                private void btnLogout_Click(object sender, EventArgs e)
         {
-            this.Hide();
-            var loginForm = new LoginForm();
-            loginForm.ShowDialog();
-            this.Close();
+            Application.Restart();
+            Environment.Exit(0);
         }
 
 

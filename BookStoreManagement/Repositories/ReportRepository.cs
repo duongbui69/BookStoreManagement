@@ -31,7 +31,7 @@ namespace BookStoreManagement.Repositories
         
         public int LowStockCount { get; set; }
         
-        public Dictionary<int, decimal> MonthlyRevenue { get; set; } = new Dictionary<int, decimal>();
+        public Dictionary<DateTime, decimal> MonthlyRevenue { get; set; } = new Dictionary<DateTime, decimal>();
 
         public List<TopSellingBook> TopSellingBooks { get; set; } = new List<TopSellingBook>();
         public List<InventoryWarning> InventoryWarnings { get; set; } = new List<InventoryWarning>();
@@ -86,7 +86,7 @@ namespace BookStoreManagement.Repositories
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
                 decimal mRev = await GetTotalRevenueAsync(mStart, mEnd);
-                stats.MonthlyRevenue.Add(mStart.Month, mRev);
+                stats.MonthlyRevenue.Add(mStart, mRev);
             }
 
             // 5. Top 5 Books

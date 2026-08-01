@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -56,6 +56,7 @@ namespace BookStoreManagement.Forms
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.ControlBox = false;
 
             Label lblTitle = new Label { Text = this.Text, Font = new Font("Segoe UI", 18F, FontStyle.Bold), Location = new Point(24, 20), AutoSize = true };
             this.Controls.Add(lblTitle);
@@ -103,9 +104,9 @@ namespace BookStoreManagement.Forms
             this.Controls.AddRange(new Control[] { pbImage, btnBrowseImg });
 
             // Buttons
-            btnSave = new Guna2Button { Text = "Lưu thông tin", Location = new Point(300, 580), Width = 130, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Text = "Lưu thông tin", Location = new Point(270, 580), Width = 140, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
-            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(450, 580), Width = 110, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(450, 580), Width = 140, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand, FillColor = Color.Transparent, BorderThickness = 1 };
             btnCancel.Click += (s, e) => this.Close();
             this.Controls.AddRange(new Control[] { btnSave, btnCancel });
         }

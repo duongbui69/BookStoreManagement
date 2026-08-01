@@ -22,45 +22,53 @@ namespace BookStoreManagement.UserControls
         private List<SalesOrderDetailFullViewModel> _currentOrderDetails;
 
         // UI Components
-        private Guna2Panel pnlContent;
+        private Guna.UI2.WinForms.Guna2Panel pnlContent;
         
         // Search Panel
-        private Guna2Panel pnlSearch;
-        private Guna2HtmlLabel lblSearchTitle;
-        private Guna2HtmlLabel lblSearchLabel;
-        private Guna2TextBox txtSearch;
-        private Guna2Button btnSearch;
-        private Guna2Button btnScan;
+        private Guna.UI2.WinForms.Guna2Panel pnlSearch;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblSearchTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblSearchLabel;
+        private Guna.UI2.WinForms.Guna2TextBox txtSearch;
+        private Guna.UI2.WinForms.Guna2Button btnSearch;
+        private Guna.UI2.WinForms.Guna2Button btnScan;
 
         // Info Panel
-        private Guna2Panel pnlInfo;
-        private Guna2HtmlLabel lblInfoTitle;
-        private Guna2HtmlLabel lblInvoiceCode;
-        private Guna2HtmlLabel lblStatus;
-        private Guna2Panel pnlDate;
-        private Guna2HtmlLabel lblDateTitle;
-        private Guna2HtmlLabel lblDateValue;
-        private Guna2Panel pnlCustomer;
-        private Guna2HtmlLabel lblCustomerTitle;
-        private Guna2HtmlLabel lblCustomerValue;
-        private Guna2Panel pnlGridHeader;
-        private Guna2Panel pnlCashier;
-        private Guna2HtmlLabel lblCashierTitle;
-        private Guna2HtmlLabel lblCashierValue;
+        private Guna.UI2.WinForms.Guna2Panel pnlInfo;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblInfoTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblInvoiceCode;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblStatus;
+        private Guna.UI2.WinForms.Guna2Panel pnlDate;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblDateTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblDateValue;
+        private Guna.UI2.WinForms.Guna2Panel pnlCustomer;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblCustomerTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblCustomerValue;
+        private Guna.UI2.WinForms.Guna2Panel pnlGridHeader;
+        private Guna.UI2.WinForms.Guna2Panel pnlCashier;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblCashierTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblCashierValue;
 
         // Grid Panel
-        private Guna2Panel pnlGrid;
-        private Guna2HtmlLabel lblGridTitle;
-        private Guna2HtmlLabel lblGridSummary;
-        private Guna2DataGridView dgvItems;
+        private Guna.UI2.WinForms.Guna2Panel pnlGrid;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblGridTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblGridSummary;
+        private Guna.UI2.WinForms.Guna2DataGridView dgvItems;
 
         // Footer Panel
-        private Guna2Panel pnlFooter;
-        private Guna2HtmlLabel lblTotalReturnQty;
-        private Guna2HtmlLabel lblTotalRefundAmountTitle;
-        private Guna2HtmlLabel lblTotalRefundAmount;
-        private Guna2Button btnCancel;
-        private Guna2Button btnConfirm;
+        private Guna.UI2.WinForms.Guna2Panel pnlFooter;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblTotalReturnQty;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblTotalRefundAmountTitle;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblTotalRefundAmount;
+        private Guna.UI2.WinForms.Guna2Button btnConfirm;
+        private Guna.UI2.WinForms.Guna2Button btnCancel;
+
+
+        // Missing fields added
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblSubtitle;
+        private Guna.UI2.WinForms.Guna2Panel pnlOrderInfo;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblInvoiceCodeTitle;
+        private Guna.UI2.WinForms.Guna2Panel pnlGridContainer;
+        private Guna.UI2.WinForms.Guna2Panel pnlActionFooter;
 
         public StaffReturnControl()
         {
@@ -83,505 +91,286 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlHeader;
         private Guna2HtmlLabel lblTitle;
 
+        
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(32); // container-padding
+            this.Padding = new Padding(24);
 
-            pnlContent = new Guna2Panel
-            {
-                Dock = DockStyle.Fill,
-                Padding = new Padding(0)
-            };
-            this.Controls.Add(pnlContent);
-
-            // 1. Footer (Dock Bottom)
-            InitializeFooter();
-            
-            // 2. Bento Box (Search & Info) (Dock Top)
-            InitializeBentoBox();
-
-            // 3. Grid Panel (Dock Fill)
-            InitializeGridPanel();
-
-            // Spacer
-            Panel spacer = new Panel { Dock = DockStyle.Top, Height = 24, BackColor = Color.Transparent };
-            pnlContent.Controls.Add(spacer);
-
-            // Header
-            pnlHeader = new Guna2Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 100,
-                BackColor = Color.Transparent
-            };
-            lblTitle = new Guna2HtmlLabel
-            {
-                Text = "Xử lý trả hàng",
-                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
-                Location = new Point(0, 0)
-            };
-            pnlHeader.Controls.Add(lblTitle);
-
-            var lblSubtitle = new Guna2HtmlLabel
-            {
-                Text = "Tìm kiếm hóa đơn và thực hiện hoàn trả cho khách hàng.",
-                Font = new Font("Segoe UI", 11F),
-                Location = new Point(0, 45)
-            };
-            pnlHeader.Controls.Add(lblSubtitle);
-            pnlContent.Controls.Add(pnlHeader);
-
-            pnlFooter.BringToFront();
-            pnlGrid.BringToFront();
-            spacer.BringToFront();
-            // We need to bring Bento Box to front before Header
-        }
-
-        private void InitializeBentoBox()
-        {
-            Guna2Panel pnlBentoContainer = new Guna2Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 180,
-                Padding = new Padding(0, 0, 0, 16) // stack-gap
-            };
-            pnlContent.Controls.Add(pnlBentoContainer);
-
-            TableLayoutPanel tlpBento = new TableLayoutPanel
+            var tlpMain = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 1
+                RowCount = 1,
+                BackColor = Color.Transparent
             };
-            tlpBento.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
-            tlpBento.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65F));
-            pnlBentoContainer.Controls.Add(tlpBento);
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65F));
 
-            // --- Search Panel ---
+            // LEFT PANEL: Search and Order Info
+            var pnlLeft = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0, 0, 12, 0) };
+            
             pnlSearch = new Guna2Panel
             {
-                Dock = DockStyle.Fill,
-                BorderRadius = 12,
-                BorderThickness = 1,
-                Padding = new Padding(20),
-                Margin = new Padding(0, 0, 8, 0)
+                Dock = DockStyle.Top,
+                Height = 120,
+                BorderRadius = 8,
+                CustomBorderThickness = new Padding(1),
+                Margin = new Padding(0, 0, 0, 16),
+                Padding = new Padding(20)
             };
-            tlpBento.Controls.Add(pnlSearch, 0, 0);
-
-            lblSearchTitle = new Guna2HtmlLabel
-            {
-                Text = "Tìm Hóa đơn",
-                Font = new Font("Inter", 14F, FontStyle.Bold),
-                Location = new Point(20, 20)
-            };
-            pnlSearch.Controls.Add(lblSearchTitle);
-
-            lblSearchLabel = new Guna2HtmlLabel
-            {
-                Text = "Mã Hóa đơn / SĐT",
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Location = new Point(20, 55)
-            };
-            pnlSearch.Controls.Add(lblSearchLabel);
-
+            
+            lblTitle = new Guna2HtmlLabel { Text = "Trả hàng / Hoàn tiền", Font = new Font("Segoe UI", 16F, FontStyle.Bold), Location = new Point(20, 20) };
+            lblSubtitle = new Guna2HtmlLabel { Text = "Nhập mã hóa đơn để kiểm tra", Font = new Font("Segoe UI", 10F), Location = new Point(20, 50) };
+            
             txtSearch = new Guna2TextBox
             {
-                PlaceholderText = "Vd: INV-2023...",
-                BorderRadius = 4,
-                Location = new Point(20, 75),
-                Size = new Size(pnlSearch.Width - 40, 36),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                PlaceholderText = "Mã hóa đơn (VD: INV-12345)...",
+                BorderRadius = 6,
+                Size = new Size(250, 36),
+                Location = new Point(20, 75)
             };
-            txtSearch.KeyDown += TxtSearch_KeyDown;
-            pnlSearch.Controls.Add(txtSearch);
-
-            btnSearch = new Guna2Button
-            {
-                Text = "Tìm kiếm",
-                BorderRadius = 4,
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Location = new Point(20, 118),
-                Size = new Size(pnlSearch.Width - 76, 36),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            txtSearch.TextChanged += async (s, e) => {
+                await SearchInvoiceAsync();
             };
-            btnSearch.Click += BtnSearch_Click;
-            pnlSearch.Controls.Add(btnSearch);
+            pnlSearch.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, txtSearch });
 
-            btnScan = new Guna2Button
-            {
-                Text = "Q",
-                BorderRadius = 4,
-                Location = new Point(pnlSearch.Width - 48, 118),
-                Size = new Size(36, 36),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            btnScan.Click += BtnScan_Click;
-            pnlSearch.Controls.Add(btnScan);
-
-            // --- Info Panel ---
-            pnlInfo = new Guna2Panel
+            pnlOrderInfo = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
-                BorderRadius = 12,
-                BorderThickness = 1,
-                Padding = new Padding(20),
-                Margin = new Padding(8, 0, 0, 0)
+                BorderRadius = 8,
+                CustomBorderThickness = new Padding(1),
+                Padding = new Padding(20)
             };
-            tlpBento.Controls.Add(pnlInfo, 1, 0);
 
-            lblInfoTitle = new Guna2HtmlLabel
-            {
-                Text = "Thông tin hóa đơn",
-                Font = new Font("Inter", 14F, FontStyle.Bold),
-                Location = new Point(20, 20)
-            };
-            pnlInfo.Controls.Add(lblInfoTitle);
-
-            lblInvoiceCode = new Guna2HtmlLabel
-            {
-                Text = "---",
-                Font = new Font("Inter", 11F),
-                Location = new Point(20, 48)
-            };
-            pnlInfo.Controls.Add(lblInvoiceCode);
-
-            lblStatus = new Guna2HtmlLabel
-            {
-                Text = "Trạng thái",
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Location = new Point(pnlInfo.Width - 100, 24),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                AutoSize = false,
-                Size = new Size(80, 24),
-                TextAlignment = ContentAlignment.MiddleCenter
-            };
-            pnlInfo.Controls.Add(lblStatus);
-
-            TableLayoutPanel tlpInfoDetails = new TableLayoutPanel
-            {
-                Location = new Point(20, 85),
-                Size = new Size(pnlInfo.Width - 40, 60),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                ColumnCount = 3,
-                RowCount = 1
-            };
-            tlpInfoDetails.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            tlpInfoDetails.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            tlpInfoDetails.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            pnlInfo.Controls.Add(tlpInfoDetails);
-
-            pnlDate = CreateInfoBox("Ngày mua", out lblDateTitle, out lblDateValue);
-            pnlCustomer = CreateInfoBox("Khách hàng", out lblCustomerTitle, out lblCustomerValue);
-            pnlCashier = CreateInfoBox("Thu ngân", out lblCashierTitle, out lblCashierValue);
-
-            pnlDate.Margin = new Padding(0, 0, 8, 0);
-            pnlCustomer.Margin = new Padding(4, 0, 4, 0);
-            pnlCashier.Margin = new Padding(8, 0, 0, 0);
-
-            tlpInfoDetails.Controls.Add(pnlDate, 0, 0);
-            tlpInfoDetails.Controls.Add(pnlCustomer, 1, 0);
-            tlpInfoDetails.Controls.Add(pnlCashier, 2, 0);
+            var lblInfoTitle = new Guna2HtmlLabel { Text = "Thông tin hóa đơn", Font = new Font("Segoe UI", 14F, FontStyle.Bold), Location = new Point(20, 20) };
             
-            pnlSearch.Resize += (s, e) => {
-                txtSearch.Width = pnlSearch.Width - 40;
-                btnSearch.Width = pnlSearch.Width - 68;
-                btnScan.Left = pnlSearch.Width - 56;
+            lblInvoiceCodeTitle = new Guna2HtmlLabel { Text = "Mã HĐ:", Font = new Font("Segoe UI", 10F), Location = new Point(20, 60) };
+            lblInvoiceCode = new Guna2HtmlLabel { Text = "---", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(100, 60) };
+            
+            lblDateTitle = new Guna2HtmlLabel { Text = "Ngày mua:", Font = new Font("Segoe UI", 10F), Location = new Point(20, 90) };
+            lblDateValue = new Guna2HtmlLabel { Text = "---", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(100, 90) };
+            
+            lblCustomerTitle = new Guna2HtmlLabel { Text = "Khách hàng:", Font = new Font("Segoe UI", 10F), Location = new Point(20, 120) };
+            lblCustomerValue = new Guna2HtmlLabel { Text = "---", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(100, 120) };
+            
+            lblCashierTitle = new Guna2HtmlLabel { Text = "Thu ngân:", Font = new Font("Segoe UI", 10F), Location = new Point(20, 150) };
+            lblCashierValue = new Guna2HtmlLabel { Text = "---", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(100, 150) };
+            
+            lblStatus = new Guna2HtmlLabel 
+            { 
+                Text = "Trạng thái", 
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold), 
+                Location = new Point(20, 190),
+                Padding = new Padding(10, 5, 10, 5)
             };
-            pnlInfo.Resize += (s, e) => {
-                lblStatus.Left = pnlInfo.Width - 120;
-                tlpInfoDetails.Width = pnlInfo.Width - 40;
-            };
-        }
 
-        private Guna2Panel CreateInfoBox(string title, out Guna2HtmlLabel lblTitle, out Guna2HtmlLabel lblValue)
-        {
-            Guna2Panel pnl = new Guna2Panel
+            pnlOrderInfo.Controls.AddRange(new Control[] { 
+                lblInfoTitle, lblInvoiceCodeTitle, lblInvoiceCode, lblDateTitle, lblDateValue, 
+                lblCustomerTitle, lblCustomerValue, lblCashierTitle, lblCashierValue, lblStatus 
+            });
+
+            pnlLeft.Controls.Add(pnlOrderInfo);
+            pnlLeft.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 16, BackColor = Color.Transparent });
+            pnlLeft.Controls.Add(pnlSearch);
+
+            // RIGHT PANEL: Grid and Footer
+            var pnlRight = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(12, 0, 0, 0) };
+            
+            pnlGridContainer = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
-                BorderRadius = 4,
-                Padding = new Padding(12)
-            };
-            
-            lblTitle = new Guna2HtmlLabel
-            {
-                Text = title,
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Location = new Point(12, 8)
-            };
-            pnl.Controls.Add(lblTitle);
-
-            lblValue = new Guna2HtmlLabel
-            {
-                Text = "---",
-                Font = new Font("Inter", 10F),
-                Location = new Point(12, 30),
-                AutoSize = false,
-                Size = new Size(150, 20)
-            };
-            pnl.Controls.Add(lblValue);
-            
-            var localLblValue = lblValue;
-            pnl.Resize += (s, e) => {
-                localLblValue.Width = pnl.Width - 24;
+                BorderRadius = 8,
+                CustomBorderThickness = new Padding(1),
+                Padding = new Padding(1)
             };
 
-            return pnl;
-        }
-
-        private void InitializeGridPanel()
-        {
-            pnlGrid = new Guna2Panel
-            {
-                Dock = DockStyle.Fill,
-                BorderRadius = 12,
-                BorderThickness = 1,
-                Padding = new Padding(1),
-                Margin = new Padding(0, 0, 0, 16) // gap above footer
-            };
-            pnlContent.Controls.Add(pnlGrid);
-            pnlGrid.BringToFront(); // To be above bento box in Z-order for fill
-
-            pnlGridHeader = new Guna2Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 48,
-                CustomBorderThickness = new Padding(0, 0, 0, 1)
-            };
-            pnlGrid.Controls.Add(pnlGridHeader);
-
-            lblGridTitle = new Guna2HtmlLabel
-            {
-                Text = "Danh sách Sản phẩm",
-                Font = new Font("Inter", 12F, FontStyle.Bold),
-                Location = new Point(16, 12)
-            };
-            pnlGridHeader.Controls.Add(lblGridTitle);
-
-            lblGridSummary = new Guna2HtmlLabel
-            {
-                Text = "0 mặt hàng (Tổng SL: 0)",
-                Font = new Font("Inter", 9F, FontStyle.Bold),
-                Location = new Point(pnlGridHeader.Width - 200, 16),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                AutoSize = false,
-                Size = new Size(180, 20),
-                TextAlignment = ContentAlignment.MiddleRight
-            };
-            pnlGridHeader.Controls.Add(lblGridSummary);
-
-            pnlGridHeader.Resize += (s, e) => {
-                lblGridSummary.Left = pnlGridHeader.Width - 200;
-            };
+            var pnlGridHeader = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.Transparent };
+            var lblGridTitle = new Guna2HtmlLabel { Text = "Chi tiết mặt hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 15) };
+            lblGridSummary = new Guna2HtmlLabel { Text = "0 mặt hàng (Tổng SL: 0)", Font = new Font("Segoe UI", 10F), Location = new Point(200, 17) };
+            pnlGridHeader.Controls.AddRange(new Control[] { lblGridTitle, lblGridSummary });
 
             dgvItems = new Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                ReadOnly = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.CellSelect,
-                RowTemplate = { Height = 48 },
-                BorderStyle = BorderStyle.None,
-                ThemeStyle = {
-                    HeaderStyle = { Font = new Font("Inter", 9F, FontStyle.Bold), Height = 40 },
-                    RowsStyle = { Font = new Font("Inter", 10F) },
-                    AlternatingRowsStyle = { Font = new Font("Inter", 10F) }
-                }
+                BackgroundColor = Color.White,
+                RowTemplate = { Height = 40 }
             };
-            
-            // Define Columns
+
             dgvItems.Columns.Add("STT", "STT");
             dgvItems.Columns["STT"].Width = 50;
             dgvItems.Columns["STT"].ReadOnly = true;
 
-            dgvItems.Columns.Add("Sản phẩm", "Sản phẩm");
-            dgvItems.Columns["Sản phẩm"].ReadOnly = true;
+            dgvItems.Columns.Add("BookName", "Tên sách");
+            dgvItems.Columns["BookName"].ReadOnly = true;
+            dgvItems.Columns["BookName"].FillWeight = 200;
 
             dgvItems.Columns.Add("UnitPrice", "Đơn giá");
-            dgvItems.Columns["UnitPrice"].Width = 100;
             dgvItems.Columns["UnitPrice"].ReadOnly = true;
-            dgvItems.Columns["UnitPrice"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvItems.Columns["UnitPrice"].DefaultCellStyle.Format = "N0";
+            
+            dgvItems.Columns.Add("Qty", "SL Mua");
+            dgvItems.Columns["Qty"].ReadOnly = true;
+            dgvItems.Columns["Qty"].Width = 80;
 
-            dgvItems.Columns.Add("PurchasedQty", "SL Mua");
-            dgvItems.Columns["PurchasedQty"].Width = 80;
-            dgvItems.Columns["PurchasedQty"].ReadOnly = true;
-            dgvItems.Columns["PurchasedQty"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            var colReturnQty = new DataGridViewTextBoxColumn
+            {
+                Name = "ReturnQty",
+                HeaderText = "SL Trả",
+                Width = 80
+            };
+            dgvItems.Columns.Add(colReturnQty);
 
-            dgvItems.Columns.Add("ReturnQty", "Số lượng trả");
-            dgvItems.Columns["ReturnQty"].Width = 80;
-            dgvItems.Columns["ReturnQty"].ReadOnly = false;
-            dgvItems.Columns["ReturnQty"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            DataGridViewComboBoxColumn colReason = new DataGridViewComboBoxColumn
+            var colReason = new DataGridViewComboBoxColumn
             {
                 Name = "ReturnReason",
                 HeaderText = "Lý do trả",
-                Width = 150,
-                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
+                Width = 150
             };
-            colReason.Items.AddRange("Sách lỗi/Rách trang", "Sai mặt hàng", "Khách đổi ý", "Khác...");
+            colReason.Items.AddRange("Khách đổi ý", "Hàng lỗi", "Giao sai", "Khác...");
             dgvItems.Columns.Add(colReason);
 
-            dgvItems.Columns.Add("RefundAmount", "Thành tiền hoàn");
-            dgvItems.Columns["RefundAmount"].Width = 120;
+            dgvItems.Columns.Add("RefundAmount", "Hoàn tiền");
             dgvItems.Columns["RefundAmount"].ReadOnly = true;
-            dgvItems.Columns["RefundAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dgvItems.Columns["RefundAmount"].DefaultCellStyle.Font = new Font("Inter", 10F, FontStyle.Bold);
+            dgvItems.Columns["RefundAmount"].DefaultCellStyle.Format = "N0";
 
             dgvItems.CellValueChanged += DgvItems_CellValueChanged;
-            dgvItems.CurrentCellDirtyStateChanged += DgvItems_CurrentCellDirtyStateChanged;
             dgvItems.CellValidating += DgvItems_CellValidating;
+            dgvItems.CurrentCellDirtyStateChanged += DgvItems_CurrentCellDirtyStateChanged;
 
-            pnlGrid.Controls.Add(dgvItems);
-            dgvItems.BringToFront();
-        }
+            pnlGridContainer.Controls.Add(dgvItems);
+            pnlGridContainer.Controls.Add(pnlGridHeader);
 
-        private void InitializeFooter()
-        {
-            pnlFooter = new Guna2Panel
+            pnlActionFooter = new Guna2Panel
             {
                 Dock = DockStyle.Bottom,
                 Height = 80,
-                BorderRadius = 12,
-                BorderThickness = 1,
-                Padding = new Padding(20)
+                BorderRadius = 8,
+                CustomBorderThickness = new Padding(1),
+                Margin = new Padding(0, 16, 0, 0)
             };
-            pnlContent.Controls.Add(pnlFooter);
 
-            lblTotalReturnQty = new Guna2HtmlLabel
-            {
-                Text = "Tổng SL Trả: 0",
-                Font = new Font("Inter", 10F, FontStyle.Bold),
-                Location = new Point(20, 16)
-            };
-            pnlFooter.Controls.Add(lblTotalReturnQty);
-
-            lblTotalRefundAmountTitle = new Guna2HtmlLabel
-            {
-                Text = "Tổng tiền hoàn: ",
-                Font = new Font("Inter", 12F),
-                Location = new Point(20, 40)
-            };
-            pnlFooter.Controls.Add(lblTotalRefundAmountTitle);
-
-            lblTotalRefundAmount = new Guna2HtmlLabel
-            {
-                Text = "0 đ",
-                Font = new Font("Inter", 18F, FontStyle.Bold),
-                Location = new Point(lblTotalRefundAmountTitle.Right + 5, 34)
-            };
-            pnlFooter.Controls.Add(lblTotalRefundAmount);
+            lblTotalReturnQty = new Guna2HtmlLabel { Text = "Tổng SL Hoàn: 0", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 30) };
+            lblTotalRefundAmountTitle = new Guna2HtmlLabel { Text = "TỔNG HOÀN TIỀN:", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(200, 30) };
+            lblTotalRefundAmount = new Guna2HtmlLabel { Text = "0 VNĐ", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.Firebrick, Location = new Point(380, 25) };
 
             btnConfirm = new Guna2Button
             {
-                Text = "Xác nhận Trả hàng & Hoàn tiền",
-                BorderRadius = 4,
-                Font = new Font("Inter", 10F, FontStyle.Bold),
-                Size = new Size(220, 44),
-                Location = new Point(pnlFooter.Width - 240, 18),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Text = "XÁC NHẬN TRẢ",
+                BorderRadius = 6,
+                Size = new Size(160, 44),
+                Enabled = false,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
             btnConfirm.Click += BtnConfirm_Click;
-            pnlFooter.Controls.Add(btnConfirm);
 
             btnCancel = new Guna2Button
             {
-                Text = "Hủy bỏ",
-                BorderRadius = 4,
-                BorderThickness = 1,
-                Font = new Font("Inter", 10F, FontStyle.Bold),
+                Text = "HỦY BỎ",
+                BorderRadius = 6,
                 Size = new Size(120, 44),
-                Location = new Point(pnlFooter.Width - 370, 18),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                FillColor = Color.Transparent,
+                BorderThickness = 1,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
             btnCancel.Click += BtnCancel_Click;
-            pnlFooter.Controls.Add(btnCancel);
 
-            pnlFooter.Resize += (s, e) => {
-                btnConfirm.Left = pnlFooter.Width - 240;
-                btnCancel.Left = pnlFooter.Width - 370;
+            pnlActionFooter.Resize += (s, e) => {
+                btnConfirm.Location = new Point(pnlActionFooter.Width - btnConfirm.Width - 20, 18);
+                btnCancel.Location = new Point(btnConfirm.Left - btnCancel.Width - 10, 18);
             };
-        }
 
-        private void ApplyTheme()
+            pnlActionFooter.Controls.AddRange(new Control[] { lblTotalReturnQty, lblTotalRefundAmountTitle, lblTotalRefundAmount, btnConfirm, btnCancel });
+
+            pnlRight.Controls.Add(pnlGridContainer);
+            pnlRight.Controls.Add(pnlActionFooter);
+
+            tlpMain.Controls.Add(pnlLeft, 0, 0);
+            tlpMain.Controls.Add(pnlRight, 1, 0);
+
+            this.Controls.Add(tlpMain);
+        }
+private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
             if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
+            if (lblSubtitle != null) lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
-            pnlSearch.FillColor = ThemeManager.CardBackground;
-            pnlSearch.BorderColor = ThemeManager.TextBoxBorder;
-            lblSearchTitle.ForeColor = ThemeManager.TextPrimary;
-            lblSearchLabel.ForeColor = ThemeManager.TextSecondary;
+            if (pnlSearch != null)
+            {
+                if (pnlSearch != null) pnlSearch.FillColor = ThemeManager.CardBackground;
+                if (pnlSearch != null) pnlSearch.BorderColor = ThemeManager.TextBoxBorder;
+            }
             
-            txtSearch.FillColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
-            txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
+            if (txtSearch != null)
+            {
+                if (txtSearch != null) txtSearch.FillColor = ThemeManager.TextBoxBackground;
+                if (txtSearch != null) txtSearch.ForeColor = ThemeManager.TextPrimary;
+                if (txtSearch != null) txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+                if (txtSearch != null) txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
+            }
             
-            btnSearch.FillColor = ThemeManager.ButtonFill;
-            btnSearch.ForeColor = ThemeManager.ButtonText;
-            
-            btnScan.FillColor = ThemeManager.CardBackground;
-            btnScan.BorderColor = ThemeManager.TextBoxBorder;
-            btnScan.BorderThickness = 1;
-            btnScan.ForeColor = ThemeManager.TextPrimary;
+            if (pnlOrderInfo != null)
+            {
+                if (pnlOrderInfo != null) pnlOrderInfo.FillColor = ThemeManager.CardBackground;
+                if (pnlOrderInfo != null) pnlOrderInfo.BorderColor = ThemeManager.TextBoxBorder;
+            }
 
-            pnlInfo.FillColor = ThemeManager.CardBackground;
-            pnlInfo.BorderColor = ThemeManager.TextBoxBorder;
-            lblInfoTitle.ForeColor = ThemeManager.TextPrimary;
-            lblInvoiceCode.ForeColor = ThemeManager.TextSecondary;
-            lblStatus.ForeColor = Color.White;
-            lblStatus.BackColor = ThemeManager.HoverColor;
+            if (lblInvoiceCodeTitle != null) lblInvoiceCodeTitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblInvoiceCode != null) lblInvoiceCode.ForeColor = ThemeManager.TextPrimary;
             
-            Color boxBg = ThemeManager.Background;
-            pnlDate.FillColor = boxBg;
-            lblDateTitle.ForeColor = ThemeManager.TextSecondary;
-            lblDateValue.ForeColor = ThemeManager.TextPrimary;
-            pnlCustomer.FillColor = boxBg;
-            lblCustomerTitle.ForeColor = ThemeManager.TextSecondary;
-            lblCustomerValue.ForeColor = ThemeManager.TextPrimary;
-            pnlCashier.FillColor = boxBg;
-            lblCashierTitle.ForeColor = ThemeManager.TextSecondary;
-            lblCashierValue.ForeColor = ThemeManager.TextPrimary;
+            if (lblDateTitle != null) lblDateTitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblDateValue != null) lblDateValue.ForeColor = ThemeManager.TextPrimary;
+            
+            if (lblCustomerTitle != null) lblCustomerTitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblCustomerValue != null) lblCustomerValue.ForeColor = ThemeManager.TextPrimary;
+            
+            if (lblCashierTitle != null) lblCashierTitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblCashierValue != null) lblCashierValue.ForeColor = ThemeManager.TextPrimary;
 
-            pnlGrid.FillColor = ThemeManager.CardBackground;
-            pnlGrid.BorderColor = ThemeManager.TextBoxBorder;
-            pnlGridHeader.BackColor = ThemeManager.CardBackground;
-            pnlGridHeader.CustomBorderColor = ThemeManager.TextBoxBorder;
-            lblGridTitle.ForeColor = ThemeManager.TextPrimary;
-            lblGridSummary.ForeColor = ThemeManager.TextSecondary;
+            if (lblStatus != null)
+            {
+                if (lblStatus != null) lblStatus.ForeColor = Color.White;
+                if (lblStatus != null) lblStatus.BackColor = ThemeManager.HoverColor;
+            }
+            
+            if (pnlGridContainer != null)
+            {
+                if (pnlGridContainer != null) pnlGridContainer.FillColor = ThemeManager.CardBackground;
+                if (pnlGridContainer != null) pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+            }
 
             ThemeManager.ApplyDataGridViewStyle(dgvItems);
 
-            pnlFooter.FillColor = ThemeManager.CardBackground;
-            pnlFooter.BorderColor = ThemeManager.TextBoxBorder;
-            lblTotalReturnQty.ForeColor = ThemeManager.TextSecondary;
-            lblTotalRefundAmountTitle.ForeColor = ThemeManager.TextPrimary;
-            lblTotalRefundAmount.ForeColor = Color.Firebrick;
-            
-            btnConfirm.FillColor = Color.Firebrick;
-            btnConfirm.ForeColor = Color.White;
-            
-            btnCancel.FillColor = ThemeManager.CardBackground;
-            btnCancel.ForeColor = ThemeManager.TextPrimary;
-            btnCancel.BorderColor = ThemeManager.TextBoxBorder;
-        }
-
-        private async void BtnSearch_Click(object? sender, EventArgs e)
-        {
-            await SearchInvoiceAsync();
-        }
-
-        private void TxtSearch_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
+            if (pnlActionFooter != null)
             {
-                e.SuppressKeyPress = true;
-                SearchInvoiceAsync();
+                if (pnlActionFooter != null) pnlActionFooter.FillColor = ThemeManager.CardBackground;
+                if (pnlActionFooter != null) pnlActionFooter.BorderColor = ThemeManager.TextBoxBorder;
+            }
+            
+            if (lblTotalReturnQty != null) lblTotalReturnQty.ForeColor = ThemeManager.TextPrimary;
+            if (lblTotalRefundAmountTitle != null) lblTotalRefundAmountTitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblTotalRefundAmount != null) lblTotalRefundAmount.ForeColor = ThemeManager.TextPrimary;
+
+            if (btnConfirm != null)
+            {
+                if (btnConfirm != null) btnConfirm.FillColor = ThemeManager.ButtonFill;
+                if (btnConfirm != null) btnConfirm.ForeColor = ThemeManager.ButtonText;
+            }
+            if (btnCancel != null)
+            {
+                if (btnCancel != null) btnCancel.FillColor = ThemeManager.Background;
+                if (btnCancel != null) btnCancel.BorderColor = ThemeManager.TextBoxBorder;
+                if (btnCancel != null) btnCancel.ForeColor = ThemeManager.TextPrimary;
             }
         }
+
+
 
         private void BtnScan_Click(object? sender, EventArgs e)
         {
@@ -785,6 +574,9 @@ namespace BookStoreManagement.UserControls
 
             lblTotalReturnQty.Text = $"Tổng SL Hoàn: {totalReturnQty}";
             lblTotalRefundAmount.Text = $"{totalRefundAmt:N0} VNĐ";
+            
+            // Adjust position dynamically to avoid overlap
+            lblTotalRefundAmountTitle.Left = lblTotalReturnQty.Right + 30;
             lblTotalRefundAmount.Left = lblTotalRefundAmountTitle.Right + 5;
             
             btnConfirm.Enabled = totalReturnQty > 0;
@@ -815,6 +607,8 @@ namespace BookStoreManagement.UserControls
                             Quantity = rQty,
                             UnitPrice = orderDetail.UnitPrice,
                             ReturnReason = row.Cells["ReturnReason"].Value?.ToString() ?? "Khác..."
+                        ,
+                            IsRestock = true
                         });
                     }
                 }

@@ -22,7 +22,6 @@ namespace BookStoreManagement.UserControls
         private Guna2HtmlLabel lblTitle;
         private Guna2HtmlLabel lblSubtitle;
         private Guna2TextBox txtSearch;
-        private Guna2Button btnFilter;
         private Guna2Panel pnlFilters;
 
         private Guna2Panel pnlGridContainer;
@@ -50,16 +49,17 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
         }
 
+        
+        private Guna2Button btnExport;
         private void InitializeUI()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(32);
+            this.Padding = new Padding(24);
 
-            // Header Section
             pnlHeader = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 100,
+                Height = 80,
                 BackColor = Color.Transparent
             };
 
@@ -79,13 +79,12 @@ namespace BookStoreManagement.UserControls
             };
             pnlHeader.Controls.Add(lblSubtitle);
 
-            // Filters Section
             pnlFilters = new Guna2Panel 
             { 
                 Dock = DockStyle.Top, 
                 Height = 70, 
                 CustomBorderThickness = new Padding(1), 
-                Margin = new Padding(0, 0, 0, 20), 
+                Margin = new Padding(0, 0, 0, 24), 
                 BorderRadius = 8 
             };
 
@@ -97,71 +96,64 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(300, 36),
                 Location = new Point(20, 16)
             };
-            txtSearch.KeyDown += TxtSearch_KeyDown;
-            
-            btnFilter = new Guna2Button
+            txtSearch.TextChanged += txtSearch_TextChanged;
+
+            btnExport = new Guna2Button
             {
-                Text = "Lọc",
+                Text = "XUẤT EXCEL",
                 BorderRadius = 6,
+                Size = new Size(120, 36),
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Size = new Size(100, 36),
                 Cursor = Cursors.Hand
             };
+            btnExport.Click += BtnExport_Click;
 
-            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnFilter });
-            pnlFilters.Resize += (s, e) => 
-            {
-                btnFilter.Location = new Point(pnlFilters.Width - 120, 16);
+            pnlFilters.Resize += (s, e) => {
+                btnExport.Location = new Point(pnlFilters.Width - 140, 16);
             };
 
-            // Grid Container
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnExport });
+
             pnlGridContainer = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
                 BorderRadius = 8,
-                BorderThickness = 1,
-                Padding = new Padding(1)
+                CustomBorderThickness = new Padding(1)
             };
 
-            paginationControl = new PaginationControl 
-            { 
-                Dock = DockStyle.Bottom 
+            paginationControl = new PaginationControl
+            {
+                Dock = DockStyle.Bottom,
+                Height = 50
             };
-            paginationControl.PageChanged += (s, e) => { 
-                _currentPage = e.NewPage; 
-                RenderCurrentPage(); 
+            paginationControl.PageChanged += async (s, e) => 
+            {
+                _currentPage = e.NewPage;
+                RenderCurrentPage();
             };
             pnlGridContainer.Controls.Add(paginationControl);
 
-            dgvInventory = new Guna2DataGridView
+            dgvInventory = new Guna.UI2.WinForms.Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                AllowUserToResizeRows = false,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowTemplate = { Height = 50 },
+                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
-                ScrollBars = ScrollBars.None,
-                ThemeStyle = {
-                    HeaderStyle = { Font = new Font("Segoe UI", 9F, FontStyle.Bold), Height = 50 },
-                    RowsStyle = { Font = new Font("Segoe UI", 10F) },
-                    AlternatingRowsStyle = { Font = new Font("Segoe UI", 10F) }
-                }
+                RowTemplate = { Height = 50 }
             };
 
-            dgvInventory.Columns.Add("BookCode", "MÃ SÁCH");
-            dgvInventory.Columns["BookCode"].Width = 100;
-            dgvInventory.Columns.Add("Tiêu đề", "TÊN SÁCH");
-            dgvInventory.Columns["Tiêu đề"].FillWeight = 200;
+            dgvInventory.Columns.Add("Code", "MÃ SÁCH");
+            dgvInventory.Columns["Code"].Width = 100;
+            dgvInventory.Columns.Add("Name", "TÊN SÁCH");
+            dgvInventory.Columns["Name"].FillWeight = 200;
             dgvInventory.Columns.Add("Tác giả", "TÁC GIẢ");
-            dgvInventory.Columns.Add("Danh mục", "DANH MỤC");
-            dgvInventory.Columns.Add("Shelf", "VỊ TRÍ KỆ");
-            
+            dgvInventory.Columns.Add("Category", "THỂ LOẠI");
+            dgvInventory.Columns.Add("Location", "VỊ TRÍ KỆ");
             dgvInventory.Columns.Add("Tồn kho", "TỒN KHO");
-            dgvInventory.Columns["Tồn kho"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvInventory.Columns["Tồn kho"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvInventory.Columns["Tồn kho"].Width = 100;
 
             dgvInventory.Columns.Add("Trạng thái", "TRẠNG THÁI");
@@ -174,7 +166,7 @@ namespace BookStoreManagement.UserControls
             pnlGridContainer.Controls.Add(dgvInventory);
             dgvInventory.BringToFront();
 
-            var spacer = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
+            var spacer = new Panel { Dock = DockStyle.Top, Height = 24, BackColor = Color.Transparent };
 
             this.Controls.Add(pnlGridContainer);
             this.Controls.Add(spacer);
@@ -182,32 +174,57 @@ namespace BookStoreManagement.UserControls
             this.Controls.Add(pnlHeader);
         }
 
-        private void ApplyTheme()
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (var sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "TonKho_" + DateTime.Now.ToString("yyyyMMdd") })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvInventory, sfd.FileName, "Ton Kho");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            lblTitle.ForeColor = ThemeManager.TextPrimary;
-            lblSubtitle.ForeColor = ThemeManager.TextSecondary;
+            if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
+            if (lblSubtitle != null) lblSubtitle.ForeColor = ThemeManager.TextSecondary;
             
             if (pnlFilters != null)
             {
-                pnlFilters.BackColor = ThemeManager.CardBackground;
-                pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
-                pnlFilters.FillColor = ThemeManager.CardBackground;
+                if (pnlFilters != null) pnlFilters.BackColor = ThemeManager.CardBackground;
+                if (pnlFilters != null) pnlFilters.CustomBorderColor = ThemeManager.TextBoxBorder;
+                if (pnlFilters != null) pnlFilters.FillColor = ThemeManager.CardBackground;
             }
 
-            txtSearch.FillColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
-            txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
+            if (txtSearch != null) txtSearch.FillColor = ThemeManager.TextBoxBackground;
+            if (txtSearch != null) txtSearch.ForeColor = ThemeManager.TextPrimary;
+            if (txtSearch != null) txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            if (txtSearch != null) txtSearch.FocusedState.BorderColor = ThemeManager.ButtonFill;
 
-            btnFilter.FillColor = ThemeManager.CardBackground;
-            btnFilter.ForeColor = ThemeManager.TextSecondary;
-            btnFilter.BorderColor = ThemeManager.TextBoxBorder;
 
-            pnlGridContainer.FillColor = ThemeManager.CardBackground;
-            pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+                        if (pnlGridContainer != null) pnlGridContainer.FillColor = ThemeManager.CardBackground;
+            if (pnlGridContainer != null) pnlGridContainer.BorderColor = ThemeManager.TextBoxBorder;
+
+            if (btnExport != null)
+            {
+                if (btnExport != null) btnExport.FillColor = ThemeManager.CardBackground;
+                if (btnExport != null) btnExport.ForeColor = ThemeManager.TextPrimary;
+                if (btnExport != null) btnExport.BorderColor = ThemeManager.TextBoxBorder;
+                if (btnExport != null) btnExport.BorderThickness = 1;
+            }
 
             ThemeManager.ApplyDataGridViewStyle(dgvInventory);
+
         }
 
         private void DgvInventory_Resize(object? sender, EventArgs e)
@@ -241,6 +258,11 @@ namespace BookStoreManagement.UserControls
         protected override async void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            await LoadDataAsync();
+        }
+
+        private async void txtSearch_TextChanged(object? sender, EventArgs e)
+        {
             await LoadDataAsync();
         }
 

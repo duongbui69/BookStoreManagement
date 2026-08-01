@@ -44,6 +44,7 @@ namespace BookStoreManagement.Forms
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.ControlBox = false;
             this.MinimizeBox = false;
 
             pnlMain = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(24) };

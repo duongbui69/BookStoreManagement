@@ -85,7 +85,7 @@ namespace BookStoreManagement.UserControls
             this.Padding = new Padding(32);
 
             // Header
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 100 };
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60 };
             lblTitle = new Guna2HtmlLabel
             {
                 Text = "Ca làm việc của tôi",
@@ -99,7 +99,7 @@ namespace BookStoreManagement.UserControls
             pnlCurrentShift = new Guna2Panel
             {
                 Dock = DockStyle.Top,
-                Height = 160,
+                Height = 190,
                 BorderRadius = 8,
                 BorderThickness = 1,
                 Padding = new Padding(16)
@@ -187,8 +187,21 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(pnlHistoryHeader.Width - 266, 12),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
-            txtSearch.KeyDown += TxtSearch_KeyDown;
-            pnlHistoryHeader.Controls.Add(lblHistoryTitle);
+            txtSearch.TextChanged += (s, e) => {
+                string keyword = txtSearch.Text.Trim().ToLower();
+                _shiftHistory = _shiftService.GetShiftHistory();
+                
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    _shiftHistory = _shiftHistory.Where(x => 
+                        x.Id.ToString().Contains(keyword) || 
+                        x.ShiftName.ToLower().Contains(keyword) ||
+                        x.StartTime.ToString("dd/MM/yyyy").Contains(keyword)
+                    ).ToList();
+                }
+                _currentPage = 1;
+                RenderHistoryPage();
+            };            pnlHistoryHeader.Controls.Add(lblHistoryTitle);
             pnlHistoryHeader.Controls.Add(txtSearch);
             pnlHistory.Controls.Add(pnlHistoryHeader);
 
@@ -236,16 +249,17 @@ namespace BookStoreManagement.UserControls
             dgvHistory.Columns.Add(actionCol);
             
             dgvHistory.CellPainting += DgvHistory_CellPainting;
+            dgvHistory.CellMouseClick += DgvHistory_CellMouseClick;
             dgvHistory.Resize += DgvHistory_Resize;
             
             pnlHistory.Controls.Add(dgvHistory);
             dgvHistory.BringToFront();
 
             // Set Z-Order
+            pnlHeader.SendToBack();
+            pnlCurrentShift.SendToBack();
+            spacer.SendToBack();
             pnlHistory.BringToFront();
-            spacer.BringToFront();
-            pnlCurrentShift.BringToFront();
-            pnlHeader.BringToFront();
 
             _timer = new System.Windows.Forms.Timer { Interval = 1000 };
             _timer.Tick += Timer_Tick;
@@ -274,18 +288,22 @@ namespace BookStoreManagement.UserControls
             if (pnlCurrentShift == null) return;
             int currentWidth = pnlCurrentShift.Width;
             
-            pnlTimer.Size = new Size(250, 128);
-            pnlTimer.Location = new Point(currentWidth - 250 - 16, 16);
-            btnCloseShift.Location = new Point(pnlTimer.Width - 160 - 16, pnlTimer.Height - 40 - 16);
+            pnlTimer.Size = new Size(260, 150);
+            pnlTimer.Location = new Point(currentWidth - 260 - 24, 16);
+            
+            lblTimer.Location = new Point(16, 42);
+            btnCloseShift.Size = new Size(228, 44);
+            btnCloseShift.Location = new Point(16, 92);
 
             int startX = 16;
-            int startY = 70;
-            int gap = 16;
-            int itemWidth = (pnlTimer.Left - startX - gap * 3) / 3;
+            int startY = 86;
+            int gap = 24;
+            int itemWidth = Math.Min(280, (pnlTimer.Left - startX - gap * 2 - 24) / 3);
+            if (itemWidth < 100) itemWidth = 100;
 
-            pnlStartInfo.Bounds = new Rectangle(startX, startY, itemWidth, 74);
-            pnlRevenueInfo.Bounds = new Rectangle(startX + itemWidth + gap, startY, itemWidth, 74);
-            pnlOrdersInfo.Bounds = new Rectangle(startX + itemWidth * 2 + gap * 2, startY, itemWidth, 74);
+            pnlStartInfo.Bounds = new Rectangle(startX, startY, itemWidth, 84);
+            pnlRevenueInfo.Bounds = new Rectangle(startX + itemWidth + gap, startY, itemWidth, 84);
+            pnlOrdersInfo.Bounds = new Rectangle(startX + itemWidth * 2 + gap * 2, startY, itemWidth, 84);
         }
 
         private void DgvHistory_Resize(object? sender, EventArgs e)
@@ -325,18 +343,17 @@ namespace BookStoreManagement.UserControls
                 _activeShift = _shiftService.GetActiveShift();
                 if (_activeShift == null)
                 {
-                    // No active shift -> Prompt to open
+                    // No active shift -> Prompt to open AFTER load is complete
                     _timer.Stop();
-                    var openForm = new StartShiftForm();
-                    if (openForm.ShowDialog() == DialogResult.OK)
-                    {
-                        _activeShift = _shiftService.GetActiveShift();
-                    }
-                    else
-                    {
-                        // User cancelled opening shift -> maybe redirect to another tab
-                        // For now, let it be empty, they can't do anything.
-                    }
+                    this.BeginInvoke(new Action(() => {
+                        if (this.IsDisposed) return;
+                        var openForm = new StartShiftForm();
+                        var parentForm = this.FindForm();
+                        if (openForm.ShowDialog(parentForm) == DialogResult.OK)
+                        {
+                            if (!this.IsDisposed) LoadData(); // Reload everything to update UI properly
+                        }
+                    }));
                 }
 
                 if (_activeShift != null)
@@ -409,50 +426,11 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void TxtSearch_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                string keyword = txtSearch.Text.Trim().ToLower();
-                _shiftHistory = _shiftService.GetShiftHistory();
-                
-                if (!string.IsNullOrEmpty(keyword))
-                {
-                    _shiftHistory = _shiftHistory.Where(x => 
-                        x.Id.ToString().Contains(keyword) || 
-                        x.ShiftName.ToLower().Contains(keyword) ||
-                        x.StartTime.ToString("dd/MM/yyyy").Contains(keyword)
-                    ).ToList();
-                }
-                _currentPage = 1;
-                RenderHistoryPage();
-            }
-        }
+
 
         private void RenderHistoryPage()
         {
-            if (dgvHistory.Columns.Count == 0)
-            {
-                dgvHistory.Columns.Add("Id", "ID");
-                dgvHistory.Columns["Id"].Width = 80;
-                dgvHistory.Columns.Add("Ngày", "Ngày");
-                dgvHistory.Columns.Add("ShiftName", "Ca");
-                dgvHistory.Columns.Add("Thời gian", "Bắt đầu - Kết thúc");
-                dgvHistory.Columns.Add("Revenue", "Doanh số (đ)");
-                dgvHistory.Columns["Revenue"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                dgvHistory.Columns.Add("Trạng thái", "Trạng thái");
-                dgvHistory.Columns["Trạng thái"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                
-                var actionCol = new DataGridViewTextBoxColumn
-                {
-                    Name = "Thao tác",
-                    HeaderText = "Thao tác",
-                    Width = 100,
-                    DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }
-                };
-                dgvHistory.Columns.Add(actionCol);
-            }
+            
             dgvHistory.Rows.Clear();
             if (_shiftHistory == null || _shiftHistory.Count == 0)
             {
@@ -541,37 +519,50 @@ namespace BookStoreManagement.UserControls
             }
         }
 
+        private void DgvHistory_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvHistory.Columns[e.ColumnIndex].Name == "Thao tác")
+            {
+                var shiftVm = dgvHistory.Rows[e.RowIndex].Tag as ShiftViewModel;
+                if (shiftVm != null)
+                {
+                    var detailsForm = new ShiftDetailsForm(shiftVm.Id);
+                    detailsForm.ShowDialog(this.FindForm());
+                }
+            }
+        }
+
         private void ApplyTheme()
         {
             this.BackColor = ThemeManager.Background;
-            lblTitle.ForeColor = ThemeManager.TextPrimary;
+            if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
 
-            pnlCurrentShift.FillColor = ThemeManager.CardBackground;
-            pnlCurrentShift.BorderColor = ThemeManager.TextBoxBorder;
-            lblCurrentShiftTitle.ForeColor = ThemeManager.TextPrimary;
-            lblEmployeeInfo.ForeColor = ThemeManager.TextSecondary;
+            if (pnlCurrentShift != null) pnlCurrentShift.FillColor = ThemeManager.CardBackground;
+            if (pnlCurrentShift != null) pnlCurrentShift.BorderColor = ThemeManager.TextBoxBorder;
+            if (lblCurrentShiftTitle != null) lblCurrentShiftTitle.ForeColor = ThemeManager.TextPrimary;
+            if (lblEmployeeInfo != null) lblEmployeeInfo.ForeColor = ThemeManager.TextSecondary;
 
-            pnlStartInfo.FillColor = ThemeManager.HoverColor;
-            pnlStartInfo.Controls[0].ForeColor = ThemeManager.TextSecondary;
-            pnlStartInfo.Controls[1].ForeColor = ThemeManager.TextPrimary;
-            pnlStartInfo.Controls[2].ForeColor = ThemeManager.TextSecondary;
+            if (pnlStartInfo != null) pnlStartInfo.FillColor = ThemeManager.HoverColor;
+            if (pnlStartInfo != null) pnlStartInfo.Controls[0].ForeColor = ThemeManager.TextSecondary;
+            if (pnlStartInfo != null) pnlStartInfo.Controls[1].ForeColor = ThemeManager.TextPrimary;
+            if (pnlStartInfo != null) pnlStartInfo.Controls[2].ForeColor = ThemeManager.TextSecondary;
 
-            pnlRevenueInfo.FillColor = Color.FromArgb(40, Color.ForestGreen);
-            pnlRevenueInfo.Controls[0].ForeColor = Color.ForestGreen;
-            pnlRevenueInfo.Controls[1].ForeColor = Color.ForestGreen;
-            pnlRevenueInfo.Controls[2].ForeColor = Color.ForestGreen;
+            if (pnlRevenueInfo != null) pnlRevenueInfo.FillColor = Color.FromArgb(40, Color.ForestGreen);
+            if (pnlRevenueInfo != null) pnlRevenueInfo.Controls[0].ForeColor = Color.ForestGreen;
+            if (pnlRevenueInfo != null) pnlRevenueInfo.Controls[1].ForeColor = Color.ForestGreen;
+            if (pnlRevenueInfo != null) pnlRevenueInfo.Controls[2].ForeColor = Color.ForestGreen;
 
-            pnlOrdersInfo.FillColor = Color.FromArgb(40, Color.DarkOrchid);
-            pnlOrdersInfo.Controls[0].ForeColor = Color.DarkOrchid;
-            pnlOrdersInfo.Controls[1].ForeColor = Color.DarkOrchid;
-            pnlOrdersInfo.Controls[2].ForeColor = Color.DarkOrchid;
+            if (pnlOrdersInfo != null) pnlOrdersInfo.FillColor = Color.FromArgb(40, Color.DarkOrchid);
+            if (pnlOrdersInfo != null) pnlOrdersInfo.Controls[0].ForeColor = Color.DarkOrchid;
+            if (pnlOrdersInfo != null) pnlOrdersInfo.Controls[1].ForeColor = Color.DarkOrchid;
+            if (pnlOrdersInfo != null) pnlOrdersInfo.Controls[2].ForeColor = Color.DarkOrchid;
 
-            pnlHistory.FillColor = ThemeManager.CardBackground;
-            pnlHistory.BorderColor = ThemeManager.TextBoxBorder;
-            lblHistoryTitle.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.FillColor = ThemeManager.TextBoxBackground;
-            txtSearch.ForeColor = ThemeManager.TextPrimary;
-            txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+            if (pnlHistory != null) pnlHistory.FillColor = ThemeManager.CardBackground;
+            if (pnlHistory != null) pnlHistory.BorderColor = ThemeManager.TextBoxBorder;
+            if (lblHistoryTitle != null) lblHistoryTitle.ForeColor = ThemeManager.TextPrimary;
+            if (txtSearch != null) txtSearch.FillColor = ThemeManager.TextBoxBackground;
+            if (txtSearch != null) txtSearch.ForeColor = ThemeManager.TextPrimary;
+            if (txtSearch != null) txtSearch.BorderColor = ThemeManager.TextBoxBorder;
 
             ThemeManager.ApplyDataGridViewStyle(dgvHistory);
         }

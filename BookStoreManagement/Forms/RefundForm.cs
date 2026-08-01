@@ -10,6 +10,7 @@ using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
 using BookStoreManagement.ViewModels;
+using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.Forms
 {
@@ -19,24 +20,25 @@ namespace BookStoreManagement.Forms
         private ReturnReceiptRepository _returnRepo;
         private BookStoreManagement.Services.SalesOrderService _orderService;
         
-        private Panel pnlHeader;
-        private Label lblTitle;
-        private Button btnClose;
+        
+        
+        
 
-        private Panel pnlContent;
+        private Guna2Panel pnlContent;
         
         // Form Controls
-        private TextBox txtOrderCode;
-        private Button btnSearchOrder;
+        private Guna2TextBox txtOrderCode;
+        private Guna2Button btnSearchOrder;
         private Label lblCustomerInfo;
         
-        private DataGridView dgvDetails;
+        private Guna2DataGridView dgvDetails;
         
-        private TextBox txtNote;
-        private ComboBox cboStatus;
+        private Guna2TextBox txtNote;
+        private Guna2ComboBox cboStatus;
         private Label lblTotalRefund;
 
-        private Button btnSave;
+        private Guna2Button btnSave;
+        private Guna2Button btnCancel;
         
         private SalesOrder? _currentOrder;
         private List<SalesOrderDetailFullViewModel> _orderDetails = new List<SalesOrderDetailFullViewModel>();
@@ -65,44 +67,37 @@ namespace BookStoreManagement.Forms
             this.Text = _refundId == 0 ? "Tạo Phiếu Trả Hàng" : "Chi tiết Phiếu Trả Hàng";
             this.Size = new Size(900, 650);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.None;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.ControlBox = false;
 
-            Panel pnlMain = new Panel { Dock = DockStyle.Fill, Padding = new Padding(2) };
+            Guna2Panel pnlMain = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(2) };
             pnlMain.BackColor = ThemeManager.TextBoxBorder;
             this.Controls.Add(pnlMain);
 
-            Panel pnlInner = new Panel { Dock = DockStyle.Fill, BackColor = ThemeManager.Background };
+            Guna2Panel pnlInner = new Guna2Panel { Dock = DockStyle.Fill, BackColor = ThemeManager.Background };
             pnlMain.Controls.Add(pnlInner);
 
             // Header
-            pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
-            lblTitle = new Label { Text = this.Text.ToUpper(), Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
             
-            btnClose = new Button { Text = "X", Size = new Size(40, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Cursor = Cursors.Hand };
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.Location = new Point(this.Width - 45, 10);
-            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.Click += (s, e) => this.Close();
             
-            pnlHeader.Controls.Add(btnClose);
-            pnlHeader.Controls.Add(lblTitle);
             
             // Content
-            pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(20) };
+            pnlContent = new Guna2Panel { Dock = DockStyle.Fill, Padding = new Padding(20) };
             
             // Top Section (Order Search / Info)
-            Panel pnlTop = new Panel { Dock = DockStyle.Top, Height = 100 };
+            Guna2Panel pnlTop = new Guna2Panel { Dock = DockStyle.Top, Height = 100 };
             
             Label lblOrder = new Label { Text = "Mã đơn hàng (*):", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 10) };
-            txtOrderCode = new TextBox { Font = new Font("Segoe UI", 12F), Width = 200, Location = new Point(140, 5) };
+            txtOrderCode = new Guna2TextBox { Font = new Font("Segoe UI", 10F), Width = 200, Height = 36, Location = new Point(140, 5), BorderRadius = 4 };
             
-            btnSearchOrder = new Button { Text = "Tìm Đơn hàng", Font = new Font("Segoe UI", 10F), Size = new Size(100, 30), Location = new Point(350, 5), FlatStyle = FlatStyle.Flat };
+            btnSearchOrder = new Guna2Button { Text = "Tìm Đơn hàng", Font = new Font("Segoe UI", 9F, FontStyle.Bold), Size = new Size(120, 36), Location = new Point(350, 5), BorderRadius = 4 };
             btnSearchOrder.Click += BtnSearchOrder_Click;
 
             lblCustomerInfo = new Label { Text = "Khách hàng: -", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 45) };
 
             Label lblStatus = new Label { Text = "Trạng thái:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(550, 10) };
-            cboStatus = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 12F), Width = 150, Location = new Point(650, 5) };
+            cboStatus = new Guna2ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10F), Width = 150, Height = 36, Location = new Point(650, 5), BorderRadius = 4 };
             cboStatus.Items.AddRange(new object[] { "Đang xử lý", "Đã duyệt", "Đã hoàn tiền", "Từ chối" });
             cboStatus.SelectedIndex = 0;
             
@@ -114,7 +109,7 @@ namespace BookStoreManagement.Forms
             pnlTop.Controls.Add(cboStatus);
             
             // Grid
-            dgvDetails = new DataGridView
+            dgvDetails = new Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
@@ -152,14 +147,14 @@ namespace BookStoreManagement.Forms
             dgvDetails.CurrentCellDirtyStateChanged += DgvDetails_CurrentCellDirtyStateChanged;
 
             // Bottom Section
-            Panel pnlBottom = new Panel { Dock = DockStyle.Bottom, Height = 140, Padding = new Padding(0, 10, 0, 0) };
+            Guna2Panel pnlBottom = new Guna2Panel { Dock = DockStyle.Bottom, Height = 140, Padding = new Padding(0, 10, 0, 0) };
             
             Label lblNote = new Label { Text = "Ghi chú phiếu:", Font = new Font("Segoe UI", 10F), AutoSize = true, Location = new Point(0, 10) };
-            txtNote = new TextBox { Font = new Font("Segoe UI", 10F), Multiline = true, Width = 400, Height = 70, Location = new Point(0, 30) };
+            txtNote = new Guna.UI2.WinForms.Guna2TextBox { Font = new Font("Segoe UI", 10F), Multiline = true, Width = 400, Height = 70, Location = new Point(0, 30), BorderRadius = 4 };
             
             lblTotalRefund = new Label { Text = "TỔNG HOÀN TIỀN: 0 ₫", Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = true, Location = new Point(450, 30) };
 
-            btnSave = new Button { Text = _refundId == 0 ? "Tạo Phiếu" : "Cập Nhật", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), FlatStyle = FlatStyle.Flat };
+            btnSave = new Guna2Button { Text = _refundId == 0 ? "Tạo Phiếu" : "Cập Nhật", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Size = new Size(150, 40), Location = new Point(700, 80), BorderRadius = 6 };
             btnSave.Click += BtnSave_Click;
 
             pnlBottom.Controls.Add(lblNote);
@@ -167,12 +162,18 @@ namespace BookStoreManagement.Forms
             pnlBottom.Controls.Add(lblTotalRefund);
             pnlBottom.Controls.Add(btnSave);
 
+            btnCancel = new Guna2Button { Text = "Hủy bỏ", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Size = new Size(110, 40), Location = new Point(570, 80), BorderRadius = 6, FillColor = Color.Transparent, BorderThickness = 1, ForeColor = ThemeManager.TextPrimary, Cursor = Cursors.Hand };
+            btnCancel.Click += (s, e) => this.Close();
+            
+            pnlBottom.Controls.Add(btnCancel);
+
+
             pnlContent.Controls.Add(dgvDetails);
             pnlContent.Controls.Add(pnlTop);
             pnlContent.Controls.Add(pnlBottom);
 
             pnlInner.Controls.Add(pnlContent);
-            pnlInner.Controls.Add(pnlHeader);
+            
         }
 
         private void ApplyTheme()
@@ -180,26 +181,37 @@ namespace BookStoreManagement.Forms
             this.BackColor = ThemeManager.Background;
             pnlContent.BackColor = ThemeManager.Background;
             
-            lblCustomerInfo.ForeColor = ThemeManager.TextPrimary;
-            lblTotalRefund.ForeColor = ThemeManager.TextPrimary;
             
-            btnSearchOrder.BackColor = ThemeManager.CardBackground;
+            foreach (Control c in pnlContent.Controls)
+            {
+                if (c is Panel pnl)
+                {
+                    foreach (Control child in pnl.Controls)
+                    {
+                        if (child is Label lbl) lbl.ForeColor = ThemeManager.TextPrimary;
+                    }
+                }
+            }
+
+            
+            btnSearchOrder.FillColor = ThemeManager.CardBackground;
             btnSearchOrder.ForeColor = ThemeManager.TextPrimary;
-            btnSearchOrder.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
+            btnSearchOrder.BorderColor = ThemeManager.TextBoxBorder;
+            btnSearchOrder.BorderThickness = 1;
 
-            btnSave.BackColor = ThemeManager.ButtonFill;
+            btnSave.FillColor = ThemeManager.ButtonFill;
+            if (btnCancel != null) { btnCancel.ForeColor = ThemeManager.TextPrimary; btnCancel.BorderColor = ThemeManager.TextBoxBorder; }
             btnSave.ForeColor = Color.White;
-            btnSave.FlatAppearance.BorderSize = 0;
+            
 
-            txtOrderCode.BackColor = ThemeManager.CardBackground;
+            txtOrderCode.FillColor = ThemeManager.CardBackground;
             txtOrderCode.ForeColor = ThemeManager.TextPrimary;
-            txtNote.BackColor = ThemeManager.CardBackground;
+            txtNote.FillColor = ThemeManager.CardBackground;
             txtNote.ForeColor = ThemeManager.TextPrimary;
-            cboStatus.BackColor = ThemeManager.CardBackground;
+            cboStatus.FillColor = ThemeManager.CardBackground;
             cboStatus.ForeColor = ThemeManager.TextPrimary;
 
-            dgvDetails.BackgroundColor = ThemeManager.CardBackground;
-            dgvDetails.GridColor = ThemeManager.TextBoxBorder;
+            ThemeManager.ApplyDataGridViewStyle(dgvDetails);
             dgvDetails.ColumnHeadersDefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvDetails.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvDetails.DefaultCellStyle.BackColor = ThemeManager.CardBackground;

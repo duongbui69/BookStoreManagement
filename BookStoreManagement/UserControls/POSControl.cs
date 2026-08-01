@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,36 +19,54 @@ namespace BookStoreManagement.UserControls
         private CategoryService _categoryService;
         private SalesOrderService _orderService;
 
+        private SplitContainer splitContainer;
         private Guna2Panel pnlLeft;
         private Guna2Panel pnlRight;
         
         // Left
         private Guna2TextBox txtSearch;
-        private FlowLayoutPanel flpCategories;
-        private TableLayoutPanel tlpProducts;
-        private FlowLayoutPanel flpPagination;
+        private Guna2ComboBox cbCategories;
+        private System.Windows.Forms.DataGridView dgvProducts;
         private Label lblPageInfo;
+        private Guna.UI2.WinForms.Guna2Button btnPrevPage;
+        private Guna.UI2.WinForms.Guna2Button btnNextPage;
 
         // Right
-        private Guna2TextBox txtCustomer;
-        private FlowLayoutPanel flpCart;
+        private Guna.UI2.WinForms.Guna2ComboBox cboCustomer;
+        private System.Windows.Forms.DataGridView dgvCart;
         private Label lblTotalAmount;
         private Label lblDiscount;
         private Label lblFinalAmount;
         private Guna2Button btnCheckout;
+        private Guna2Button btnCash;
+                private Guna.UI2.WinForms.Guna2Button btnTransfer;
+        private Guna.UI2.WinForms.Guna2Panel pnlTop;
+        private Guna.UI2.WinForms.Guna2Panel pnlBot;
+        private Guna.UI2.WinForms.Guna2Panel pnlCustomer;
+        private Guna.UI2.WinForms.Guna2Panel pnlSummary;
+        private Guna.UI2.WinForms.Guna2Panel pnlCart;
+        private Guna.UI2.WinForms.Guna2Panel pnlCartTop;
+        private System.Windows.Forms.Label lblCustTitle;
+        private System.Windows.Forms.Label lblCartTitle;
+        private System.Windows.Forms.Label lblTotalText;
+        private System.Windows.Forms.Label lblDiscountText;
+        private System.Windows.Forms.Label lblFinalText;
+        private Guna.UI2.WinForms.Guna2Panel lineSummary;
 
         // Data
         private List<StoreBookInventoryViewModel> _allBooks = new List<StoreBookInventoryViewModel>();
         private List<StoreBookInventoryViewModel> _filteredBooks = new List<StoreBookInventoryViewModel>();
         private List<Category> _categories = new List<Category>();
         
-        // Pagination
-        private int _currentPage = 1;
-        private const int _pageSize = 9;
         private string _currentCategory = "Tất cả";
+        private string _selectedPaymentMethod = "Tiền mặt";
         
         // Cart
         private Dictionary<int, CartItem> _cart = new Dictionary<int, CartItem>();
+
+        // Pagination
+        private int _currentPage = 1;
+        private int _pageSize = 15;
 
         public POSControl()
         {
@@ -59,130 +76,241 @@ namespace BookStoreManagement.UserControls
 
             InitializeComponent();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            ThemeManager_ThemeChanged(null, EventArgs.Empty);
             this.Load += POSControl_Load;
+            this.Resize += POSControl_Resize;
         }
 
         private void InitializeComponent()
         {
             this.Dock = DockStyle.Fill;
-            this.Padding = new Padding(32);
+            this.Padding = new Padding(24);
             this.BackColor = ThemeManager.Background;
 
-            var tlpMain = new TableLayoutPanel
+            splitContainer = new SplitContainer
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 1,
-                BackColor = Color.Transparent
+                BackColor = Color.Transparent,
+                SplitterWidth = 12,
             };
-            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
-            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
 
-            pnlLeft = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0, 0, 10, 0), BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1 };
-            pnlRight = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(10, 0, 0, 0), BorderRadius = 12, FillColor = Color.Transparent };
+            pnlLeft = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0), BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1 };
+            pnlRight = new Guna2Panel { Dock = DockStyle.Fill, Margin = new Padding(0), BorderRadius = 12, FillColor = Color.Transparent };
 
-            tlpMain.Controls.Add(pnlLeft, 0, 0);
-            tlpMain.Controls.Add(pnlRight, 1, 0);
-            this.Controls.Add(tlpMain);
+            splitContainer.Panel1.Controls.Add(pnlLeft);
+            splitContainer.Panel2.Controls.Add(pnlRight);
+            
+            splitContainer.SplitterMoved += SplitContainer_SplitterMoved;
+
+            this.Load += (s, e) => {
+                if (this.Width > 0)
+                    splitContainer.SplitterDistance = (int)(this.Width * 0.65);
+            };
+
+            this.Controls.Add(splitContainer);
 
             BuildLeftPanel();
             BuildRightPanel();
         }
 
+        private void POSControl_Resize(object sender, EventArgs e)
+        {
+            // Adjust page size based on available height for the grid
+            if (dgvProducts != null && pnlLeft.Height > 200)
+            {
+                // Roughly calculate how many rows fit in the grid
+                int rowHeight = dgvProducts.RowTemplate.Height;
+                int headerHeight = dgvProducts.ColumnHeadersHeight;
+                int availableHeight = pnlLeft.Height - 160; // Subtract top panel and bottom panel heights roughly
+                
+                int newPageSize = Math.Max(5, (availableHeight - headerHeight) / rowHeight);
+                if (_pageSize != newPageSize)
+                {
+                    _pageSize = newPageSize;
+                    _currentPage = 1;
+                    RenderProducts();
+                }
+            }
+            
+            EnforceSplitterLimit();
+        }
+
+        private void SplitContainer_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            EnforceSplitterLimit();
+        }
+        
+        private void EnforceSplitterLimit()
+        {
+            if (splitContainer.Width > 0)
+            {
+                int maxDistance = (int)(splitContainer.Width * 0.80);
+                if (splitContainer.SplitterDistance > maxDistance)
+                {
+                    splitContainer.SplitterDistance = maxDistance;
+                }
+            }
+        }
+
         private void BuildLeftPanel()
         {
-            // Top search bar
-            var pnlTop = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(0, 0, 0, 1), CustomBorderColor = ThemeManager.TextBoxBorder, FillColor = Color.Transparent };
-            txtSearch = new Guna2TextBox
+            // Top search bar & category
+            pnlTop = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(0, 0, 0, 1), CustomBorderColor = ThemeManager.TextBoxBorder, FillColor = Color.Transparent };
+            
+            cbCategories = new Guna2ComboBox
             {
                 Location = new Point(15, 15),
-                Size = new Size(350, 40),
+                Size = new Size(200, 40),
+                BorderRadius = 8,
+                Font = new Font("Segoe UI", 10F),
+                Cursor = Cursors.Hand
+            };
+            cbCategories.SelectedIndexChanged += (s, e) => {
+                if (cbCategories.SelectedItem != null)
+                {
+                    _currentCategory = cbCategories.SelectedItem.ToString();
+                    _currentPage = 1;
+                    FilterBooks();
+                }
+            };
+
+            txtSearch = new Guna2TextBox
+            {
+                Location = new Point(230, 15),
+                Size = new Size(300, 40),
                 BorderRadius = 8,
                 PlaceholderText = "Tìm theo mã vạch, tên sách...",
                 IconLeftOffset = new Point(5, 0)
             };
-            txtSearch.TextChanged += (s, e) => { _currentPage = 1; FilterBooks(); };
+            // Real-time search
+            txtSearch.TextChanged += (s, e) => { 
+                _currentPage = 1;
+                FilterBooks(); 
+            };
             
-            var btnScan = CreateOutlineButton("Quét mã", 380, 15);
-            var btnFilter = CreateOutlineButton("Lọc", 490, 15);
+            var btnScan = CreateOutlineButton("Quét mã", 545, 15);
             
+            pnlTop.Controls.Add(cbCategories);
             pnlTop.Controls.Add(txtSearch);
             pnlTop.Controls.Add(btnScan);
-            pnlTop.Controls.Add(btnFilter);
             pnlLeft.Controls.Add(pnlTop);
 
-            // Categories
-            var pnlCat = new Guna2Panel { Dock = DockStyle.Top, Height = 55, FillColor = Color.Transparent, Padding = new Padding(15, 10, 15, 5) };
-            flpCategories = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = false, WrapContents = false };
-            pnlCat.Controls.Add(flpCategories);
-            pnlLeft.Controls.Add(pnlCat);
+            // Bottom info (Pagination)
+            pnlBot = new Guna2Panel { Dock = DockStyle.Bottom, Height = 50, CustomBorderThickness = new Padding(0, 1, 0, 0), CustomBorderColor = ThemeManager.TextBoxBorder, FillColor = Color.Transparent };
+            lblPageInfo = new Label { Location = new Point(15, 15), AutoSize = true, Font = new Font("Segoe UI", 10F), ForeColor = ThemeManager.TextSecondary };
+            
+            btnPrevPage = CreateOutlineButton("<", pnlBot.Width - 120, 10, 40);
+            btnPrevPage.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+            btnPrevPage.Click += (s, e) => { if (_currentPage > 1) { _currentPage--; RenderProducts(); } };
+            
+            btnNextPage = CreateOutlineButton(">", pnlBot.Width - 60, 10, 40);
+            btnNextPage.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+            btnNextPage.Click += (s, e) => { 
+                int maxPage = (int)Math.Ceiling((double)_filteredBooks.Count / _pageSize);
+                if (_currentPage < maxPage) { _currentPage++; RenderProducts(); } 
+            };
 
-            // Pagination Bottom
-            var pnlBot = new Guna2Panel { Dock = DockStyle.Bottom, Height = 60, CustomBorderThickness = new Padding(0, 1, 0, 0), CustomBorderColor = ThemeManager.TextBoxBorder, FillColor = Color.Transparent };
-            lblPageInfo = new Label { Location = new Point(15, 20), AutoSize = true, Font = new Font("Segoe UI", 9F), ForeColor = ThemeManager.TextSecondary };
-            flpPagination = new FlowLayoutPanel { Location = new Point(300, 15), Size = new Size(300, 35), FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
             pnlBot.Controls.Add(lblPageInfo);
-            pnlBot.Controls.Add(flpPagination);
+            pnlBot.Controls.Add(btnPrevPage);
+            pnlBot.Controls.Add(btnNextPage);
+            
             pnlLeft.Controls.Add(pnlBot);
 
-            // 3x3 Grid
-            tlpProducts = new TableLayoutPanel
+            // DataGridView Products
+            dgvProducts = new System.Windows.Forms.DataGridView
             {
+                AutoGenerateColumns = false,
                 Dock = DockStyle.Fill,
-                ColumnCount = 3,
-                RowCount = 3,
-                Padding = new Padding(10)
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                ReadOnly = true,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowTemplate = { Height = 45 },
+                Margin = new Padding(15),
+                Cursor = Cursors.Hand
             };
-            for (int i = 0; i < 3; i++)
-            {
-                tlpProducts.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-                tlpProducts.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33F));
-            }
-            pnlLeft.Controls.Add(tlpProducts);
+            ThemeManager.ApplyDataGridViewStyle(dgvProducts);
 
-            // Bring to front properly
+            dgvProducts.Columns.Add("Code", "MÃ SÁCH");
+            dgvProducts.Columns["Code"].Width = 100;
+            dgvProducts.Columns.Add("Name", "TÊN SÁCH");
+            dgvProducts.Columns["Name"].FillWeight = 200;
+            dgvProducts.Columns.Add("Price", "GIÁ BÁN");
+            dgvProducts.Columns["Price"].DefaultCellStyle.Format = "N0";
+            dgvProducts.Columns["Price"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvProducts.Columns.Add("Stock", "TỒN KHO");
+            dgvProducts.Columns["Stock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvProducts.Columns["Stock"].Width = 80;
+
+            // Click to add
+            dgvProducts.CellClick += (s, e) => {
+                if (e.RowIndex >= 0)
+                {
+                    var book = dgvProducts.Rows[e.RowIndex].Tag as StoreBookInventoryViewModel;
+                    if (book != null) AddToCart(book);
+                }
+            };
+            
+            pnlLeft.Controls.Add(dgvProducts);
+
             pnlTop.BringToFront();
-            pnlCat.BringToFront();
             pnlBot.BringToFront();
-            tlpProducts.BringToFront();
+            dgvProducts.BringToFront();
         }
 
         private void BuildRightPanel()
         {
             // Customer Card
-            var pnlCustomer = new Guna2Panel { Dock = DockStyle.Top, Height = 120, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 0, 0, 15) };
-            var lblCustTitle = new Label { Text = "👤 Khách hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 15), AutoSize = true };
-            var btnAddCust = new Label { Text = "Thêm mới", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlCustomer.Width - 80, 18), AutoSize = true, Cursor = Cursors.Hand };
+            pnlCustomer = new Guna2Panel { Dock = DockStyle.Top, Height = 120, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 0, 0, 12) };
+            lblCustTitle = new Label { Text = "👤 Khách hàng", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 15), AutoSize = true };
+            var btnAddCust = new Label { Text = "Thêm mới", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlCustomer.Width - 80, 18), AutoSize = true, Anchor = AnchorStyles.Right | AnchorStyles.Top, Cursor = Cursors.Hand };
             
-            txtCustomer = new Guna2TextBox
+            
+            cboCustomer = new Guna.UI2.WinForms.Guna2ComboBox
             {
                 Location = new Point(15, 50),
                 Size = new Size(pnlCustomer.Width - 30, 40),
                 Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right,
                 BorderRadius = 8,
-                PlaceholderText = "Tìm theo số điện thoại hoặc tên..."
+                Font = new Font("Segoe UI", 10F),
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
-            pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, txtCustomer });
+            
+            // Allow adding new customer
+            btnAddCust.Click += async (s, e) => {
+                using (var form = new BookStoreManagement.Forms.CustomerForm(null))
+                {
+                    if (form.ShowDialog() == DialogResult.OK)
+                    {
+                        await LoadCustomersAsync();
+                    }
+                }
+            };
+pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCustomer });
             pnlRight.Controls.Add(pnlCustomer);
 
             // Summary Card (Bottom)
-            var pnlSummary = new Guna2Panel { Dock = DockStyle.Bottom, Height = 220, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 15, 0, 0) };
+            pnlSummary = new Guna2Panel { Dock = DockStyle.Bottom, Height = 220, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1, Margin = new Padding(0, 12, 0, 0) };
             
-            var lblTotalText = new Label { Text = "Tổng tiền hàng", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 15), AutoSize = true };
+            lblTotalText = new Label { Text = "Tổng tiền hàng", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 15), AutoSize = true };
             lblTotalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(pnlSummary.Width - 100, 15), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
             
-            var lblDiscountText = new Label { Text = "Giảm giá", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 45), AutoSize = true };
+            lblDiscountText = new Label { Text = "Giảm giá", Font = new Font("Segoe UI", 11F), ForeColor = ThemeManager.TextSecondary, Location = new Point(15, 45), AutoSize = true };
             lblDiscount = new Label { Text = "- 0 ₫", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlSummary.Width - 100, 45), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
 
-            var line = new Guna2Panel { Location = new Point(15, 75), Size = new Size(pnlSummary.Width - 30, 1), FillColor = ThemeManager.TextBoxBorder, Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right };
+            lineSummary = new Guna2Panel { Location = new Point(15, 75), Size = new Size(pnlSummary.Width - 30, 1), FillColor = ThemeManager.TextBoxBorder, Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right };
 
-            var lblFinalText = new Label { Text = "Khách cần trả", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 90), AutoSize = true };
+            lblFinalText = new Label { Text = "Khách cần trả", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(15, 90), AutoSize = true };
             lblFinalAmount = new Label { Text = "0 ₫", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnlSummary.Width - 150, 85), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
 
-            var btnCash = CreateOutlineButton("Tiền mặt", 15, 130, 120);
-            btnCash.FillColor = Color.FromArgb(20, ThemeManager.ButtonFill);
-            btnCash.ForeColor = ThemeManager.ButtonFill;
-            var btnTransfer = CreateOutlineButton("Chuyển khoản", 145, 130, 120);
+            btnCash = CreateOutlineButton("Tiền mặt", 15, 130, 120);
+            btnCash.Click += PaymentMethod_Click;
+            
+            btnTransfer = CreateOutlineButton("Chuyển khoản", 145, 130, 120);
+            btnTransfer.Click += PaymentMethod_Click;
+
+            UpdatePaymentMethodUI();
 
             var btnSave = CreateOutlineButton("Lưu tạm", 15, 175, 100);
             btnCheckout = new Guna2Button
@@ -197,53 +325,196 @@ namespace BookStoreManagement.UserControls
             };
             btnCheckout.Click += BtnCheckout_Click;
 
-            pnlSummary.Controls.AddRange(new Control[] { lblTotalText, lblTotalAmount, lblDiscountText, lblDiscount, line, lblFinalText, lblFinalAmount, btnCash, btnTransfer, btnSave, btnCheckout });
+            pnlSummary.Controls.AddRange(new Control[] { lblTotalText, lblTotalAmount, lblDiscountText, lblDiscount, lineSummary, lblFinalText, lblFinalAmount, btnCash, btnTransfer, btnSave, btnCheckout });
             pnlRight.Controls.Add(pnlSummary);
 
             // Cart Items Container (Middle)
-            var pnlCart = new Guna2Panel { Dock = DockStyle.Fill, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1 };
-            var pnlCartTop = new Guna2Panel { Dock = DockStyle.Top, Height = 40, CustomBorderThickness = new Padding(0, 0, 0, 1), CustomBorderColor = ThemeManager.TextBoxBorder };
-            var lblCartTitle = new Label { Text = "🛒 Giỏ hàng (0)", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(10, 10), AutoSize = true };
+            pnlCart = new Guna2Panel { Dock = DockStyle.Fill, BorderRadius = 12, FillColor = ThemeManager.CardBackground, BorderColor = ThemeManager.TextBoxBorder, BorderThickness = 1 };
+            pnlCartTop = new Guna2Panel { Dock = DockStyle.Top, Height = 40, CustomBorderThickness = new Padding(0, 0, 0, 1), CustomBorderColor = ThemeManager.TextBoxBorder };
+            lblCartTitle = new Label { Text = "🛒 Giỏ hàng", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(10, 10), AutoSize = true };
             var btnClearCart = new Label { Text = "Xóa tất cả", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlCart.Width - 70, 12), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, Cursor = Cursors.Hand };
-            btnClearCart.Click += (s, e) => { _cart.Clear(); RenderCart(); };
+            btnClearCart.Click += (s, e) => { 
+                // Return stock
+                foreach (var item in _cart.Values)
+                {
+                    var book = _allBooks.FirstOrDefault(b => b.BookId == item.BookId);
+                    if (book != null) book.Quantity += item.Quantity;
+                }
+                _cart.Clear(); 
+                RenderCart(); 
+                RenderProducts();
+            };
             
             pnlCartTop.Controls.Add(lblCartTitle);
             pnlCartTop.Controls.Add(btnClearCart);
             pnlCart.Controls.Add(pnlCartTop);
 
-            flpCart = new FlowLayoutPanel
+            dgvCart = new System.Windows.Forms.DataGridView
             {
+                AutoGenerateColumns = false,
                 Dock = DockStyle.Fill,
-                AutoScroll = true,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
-                Padding = new Padding(10)
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowTemplate = { Height = 45 }
             };
-            pnlCart.Controls.Add(flpCart);
-            flpCart.BringToFront();
+            ThemeManager.ApplyDataGridViewStyle(dgvCart);
 
-            // Spacer between Customer and Cart
-            var pnlSpacer = new Panel { Dock = DockStyle.Top, Height = 15, BackColor = Color.Transparent };
-            pnlRight.Controls.Add(pnlSpacer);
+            dgvCart.Columns.Add("Name", "TÊN SÁCH");
+            dgvCart.Columns["Name"].ReadOnly = true;
+            dgvCart.Columns["Name"].FillWeight = 200;
             
+            var colQty = new DataGridViewTextBoxColumn
+            {
+                Name = "Qty",
+                HeaderText = "SL",
+                Width = 60
+            };
+            colQty.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvCart.Columns.Add(colQty);
+            
+            dgvCart.Columns.Add("Amount", "THÀNH TIỀN");
+            dgvCart.Columns["Amount"].ReadOnly = true;
+            dgvCart.Columns["Amount"].DefaultCellStyle.Format = "N0";
+            dgvCart.Columns["Amount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            var actionCol = new DataGridViewButtonColumn
+            {
+                Name = "Delete",
+                HeaderText = "",
+                Text = "X",
+                UseColumnTextForButtonValue = true,
+                Width = 40,
+                FlatStyle = FlatStyle.Flat
+            };
+            actionCol.DefaultCellStyle.ForeColor = Color.Red;
+            dgvCart.Columns.Add(actionCol);
+
+            dgvCart.CellValueChanged += DgvCart_CellValueChanged;
+            dgvCart.CellValidating += DgvCart_CellValidating;
+            dgvCart.CurrentCellDirtyStateChanged += DgvCart_CurrentCellDirtyStateChanged;
+            dgvCart.CellContentClick += DgvCart_CellContentClick;
+
+            pnlCart.Controls.Add(dgvCart);
+            dgvCart.BringToFront();
+
+            var pnlSpacer = new Panel { Dock = DockStyle.Top, Height = 12, BackColor = Color.Transparent };
+            pnlRight.Controls.Add(pnlSpacer);
             pnlRight.Controls.Add(pnlCart);
             
-            // Re-order controls in Right Panel
             pnlCustomer.BringToFront();
             pnlSpacer.BringToFront();
             pnlCart.BringToFront();
             pnlSummary.BringToFront();
+        }
+
+        private void PaymentMethod_Click(object sender, EventArgs e)
+        {
+            var btn = sender as Guna2Button;
+            if (btn != null)
+            {
+                _selectedPaymentMethod = btn.Text;
+                UpdatePaymentMethodUI();
+            }
+        }
+
+        private void UpdatePaymentMethodUI()
+        {
+            if (btnCash == null || btnTransfer == null) return;
             
-            // Resize handling
-            pnlSummary.Resize += (s, e) => {
-                txtCustomer.Width = pnlCustomer.Width - 30;
-                btnAddCust.Left = pnlCustomer.Width - 80;
-                lblTotalAmount.Left = pnlSummary.Width - lblTotalAmount.Width - 15;
-                lblDiscount.Left = pnlSummary.Width - lblDiscount.Width - 15;
-                lblFinalAmount.Left = pnlSummary.Width - lblFinalAmount.Width - 15;
-                btnClearCart.Left = pnlCart.Width - 70;
-                btnCheckout.Width = pnlSummary.Width - 140;
-            };
+            if (_selectedPaymentMethod == "Tiền mặt")
+            {
+                btnCash.FillColor = Color.FromArgb(20, ThemeManager.ButtonFill);
+                btnCash.ForeColor = ThemeManager.ButtonFill;
+                btnCash.BorderColor = ThemeManager.ButtonFill;
+                
+                btnTransfer.FillColor = ThemeManager.Background;
+                btnTransfer.ForeColor = ThemeManager.TextPrimary;
+                btnTransfer.BorderColor = ThemeManager.TextBoxBorder;
+            }
+            else
+            {
+                btnTransfer.FillColor = Color.FromArgb(20, ThemeManager.ButtonFill);
+                btnTransfer.ForeColor = ThemeManager.ButtonFill;
+                btnTransfer.BorderColor = ThemeManager.ButtonFill;
+                
+                btnCash.FillColor = ThemeManager.Background;
+                btnCash.ForeColor = ThemeManager.TextPrimary;
+                btnCash.BorderColor = ThemeManager.TextBoxBorder;
+            }
+        }
+
+        private void DgvCart_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+        {
+            if (dgvCart.IsCurrentCellDirty) dgvCart.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+
+        private void DgvCart_CellValidating(object? sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.ColumnIndex == dgvCart.Columns["Qty"].Index)
+            {
+                if (!int.TryParse(e.FormattedValue?.ToString(), out int qty) || qty <= 0)
+                {
+                    e.Cancel = true;
+                    MessageBox.Show("Số lượng phải là số lớn hơn 0.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var item = dgvCart.Rows[e.RowIndex].Tag as CartItem;
+                if (item != null)
+                {
+                    int diff = qty - item.Quantity; // if diff > 0, we need more stock
+                    if (diff > 0 && diff > item.MaxStock) // wait, MaxStock is dynamic now since we change the main list
+                    {
+                        var book = _allBooks.FirstOrDefault(b => b.BookId == item.BookId);
+                        if (book != null && diff > book.Quantity)
+                        {
+                            e.Cancel = true;
+                            MessageBox.Show($"Tồn kho không đủ (chỉ còn {book.Quantity}).", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DgvCart_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCart.Columns["Qty"].Index)
+            {
+                var row = dgvCart.Rows[e.RowIndex];
+                var item = row.Tag as CartItem;
+                
+                if (item != null && int.TryParse(row.Cells["Qty"].Value?.ToString(), out int qty))
+                {
+                    int diff = qty - item.Quantity;
+                    var book = _allBooks.FirstOrDefault(b => b.BookId == item.BookId);
+                    if (book != null)
+                    {
+                        book.Quantity -= diff; // Update main memory stock
+                    }
+                    item.Quantity = qty;
+                    RenderCart();
+                    RenderProducts();
+                }
+            }
+        }
+
+        private void DgvCart_CellContentClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dgvCart.Columns["Delete"].Index)
+            {
+                var item = dgvCart.Rows[e.RowIndex].Tag as CartItem;
+                if (item != null)
+                {
+                    var book = _allBooks.FirstOrDefault(b => b.BookId == item.BookId);
+                    if (book != null) book.Quantity += item.Quantity; // return stock
+                    
+                    _cart.Remove(item.BookId);
+                    RenderCart();
+                    RenderProducts();
+                }
+            }
         }
 
         private Guna2Button CreateOutlineButton(string text, int x, int y, int width = 100)
@@ -256,86 +527,96 @@ namespace BookStoreManagement.UserControls
                 BorderRadius = 8,
                 BorderThickness = 1,
                 BorderColor = ThemeManager.TextBoxBorder,
-                FillColor = Color.White,
+                FillColor = ThemeManager.Background,
                 ForeColor = ThemeManager.TextPrimary,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
         }
 
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
             this.BackColor = ThemeManager.Background;
-            pnlLeft.FillColor = ThemeManager.CardBackground;
-            pnlLeft.BorderColor = ThemeManager.TextBoxBorder;
-            // Update other colors...
+            if (pnlLeft != null) { pnlLeft.FillColor = ThemeManager.CardBackground; pnlLeft.BorderColor = ThemeManager.TextBoxBorder; }
+            if (pnlRight != null) { pnlRight.FillColor = ThemeManager.Background; }
+            if (pnlTop != null) { pnlTop.FillColor = ThemeManager.Background; pnlTop.CustomBorderColor = ThemeManager.TextBoxBorder; }
+            if (pnlBot != null) { pnlBot.CustomBorderColor = ThemeManager.TextBoxBorder; }
+            if (lblPageInfo != null) { lblPageInfo.ForeColor = ThemeManager.TextSecondary; }
+            
+            if (cbCategories != null) { cbCategories.FillColor = ThemeManager.Background; cbCategories.ForeColor = ThemeManager.TextPrimary; cbCategories.BorderColor = ThemeManager.TextBoxBorder; }
+            if (txtSearch != null) { txtSearch.FillColor = ThemeManager.Background; txtSearch.ForeColor = ThemeManager.TextPrimary; txtSearch.BorderColor = ThemeManager.TextBoxBorder; }
+            
+            if (pnlCustomer != null) { pnlCustomer.FillColor = ThemeManager.CardBackground; pnlCustomer.BorderColor = ThemeManager.TextBoxBorder; }
+            if (lblCustTitle != null) { lblCustTitle.ForeColor = ThemeManager.TextPrimary; }
+            if (cboCustomer != null) { cboCustomer.FillColor = ThemeManager.Background; cboCustomer.ForeColor = ThemeManager.TextPrimary; cboCustomer.BorderColor = ThemeManager.TextBoxBorder; }
+            
+            if (pnlSummary != null) { pnlSummary.FillColor = ThemeManager.CardBackground; pnlSummary.BorderColor = ThemeManager.TextBoxBorder; }
+            if (lblTotalText != null) { lblTotalText.ForeColor = ThemeManager.TextSecondary; }
+            if (lblDiscountText != null) { lblDiscountText.ForeColor = ThemeManager.TextSecondary; }
+            if (lblFinalText != null) { lblFinalText.ForeColor = ThemeManager.TextPrimary; }
+            if (lblTotalAmount != null) { lblTotalAmount.ForeColor = ThemeManager.TextPrimary; }
+            if (lineSummary != null) { lineSummary.FillColor = ThemeManager.TextBoxBorder; }
+            
+            if (pnlCart != null) { pnlCart.FillColor = ThemeManager.CardBackground; pnlCart.BorderColor = ThemeManager.TextBoxBorder; }
+            if (pnlCartTop != null) { pnlCartTop.CustomBorderColor = ThemeManager.TextBoxBorder; }
+            if (lblCartTitle != null) { lblCartTitle.ForeColor = ThemeManager.TextPrimary; }
+            
+            if (dgvProducts != null) { 
+                ThemeManager.ApplyDataGridViewStyle(dgvProducts); 
+                dgvProducts.BackgroundColor = ThemeManager.CardBackground;
+            }
+            if (dgvCart != null) { 
+                ThemeManager.ApplyDataGridViewStyle(dgvCart); 
+                dgvCart.BackgroundColor = ThemeManager.CardBackground;
+            }
+            UpdatePaymentMethodUI();
+        }
+
+        
+        private BookStoreManagement.Services.CustomerService _customerService = new BookStoreManagement.Services.CustomerService();
+        
+        private async Task LoadCustomersAsync()
+        {
+            try
+            {
+                var customers = await _customerService.GetActiveAsync();
+                
+                // Add default guest customer at top
+                customers.Insert(0, new BookStoreManagement.Models.Customer { Id = 0, FullName = "-- Khách vãng lai --" });
+                
+                if (cboCustomer != null)
+                {
+                    cboCustomer.DataSource = customers;
+                    cboCustomer.DisplayMember = "FullName";
+                    cboCustomer.ValueMember = "Id";
+                    cboCustomer.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // handle silently or log
+            }
         }
 
         private async void POSControl_Load(object sender, EventArgs e)
         {
+            await LoadCustomersAsync();
+            if (this.IsDisposed) return;
             _categories = await _categoryService.GetActiveAsync();
-            RenderCategories();
+            if (this.IsDisposed) return;
             
-            int currentStoreId = CurrentSession.StoreId ?? 1; // fallback
-            
-            _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
-            FilterBooks();
-        }
-
-        private void RenderCategories()
-        {
-            flpCategories.Controls.Clear();
-            var allBtn = CreateCategoryButton("Tất cả", true);
-            flpCategories.Controls.Add(allBtn);
-
+            cbCategories.Items.Clear();
+            cbCategories.Items.Add("Tất cả");
             foreach (var cat in _categories)
             {
-                var btn = CreateCategoryButton(cat.CategoryName, false);
-                flpCategories.Controls.Add(btn);
+                cbCategories.Items.Add(cat.CategoryName);
             }
-        }
-
-        private Guna2Button CreateCategoryButton(string text, bool isActive)
-        {
-            var btn = new Guna2Button
-            {
-                Text = text,
-                AutoSize = true,
-                Height = 35,
-                BorderRadius = 17,
-                Margin = new Padding(0, 0, 8, 0),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            if (isActive)
-            {
-                btn.FillColor = ThemeManager.ButtonFill;
-                btn.ForeColor = Color.White;
-            }
-            else
-            {
-                btn.FillColor = ThemeManager.CardBackground;
-                btn.BorderThickness = 1;
-                btn.BorderColor = ThemeManager.TextBoxBorder;
-                btn.ForeColor = ThemeManager.TextSecondary;
-            }
-
-            btn.Click += (s, e) =>
-            {
-                _currentCategory = text;
-                foreach (Guna2Button c in flpCategories.Controls)
-                {
-                    c.FillColor = ThemeManager.CardBackground;
-                    c.ForeColor = ThemeManager.TextSecondary;
-                    c.BorderThickness = 1;
-                }
-                btn.FillColor = ThemeManager.ButtonFill;
-                btn.ForeColor = Color.White;
-                btn.BorderThickness = 0;
-                
-                _currentPage = 1;
-                FilterBooks();
-            };
-            return btn;
+            cbCategories.SelectedIndex = 0;
+            
+            int currentStoreId = CurrentSession.StoreId ?? 1;
+            
+            _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
+            if (!this.IsDisposed) FilterBooks();
         }
 
         private void FilterBooks()
@@ -354,200 +635,55 @@ namespace BookStoreManagement.UserControls
             }
 
             _filteredBooks = query.ToList();
-            RenderProducts();
+            
+            // Adjust page if current page is empty after filter
+            int maxPage = Math.Max(1, (int)Math.Ceiling((double)_filteredBooks.Count / _pageSize));
+            if (_currentPage > maxPage) _currentPage = maxPage;
+            
+            if (!this.IsDisposed) RenderProducts();
         }
 
         private void RenderProducts()
         {
-            tlpProducts.Controls.Clear();
+            dgvProducts.Rows.Clear();
             
-            int totalItems = _filteredBooks.Count;
-            int totalPages = (int)Math.Ceiling(totalItems / (double)_pageSize);
-            if (totalPages == 0) totalPages = 1;
-            if (_currentPage > totalPages) _currentPage = totalPages;
-
-            var itemsToDisplay = _filteredBooks.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
-
-            int col = 0;
-            int row = 0;
+            int skip = (_currentPage - 1) * _pageSize;
+            var pageData = _filteredBooks.Skip(skip).Take(_pageSize).ToList();
             
-            foreach (var item in itemsToDisplay)
+            foreach (var item in pageData)
             {
-                var card = CreateProductCard(item);
-                tlpProducts.Controls.Add(card, col, row);
+                int rowIndex = dgvProducts.Rows.Add(
+                    item.BookCode,
+                    item.Title,
+                    item.SellingPrice,
+                    item.Quantity
+                );
+                dgvProducts.Rows[rowIndex].Tag = item;
                 
-                col++;
-                if (col > 2)
+                if (item.Quantity <= 0)
                 {
-                    col = 0;
-                    row++;
+                    dgvProducts.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
                 }
             }
-
-            // Update Pagination
-            lblPageInfo.Text = $"Hiển thị {(_currentPage - 1) * _pageSize + 1}-{Math.Min(_currentPage * _pageSize, totalItems)} trong {totalItems} sản phẩm";
-            RenderPagination(totalPages);
-        }
-
-        private Guna2Panel CreateProductCard(StoreBookInventoryViewModel item)
-        {
-            var pnl = new Guna2Panel
-            {
-                Dock = DockStyle.Fill,
-                Margin = new Padding(8),
-                BorderRadius = 8,
-                BorderThickness = 1,
-                BorderColor = ThemeManager.TextBoxBorder,
-                FillColor = ThemeManager.CardBackground,
-                Cursor = Cursors.Hand
-            };
-
-            var pic = new PictureBox
-            {
-                Dock = DockStyle.Top,
-                Height = 135,
-                BackColor = ThemeManager.HoverColor,
-                SizeMode = PictureBoxSizeMode.Zoom
-            };
             
-            bool hasImage = false;
-            if (!string.IsNullOrEmpty(item.ImagePath))
-            {
-                string fullPath = System.IO.Path.Combine(Application.StartupPath, "Covers", item.ImagePath);
-                if (System.IO.File.Exists(fullPath))
-                {
-                    pic.Image = Image.FromFile(fullPath);
-                    hasImage = true;
-                }
-            }
-            if (!hasImage)
-            {
-                pic.Paint += (s, e) => {
-                    var g = e.Graphics;
-                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    string initials = item.Title.Length >= 2 ? item.Title.Substring(0, 2).ToUpper() : item.Title.ToUpper();
-                    using (var brush = new SolidBrush(ThemeManager.TextSecondary))
-                    using (var font = new Font("Segoe UI", 24, FontStyle.Bold))
-                    {
-                        var size = g.MeasureString(initials, font);
-                        g.DrawString(initials, font, brush, (pic.Width - size.Width) / 2, (pic.Height - size.Height) / 2);
-                    }
-                };
-            }
-
-            var pnlBottom = new Guna2Panel
-            {
-                Dock = DockStyle.Bottom,
-                Height = 70,
-                BackColor = Color.Transparent,
-                Padding = new Padding(10, 5, 10, 5)
-            };
-
-            var lblTitle = new Label
-            {
-                Text = item.Title,
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-                Dock = DockStyle.Top,
-                Height = 35,
-                AutoEllipsis = true,
-                BackColor = Color.Transparent,
-                ForeColor = ThemeManager.TextPrimary
-            };
-
-            var lblPrice = new Label
-            {
-                Text = $"{item.SellingPrice:N0} đ",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                ForeColor = ThemeManager.ButtonFill,
-                Dock = DockStyle.Left,
-                AutoSize = true,
-                Padding = new Padding(0, 5, 0, 0),
-                BackColor = Color.Transparent
-            };
-
-            var lblStock = new Label
-            {
-                Text = $"Tồn: {item.Quantity}",
-                Font = new Font("Segoe UI", 8.5F),
-                Dock = DockStyle.Right,
-                AutoSize = true,
-                Padding = new Padding(0, 8, 0, 0),
-                BackColor = Color.Transparent,
-                ForeColor = item.Quantity > 0 ? ThemeManager.TextSecondary : Color.Red
-            };
+            int totalPages = Math.Max(1, (int)Math.Ceiling((double)_filteredBooks.Count / _pageSize));
+            lblPageInfo.Text = $"Trang {_currentPage}/{totalPages} (Tổng: {_filteredBooks.Count} sản phẩm)";
             
-            pnlBottom.Controls.Add(lblStock);
-            pnlBottom.Controls.Add(lblPrice);
-            
-            pnl.Controls.Add(pnlBottom);
-            pnl.Controls.Add(lblTitle);
-            pnl.Controls.Add(pic);
-            
-            pnl.Click += (s, e) => AddToCart(item);
-            pic.Click += (s, e) => AddToCart(item);
-            lblTitle.Click += (s, e) => AddToCart(item);
-            
-            return pnl;
-        }
-
-        private void RenderPagination(int totalPages)
-        {
-            flpPagination.Controls.Clear();
-            
-            var btnPrev = new Guna2Button { Text = "<", Size = new Size(35, 35), BorderRadius = 4, FillColor = ThemeManager.CardBackground, BorderThickness = 1, BorderColor = ThemeManager.TextBoxBorder, ForeColor = ThemeManager.TextPrimary };
-            btnPrev.Enabled = _currentPage > 1;
-            btnPrev.Click += (s, e) => { _currentPage--; RenderProducts(); };
-            flpPagination.Controls.Add(btnPrev);
-
-            // Simple pagination (1 2 3)
-            int start = Math.Max(1, _currentPage - 1);
-            int end = Math.Min(totalPages, start + 2);
-            if (end - start < 2 && start > 1) start = end - 2;
-
-            for (int i = start; i <= end; i++)
-            {
-                var page = i;
-                var btn = new Guna2Button { Text = page.ToString(), Size = new Size(35, 35), BorderRadius = 4 };
-                if (page == _currentPage)
-                {
-                    btn.FillColor = ThemeManager.ButtonFill;
-                    btn.ForeColor = Color.White;
-                }
-                else
-                {
-                    btn.FillColor = ThemeManager.CardBackground;
-                    btn.BorderThickness = 1;
-                    btn.BorderColor = ThemeManager.TextBoxBorder;
-                    btn.ForeColor = ThemeManager.TextPrimary;
-                }
-                btn.Click += (s, e) => { _currentPage = page; RenderProducts(); };
-                flpPagination.Controls.Add(btn);
-            }
-
-            var btnNext = new Guna2Button { Text = ">", Size = new Size(35, 35), BorderRadius = 4, FillColor = ThemeManager.CardBackground, BorderThickness = 1, BorderColor = ThemeManager.TextBoxBorder, ForeColor = ThemeManager.TextPrimary };
-            btnNext.Enabled = _currentPage < totalPages;
-            btnNext.Click += (s, e) => { _currentPage++; RenderProducts(); };
-            flpPagination.Controls.Add(btnNext);
+            btnPrevPage.Enabled = _currentPage > 1;
+            btnNextPage.Enabled = _currentPage < totalPages;
         }
 
         private void AddToCart(StoreBookInventoryViewModel item)
         {
             if (item.Quantity <= 0)
             {
-                MessageBox.Show("Sách này đã hết hàng!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Sách này đã hết hàng trong kho!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (_cart.ContainsKey(item.BookId))
             {
-                if (_cart[item.BookId].Quantity < item.Quantity)
-                {
-                    _cart[item.BookId].Quantity++;
-                }
-                else
-                {
-                    MessageBox.Show("Không đủ tồn kho!", "Cảnh báo");
-                }
+                _cart[item.BookId].Quantity++;
             }
             else
             {
@@ -561,77 +697,34 @@ namespace BookStoreManagement.UserControls
                     MaxStock = item.Quantity
                 });
             }
+            
+            // Reduce stock in memory
+            item.Quantity--;
+            
             RenderCart();
+            if (!this.IsDisposed) RenderProducts();
         }
 
         private void RenderCart()
         {
-            flpCart.Controls.Clear();
-            flpCart.SuspendLayout();
-            
+            dgvCart.Rows.Clear();
             decimal total = 0;
             
             foreach (var item in _cart.Values)
             {
                 total += item.Price * item.Quantity;
                 
-                var pnl = new Guna2Panel
-                {
-                    Width = flpCart.Width - 25,
-                    Height = 80,
-                    BorderRadius = 8,
-                    BorderThickness = 1,
-                    BorderColor = ThemeManager.TextBoxBorder,
-                    FillColor = ThemeManager.CardBackground,
-                    Margin = new Padding(0, 0, 0, 10)
-                };
-
-                var lblTitle = new Label { Text = item.Title, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(60, 10), Width = pnl.Width - 100, AutoEllipsis = true };
-                var lblCode = new Label { Text = item.Code, Font = new Font("Segoe UI", 8F), ForeColor = ThemeManager.TextSecondary, Location = new Point(60, 30), AutoSize = true };
-                
-                var lblPrice = new Label { Text = $"{item.Price * item.Quantity:N0} ₫", Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = ThemeManager.ButtonFill, Location = new Point(pnl.Width - 120, 50), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, TextAlign = ContentAlignment.MiddleRight };
-                
-                // Quantity controls
-                var pnlQty = new Guna2Panel { Location = new Point(60, 50), Size = new Size(90, 25), BorderRadius = 4, BorderThickness = 1, BorderColor = ThemeManager.TextBoxBorder };
-                
-                var btnMinus = new Button { Text = "-", Size = new Size(25, 25), Dock = DockStyle.Left, FlatStyle = FlatStyle.Flat, BackColor = Color.White };
-                btnMinus.FlatAppearance.BorderSize = 0;
-                btnMinus.Click += (s, e) => { 
-                    if (item.Quantity > 1) { item.Quantity--; RenderCart(); } 
-                    else { _cart.Remove(item.BookId); RenderCart(); }
-                };
-
-                var lblQty = new Label { Text = item.Quantity.ToString(), Size = new Size(40, 25), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-                
-                var btnPlus = new Button { Text = "+", Size = new Size(25, 25), Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, BackColor = Color.White };
-                btnPlus.FlatAppearance.BorderSize = 0;
-                btnPlus.Click += (s, e) => { 
-                    if (item.Quantity < item.MaxStock) { item.Quantity++; RenderCart(); } 
-                };
-
-                pnlQty.Controls.AddRange(new Control[] { lblQty, btnMinus, btnPlus });
-                
-                // Delete button
-                var btnDel = new Label { Text = "❌", Location = new Point(pnl.Width - 30, 10), Cursor = Cursors.Hand };
-                btnDel.Click += (s, e) => { _cart.Remove(item.BookId); RenderCart(); };
-
-                pnl.Controls.AddRange(new Control[] { lblTitle, lblCode, pnlQty, lblPrice, btnDel });
-                
-                // Align right manually
-                pnl.Resize += (s, e) => {
-                    lblPrice.Left = pnl.Width - lblPrice.Width - 10;
-                    btnDel.Left = pnl.Width - 25;
-                };
-
-                flpCart.Controls.Add(pnl);
+                int rowIndex = dgvCart.Rows.Add(
+                    item.Title,
+                    item.Quantity,
+                    item.Price * item.Quantity
+                );
+                dgvCart.Rows[rowIndex].Tag = item;
             }
-
-            flpCart.ResumeLayout();
 
             lblTotalAmount.Text = $"{total:N0} ₫";
             lblFinalAmount.Text = $"{total:N0} ₫";
             
-            // Adjust label positions
             lblTotalAmount.Left = lblTotalAmount.Parent.Width - lblTotalAmount.Width - 15;
             lblFinalAmount.Left = lblFinalAmount.Parent.Width - lblFinalAmount.Width - 15;
         }
@@ -644,13 +737,13 @@ namespace BookStoreManagement.UserControls
                 return;
             }
 
-            var confirm = MessageBox.Show("Xác nhận thanh toán hóa đơn này?", "Thanh toán", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirm = MessageBox.Show($"Xác nhận thanh toán hóa đơn này bằng {_selectedPaymentMethod}?", "Thanh toán", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
                 try
                 {
                     int storeId = CurrentSession.StoreId ?? 1;
-                    int? customerId = 1; // Default customer
+                    int? customerId = cboCustomer.SelectedValue != null && (int)cboCustomer.SelectedValue > 0 ? (int)cboCustomer.SelectedValue : null;
                     
                     var details = new List<SalesOrderDetail>();
                     foreach (var item in _cart.Values)
@@ -664,13 +757,13 @@ namespace BookStoreManagement.UserControls
                         });
                     }
 
-                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, "Tiền mặt", "Bán tại quầy", details);
+                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, _selectedPaymentMethod, "Bán tại quầy", details);
 
                     MessageBox.Show("Thanh toán thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _cart.Clear();
                     RenderCart();
                     
-                    // Reload inventory
+                    // Reload inventory from DB to ensure it matches DB Trigger deductions
                     _allBooks = await _inventoryService.GetByStoreIdAsync(storeId);
                     FilterBooks();
                 }

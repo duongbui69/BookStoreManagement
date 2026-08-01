@@ -72,6 +72,25 @@ namespace BookStoreManagement.Themes
             dgv.DefaultCellStyle.SelectionBackColor = ButtonFill; 
             dgv.DefaultCellStyle.SelectionForeColor = ButtonText;
 
+            if (dgv is Guna.UI2.WinForms.Guna2DataGridView gunaDgv)
+            {
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.ForeColor = TextPrimary;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionBackColor = ButtonFill;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionForeColor = ButtonText;
+                
+                gunaDgv.ThemeStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.GridColor = TextBoxBorder;
+                
+                gunaDgv.ThemeStyle.HeaderStyle.BackColor = Background;
+                gunaDgv.ThemeStyle.HeaderStyle.ForeColor = TextSecondary;
+                
+                gunaDgv.ThemeStyle.RowsStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.RowsStyle.ForeColor = TextPrimary;
+                gunaDgv.ThemeStyle.RowsStyle.SelectionBackColor = ButtonFill;
+                gunaDgv.ThemeStyle.RowsStyle.SelectionForeColor = ButtonText;
+            }
+
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
             dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;

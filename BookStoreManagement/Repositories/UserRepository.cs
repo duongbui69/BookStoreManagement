@@ -11,7 +11,7 @@ namespace BookStoreManagement.Repositories
 
         public User? Login(string username, string password)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u JOIN Roles r On u.RoleId = r.Id WHERE u.Username = @Username AND u.PasswordHash = @PasswordHash AND u.IsActive = 1";
 
             return ExecuteQuery(command =>
@@ -31,14 +31,14 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<User?> LoginAsync(string username, string password)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u JOIN Roles r On u.RoleId = r.Id WHERE u.Username = @Username AND u.PasswordHash = @PasswordHash AND u.IsActive = 1";
             return await QueryFirstOrDefaultAsync<User>(sql, new { Username = username, PasswordHash = password });
         }
 
         public User? GetByUsername(string username)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u WHERE u.Username = @Username";
 
             return ExecuteQuery(command =>
@@ -50,14 +50,14 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<User?> GetByUsernameAsync(string username)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u WHERE u.Username = @Username";
             return await QueryFirstOrDefaultAsync<User>(sql, new { Username = username });
         }
 
         public User? GetById(int id)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u WHERE u.Id = @Id";
 
             return ExecuteQuery(command =>
@@ -69,7 +69,7 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<User?> GetByIdAsync(int id)
         {
-            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt 
+            const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 
                                 FROM Users u WHERE u.Id = @Id";
             return await QueryFirstOrDefaultAsync<User>(sql, new { Id = id });
         }
@@ -77,9 +77,9 @@ namespace BookStoreManagement.Repositories
         public int Add(User user)
         {
             const string sql = @"
-                INSERT INTO Users (RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt)
+                INSERT INTO Users (RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, HourlyRate)
                 OUTPUT INSERTED.Id
-                VALUES (@RoleId, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive, SYSDATETIME())";
+                VALUES (@RoleId, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive, SYSDATETIME(), @HourlyRate)";
 
             return (int?)ExecuteScalar(sql, parameters =>
             {
@@ -97,10 +97,10 @@ namespace BookStoreManagement.Repositories
         public async System.Threading.Tasks.Task<int> AddAsync(User user)
         {
             const string sql = @"
-                INSERT INTO Users (RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt)
+                INSERT INTO Users (RoleId, Username, PasswordHash, FullName, Phone, Email, Address, IsActive, CreatedAt, HourlyRate)
                 OUTPUT INSERTED.Id
-                VALUES (@RoleId, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive, SYSDATETIME())";
-            return await ExecuteScalarAsync<int>(sql, new { user.RoleId, user.Username, user.PasswordHash, user.FullName, user.Phone, user.Email, user.Address, user.IsActive });
+                VALUES (@RoleId, @Username, @PasswordHash, @FullName, @Phone, @Email, @Address, @IsActive, SYSDATETIME(), @HourlyRate)";
+            return await ExecuteScalarAsync<int>(sql, new { user.RoleId, user.Username, user.PasswordHash, user.FullName, user.Phone, user.Email, user.Address, user.IsActive, user.HourlyRate });
         }
 
         public bool Update(User user)
@@ -109,7 +109,7 @@ namespace BookStoreManagement.Repositories
                 UPDATE Users 
                 SET RoleId = @RoleId, 
                     Username = @Username, FullName = @FullName, Phone = @Phone, Email = @Email, Address = @Address, 
-                    IsActive = @IsActive, UpdatedAt = SYSDATETIME()
+                    IsActive = @IsActive, HourlyRate = @HourlyRate, UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id";
 
             return ExecuteNonQuery(sql, parameters =>
@@ -131,9 +131,9 @@ namespace BookStoreManagement.Repositories
                 UPDATE Users 
                 SET RoleId = @RoleId, 
                     Username = @Username, FullName = @FullName, Phone = @Phone, Email = @Email, Address = @Address, 
-                    IsActive = @IsActive, UpdatedAt = SYSDATETIME()
+                    IsActive = @IsActive, HourlyRate = @HourlyRate, UpdatedAt = SYSDATETIME()
                 WHERE Id = @Id";
-            return await ExecuteAsync(sql, new { user.Id, user.RoleId, user.Username, user.FullName, user.Phone, user.Email, user.Address, user.IsActive }) > 0;
+            return await ExecuteAsync(sql, new { user.Id, user.RoleId, user.Username, user.FullName, user.Phone, user.Email, user.Address, user.IsActive, user.HourlyRate }) > 0;
         }
 
         public bool ChangePassword(int userId, string newPasswordHash)
@@ -179,7 +179,8 @@ namespace BookStoreManagement.Repositories
                 Address = DataReaderHelper.GetNullableString(reader, "Address"),
                 IsActive = DataReaderHelper.GetBool(reader, "IsActive"),
                 CreatedAt = DataReaderHelper.GetDateTime(reader, "CreatedAt"),
-                UpdatedAt = DataReaderHelper.GetNullableDateTime(reader, "UpdatedAt")
+                UpdatedAt = DataReaderHelper.GetNullableDateTime(reader, "UpdatedAt"),
+                HourlyRate = DataReaderHelper.GetDecimal(reader, "HourlyRate")
             };
         }
 

@@ -310,7 +310,7 @@ namespace BookStoreManagement.UserControls
                     format.Alignment = StringAlignment.Center;
                     g.TranslateTransform(x, bottomY + 15);
                     g.RotateTransform(-45);
-                    g.DrawString($"Tháng {sortedMonths[i].Key}", font, brush, 0, 0, format);
+                    g.DrawString($"Tháng {sortedMonths[i].Key:MM/yy}", font, brush, 0, 0, format);
                     g.ResetTransform();
                 }
             }

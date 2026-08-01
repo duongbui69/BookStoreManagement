@@ -179,5 +179,29 @@ namespace BookStoreManagement.Repositories
 
             return (System.Linq.Enumerable.ToList(items), totalCount);
         }
+
+        public async System.Threading.Tasks.Task<List<BookStoreManagement.Models.SalaryViewModel>> GetSalaryReportAsync(int month, int year)
+        {
+            string sql = @"
+                SELECT 
+                    u.Id as StaffId,
+                    'NV' + CAST(u.Id AS VARCHAR) as UserCode,
+                    u.FullName,
+                    ISNULL(s.StoreName, N'Tất cả chi nhánh') as StoreName,
+                    u.HourlyRate,
+                    ISNULL(SUM(DATEDIFF(MINUTE, sh.StartTime, sh.EndTime)) / 60.0, 0) as TotalHours
+                FROM Users u
+                LEFT JOIN Stores s ON u.StoreId = s.Id
+                LEFT JOIN Shifts sh ON u.Id = sh.StaffId 
+                    AND sh.Status = 'CLOSED' 
+                    AND MONTH(sh.StartTime) = @Month 
+                    AND YEAR(sh.StartTime) = @Year
+                WHERE u.IsActive = 1 AND u.RoleId != 1
+                GROUP BY u.Id, u.UserCode, u.FullName, s.StoreName, u.HourlyRate
+                ORDER BY u.Id ASC";
+
+            var list = await QueryAsync<BookStoreManagement.Models.SalaryViewModel>(sql, new { Month = month, Year = year });
+            return System.Linq.Enumerable.ToList(list);
+        }
     }
 }

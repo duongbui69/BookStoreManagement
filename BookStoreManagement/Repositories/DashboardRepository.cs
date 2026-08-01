@@ -30,7 +30,7 @@ namespace BookStoreManagement.Repositories
         public int LowStockCount { get; set; }
         
         public Dictionary<string, decimal> SalesByCategory { get; set; } = new Dictionary<string, decimal>();
-        public Dictionary<int, decimal> MonthlyRevenue { get; set; } = new Dictionary<int, decimal>();
+        public Dictionary<DateTime, decimal> MonthlyRevenue { get; set; } = new Dictionary<DateTime, decimal>();
         public List<LowStockItem> LowStockItems { get; set; } = new List<LowStockItem>();
     }
 
@@ -85,7 +85,7 @@ namespace BookStoreManagement.Repositories
             {
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
-                stats.MonthlyRevenue.Add(mStart.Month, GetTotalRevenue(mStart, mEnd));
+                stats.MonthlyRevenue.Add(mStart, GetTotalRevenue(mStart, mEnd));
             }
 
             // Pie Chart Data (Sales By Category)
@@ -178,7 +178,7 @@ namespace BookStoreManagement.Repositories
             {
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
-                stats.MonthlyRevenue.Add(mStart.Month, await GetTotalRevenueAsync(mStart, mEnd));
+                stats.MonthlyRevenue.Add(mStart, await GetTotalRevenueAsync(mStart, mEnd));
             }
 
             // Pie Chart Data (Sales By Category)

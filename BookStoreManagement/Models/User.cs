@@ -19,6 +19,7 @@ namespace BookStoreManagement.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public decimal HourlyRate { get; set; } = 20000;
 
         // Dung khi JOIN Roles / Stores hoac doc tu vw_UserList
         public string RoleName { get; set; } = string.Empty;

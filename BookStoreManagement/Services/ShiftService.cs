@@ -74,5 +74,20 @@ namespace BookStoreManagement.Services
         {
             return _shiftRepository.GetShiftHistory(CurrentSession.UserId, CurrentSession.StoreId ?? 1);
         }
-    }
+
+        public List<ShiftViewModel> GetShiftHistoryByStaff(int staffId, int storeId)
+        {
+            return _shiftRepository.GetShiftHistory(staffId, storeId);
+        }
+    
+        public Shift? GetShiftById(int id)
+        {
+            return _shiftRepository.GetShiftById(id);
+        }
+
+        public List<ShiftViewModel> GetAllShifts()
+        {
+            return _shiftRepository.GetAllShifts();
+        }
+}
 }

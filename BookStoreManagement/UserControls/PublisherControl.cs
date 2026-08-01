@@ -1,4 +1,4 @@
-using BookStoreManagement.Helpers;
+﻿using BookStoreManagement.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -110,7 +110,7 @@ namespace BookStoreManagement.UserControls
                 FillColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
-            btnExport.Click += (s, e) => MessageBox.Show("Tính năng đang phát triển!");
+            btnExport.Click += BtnExport_Click;
 
             pnlFilters.Controls.AddRange(new Control[] { txtSearch, btnExport, btnAdd });
             pnlFilters.Resize += (s, e) => 
@@ -360,7 +360,10 @@ namespace BookStoreManagement.UserControls
                     Color bgColor = isActive ? Color.FromArgb(107, 254, 156) : Color.FromArgb(225, 226, 228);
                     Color fgColor = isActive ? Color.FromArgb(0, 82, 40) : Color.FromArgb(67, 71, 77);
 
-                    Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - 110) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, 110, 24);
+                                          var badgeFont = new Font("Segoe UI", 8F, FontStyle.Bold);
+                      var size = e.Graphics.MeasureString(text.ToUpper(), badgeFont);
+                      int badgeWidth = (int)size.Width + 24;
+                      Rectangle rect = new Rectangle(e.CellBounds.X + (e.CellBounds.Width - badgeWidth) / 2, e.CellBounds.Y + (e.CellBounds.Height - 24) / 2, badgeWidth, 24);
                     
                     using (GraphicsPath path = new GraphicsPath())
                     {
@@ -510,6 +513,25 @@ namespace BookStoreManagement.UserControls
                         }
                     }
                 }
+            }
+        }
+        private void BtnExport_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "DanhSachNhaXuatBan.xlsx" })
+                {
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        var excelService = new BookStoreManagement.Services.ExcelExportService();
+                        excelService.ExportDataGridView(dgvData, sfd.FileName, "Nhà Xuất Bản");
+                        MessageBox.Show("Xuất file Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
