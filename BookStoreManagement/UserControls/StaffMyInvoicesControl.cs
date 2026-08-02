@@ -188,10 +188,13 @@ namespace BookStoreManagement.UserControls
                 RowTemplate = { Height = 50 }
             };
 
+            dgvInvoices.Columns.Add("Id", "Id");
+            dgvInvoices.Columns["Id"].Visible = false;
             dgvInvoices.Columns.Add("Code", "MÃ HÓA ĐƠN");
             dgvInvoices.Columns.Add("Date", "NGÀY BÁN");
             dgvInvoices.Columns.Add("Customer", "KHÁCH HÀNG");
             dgvInvoices.Columns.Add("Amount", "TỔNG TIỀN");
+            dgvInvoices.Columns.Add("PaymentMethod", "THANH TOÁN");
             dgvInvoices.Columns["Amount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInvoices.Columns["Amount"].DefaultCellStyle.Format = "N0";
 
