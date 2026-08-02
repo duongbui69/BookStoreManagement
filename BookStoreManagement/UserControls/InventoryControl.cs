@@ -10,7 +10,7 @@ using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class InventoryControl : UserControl, ISearchableControl
+    public partial class InventoryControl : UserControl, BookStoreManagement.Interfaces.IRefreshable, ISearchableControl
     {
         private readonly InventoryService _inventoryService;
         private readonly CategoryService _categoryService;
@@ -81,12 +81,19 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
             
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Load += async (s, e) => { 
-                await LoadFiltersAsync();
-                LoadData(); 
-            };
+            // Load is deferred to RefreshDataAsync
         }
         
+        public async Task RefreshDataAsync()
+        {
+            if (cbCategory.Items.Count == 0 || cbWarehouse.Items.Count == 0)
+            {
+                await LoadFiltersAsync();
+            }
+            LoadData(); // LoadData is async void, we can await it if we change it or just leave it
+            await Task.CompletedTask;
+        }
+
         private async System.Threading.Tasks.Task LoadFiltersAsync()
         {
             var categories = await _categoryService.GetActiveAsync();

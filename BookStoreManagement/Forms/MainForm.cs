@@ -47,73 +47,86 @@ namespace BookStoreManagement.Forms
             }
         }
 
-        private void LoadControl(Control newControl, string placeholder)
+                private Dictionary<Type, Control> _controlCache = new Dictionary<Type, Control>();
+
+        private async void LoadControl<T>(string placeholder) where T : Control, new()
         {
-            if (CurrentSession.IsStaff && !(newControl is UserControls.StaffMyShiftsControl))
+            Type type = typeof(T);
+            
+            if (CurrentSession.IsStaff && type != typeof(UserControls.StaffMyShiftsControl))
             {
                 var shiftService = new BookStoreManagement.Services.ShiftService();
                 if (shiftService.GetActiveShift() == null)
                 {
                     MessageBox.Show("Vui lòng bắt đầu ca làm việc trước khi thực hiện các thao tác khác!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    newControl = new UserControls.StaffMyShiftsControl();
+                    type = typeof(UserControls.StaffMyShiftsControl);
                     placeholder = "Ca của tôi";
                 }
             }
 
-            foreach (Control c in panelMain.Controls)
+            if (!_controlCache.ContainsKey(type))
             {
-                c.Dispose();
+                Control newControl = (Control)Activator.CreateInstance(type);
+                newControl.Dock = DockStyle.Fill;
+                _controlCache[type] = newControl;
             }
-            panelMain.Controls.Clear();
 
-            newControl.Dock = DockStyle.Fill;
-            panelMain.Controls.Add(newControl);
+            Control controlToLoad = _controlCache[type];
+
+            // Don't dispose existing controls, just remove them from visual tree
+            panelMain.Controls.Clear();
+            panelMain.Controls.Add(controlToLoad);
+            
+            if (controlToLoad is BookStoreManagement.Interfaces.IRefreshable refreshable)
+            {
+                await refreshable.RefreshDataAsync();
+            }
         }
 
         private void BtnInventory_Click(object sender, EventArgs e)
         {
             if (CurrentSession.IsAdmin)
             {
-                LoadControl(new UserControls.InventoryControl(), "Search by ISBN, title or SKU...");
+                LoadControl<UserControls.InventoryControl>("Search by ISBN, title or SKU...");
             }
             else
             {
-                LoadControl(new UserControls.StaffInventoryControl(), "Tra cứu kho");
+                LoadControl<UserControls.StaffInventoryControl>("Tra cứu kho");
             }
         }
 
         private void BtnInventoryLedger_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.InventoryLedgerControl(), "Sổ kho — nhật ký nhập xuất...");
+            LoadControl<UserControls.InventoryLedgerControl>("Sổ kho — nhật ký nhập xuất...");
         }
 
         private void BtnPurchaseReceipts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.PurchaseReceiptControl(), "Tìm kiếm phiếu nhập...");
+            LoadControl<UserControls.PurchaseReceiptControl>("Tìm kiếm phiếu nhập...");
         }
 
         private void BtnExportReceipts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.ExportReceiptControl(), "Tìm kiếm phiếu xuất...");
+            LoadControl<UserControls.ExportReceiptControl>("Tìm kiếm phiếu xuất...");
         }
 
 
         private void BtnCatalog_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.CatalogControl(), "Search by book title, ISBN or author...");
+            LoadControl<UserControls.CatalogControl>("Search by book title, ISBN or author...");
         }
 
         private void BtnOrders_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.OrdersControl(), "Search orders, customers...");
+            LoadControl<UserControls.OrdersControl>("Search orders, customers...");
         }
 
         private void BtnInvoices_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.OrdersControl(), "Search invoices...");
+            LoadControl<UserControls.OrdersControl>("Search invoices...");
         }
 
         private void BtnRefunds_Click(object sender, EventArgs e)
@@ -121,64 +134,64 @@ namespace BookStoreManagement.Forms
 
             if (CurrentSession.IsAdmin)
             {
-                LoadControl(new UserControls.RefundControl(), "Search return receipts...");
+                LoadControl<UserControls.RefundControl>("Search return receipts...");
             }
             else
             {
-                LoadControl(new UserControls.StaffReturnControl(), "Xử lý Trả hàng");
+                LoadControl<UserControls.StaffReturnControl>("Xử lý Trả hàng");
             }
         }
 
         private void BtnPOS_Click(object sender, EventArgs e)
         {
             // SetActiveTab or handling
-            LoadControl(new UserControls.POSControl(), "Tìm kiếm theo mã vạch, tên sách, tác giả...");
+            LoadControl<UserControls.POSControl>("Tìm kiếm theo mã vạch, tên sách, tác giả...");
         }
 
         private void BtnMyInvoices_Click(object sender, EventArgs e)
         {
             if (CurrentSession.IsAdmin)
             {
-                LoadControl(new UserControls.OrdersControl(), "Search my invoices...");
+                LoadControl<UserControls.OrdersControl>("Search my invoices...");
             }
             else
             {
-                LoadControl(new UserControls.StaffMyInvoicesControl(), "Lịch sử hóa đơn");
+                LoadControl<UserControls.StaffMyInvoicesControl>("Lịch sử hóa đơn");
             }
         }
 
         private void BtnMyShifts_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.StaffMyShiftsControl(), "Ca của tôi");
+            LoadControl<UserControls.StaffMyShiftsControl>("Ca của tôi");
         }
 
         private void BtnCustomer_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.CustomerControl(), "Search customers...");
+            LoadControl<UserControls.CustomerControl>("Search customers...");
         }
 
         private void BtnHR_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.HRControl(), "Search employees, roles, or departments...");
+            LoadControl<UserControls.HRControl>("Search employees, roles, or departments...");
         }
 
         private void BtnAccount_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.AccountControl(), "Search accounts by username, name, email...");
+            LoadControl<UserControls.AccountControl>("Search accounts by username, name, email...");
         }
 
         private void BtnReports_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.ReportsControl(), "Search reports...");
+            LoadControl<UserControls.ReportsControl>("Search reports...");
         }
 
         private void BtnStores_Click(object sender, EventArgs e)
         {
 
-            LoadControl(new UserControls.StoresControl(), "Search stores...");
+            LoadControl<UserControls.StoresControl>("Search stores...");
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)
@@ -189,27 +202,27 @@ namespace BookStoreManagement.Forms
 
         private void LoadDashboard()
         {
-            LoadControl(new UserControls.DashboardControl(), "Search dashboard...");
+            LoadControl<UserControls.DashboardControl>("Search dashboard...");
         }
 
         private void BtnCategory_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.CategoryControl(), "Tìm kiếm danh mục...");
+            LoadControl<UserControls.CategoryControl>("Tìm kiếm danh mục...");
         }
 
         private void BtnAuthor_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.AuthorControl(), "Tìm theo tên, mã...");
+            LoadControl<UserControls.AuthorControl>("Tìm theo tên, mã...");
         }
 
         private void BtnPublisher_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.PublisherControl(), "Tìm kiếm nhà xuất bản...");
+            LoadControl<UserControls.PublisherControl>("Tìm kiếm nhà xuất bản...");
         }
 
         private void BtnSupplier_Click(object sender, EventArgs e)
         {
-            LoadControl(new UserControls.SupplierControl(), "Tìm theo tên, mã, email, sđt...");
+            LoadControl<UserControls.SupplierControl>("Tìm theo tên, mã, email, sđt...");
         }
 
 

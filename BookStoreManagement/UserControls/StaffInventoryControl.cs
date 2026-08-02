@@ -255,10 +255,14 @@ private void ApplyTheme()
             _isCalculatingPageSize = false;
         }
 
-        protected override async void OnLoad(EventArgs e)
+        public async Task RefreshDataAsync()
+        {
+            await LoadDataAsync();
+        }
+
+        protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            await LoadDataAsync();
         }
 
         private async void txtSearch_TextChanged(object? sender, EventArgs e)

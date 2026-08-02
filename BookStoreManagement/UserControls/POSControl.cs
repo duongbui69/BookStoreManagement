@@ -13,7 +13,7 @@ using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class POSControl : UserControl
+    public partial class POSControl : UserControl, BookStoreManagement.Interfaces.IRefreshable
     {
         private StoreBookInventoryService _inventoryService;
         private CategoryService _categoryService;
@@ -598,6 +598,15 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
             }
         }
 
+        public async Task RefreshDataAsync()
+        {
+            try {
+
+            } catch (Exception ex) {
+                System.Windows.Forms.MessageBox.Show("Refresh Data Error: " + ex.Message);
+            }
+        }
+
         private async void POSControl_Load(object sender, EventArgs e)
         {
             try {
@@ -614,10 +623,7 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
                 }
                 cbCategories.SelectedIndex = 0;
                 
-                int currentStoreId = CurrentSession.StoreId ?? 1;
-                
-                _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
-                if (!this.IsDisposed) FilterBooks();
+
             } catch (Exception ex) {
                 System.Windows.Forms.MessageBox.Show("POS Load Error: " + ex.Message + "\n" + ex.StackTrace);
             }
