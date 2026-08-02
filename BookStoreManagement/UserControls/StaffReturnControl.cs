@@ -253,9 +253,9 @@ namespace BookStoreManagement.UserControls
                 Margin = new Padding(0, 16, 0, 0)
             };
 
-            lblTotalReturnQty = new Guna2HtmlLabel { Text = "Tổng SL Hoàn: 0", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(20, 30) };
-            lblTotalRefundAmountTitle = new Guna2HtmlLabel { Text = "TỔNG HOÀN TIỀN:", Font = new Font("Segoe UI", 12F, FontStyle.Bold), Location = new Point(200, 30) };
-            lblTotalRefundAmount = new Guna2HtmlLabel { Text = "0 VNĐ", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.Firebrick, Location = new Point(380, 25) };
+            lblTotalReturnQty = new Guna2HtmlLabel { Text = "Tổng SL Hoàn: 0", Font = new Font("Segoe UI", 11F, FontStyle.Bold), Location = new Point(20, 15) };
+            lblTotalRefundAmountTitle = new Guna2HtmlLabel { Text = "TỔNG HOÀN TIỀN:", Font = new Font("Segoe UI", 11F, FontStyle.Bold), Location = new Point(20, 45) };
+            lblTotalRefundAmount = new Guna2HtmlLabel { Text = "0 VNĐ", Font = new Font("Segoe UI", 14F, FontStyle.Bold), ForeColor = Color.Firebrick, Location = new Point(170, 42) };
 
             btnConfirm = new Guna2Button
             {
@@ -611,7 +611,6 @@ private void ApplyTheme()
             lblTotalRefundAmount.Text = $"{totalRefundAmt:N0} VNĐ";
             
             // Adjust position dynamically to avoid overlap
-            lblTotalRefundAmountTitle.Left = lblTotalReturnQty.Right + 30;
             lblTotalRefundAmount.Left = lblTotalRefundAmountTitle.Right + 5;
             
             btnConfirm.Enabled = totalReturnQty > 0;
