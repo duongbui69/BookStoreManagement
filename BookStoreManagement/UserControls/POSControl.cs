@@ -601,7 +601,9 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
         public async Task RefreshDataAsync()
         {
             try {
-
+                int currentStoreId = CurrentSession.StoreId ?? 1;
+                _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
+                if (!this.IsDisposed) FilterBooks();
             } catch (Exception ex) {
                 System.Windows.Forms.MessageBox.Show("Refresh Data Error: " + ex.Message);
             }

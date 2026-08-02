@@ -12,8 +12,8 @@ using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public class StaffInventoryControl : UserControl
-    {
+    public class StaffInventoryControl : UserControl, BookStoreManagement.Interfaces.IRefreshable
+{
         private StoreBookInventoryService _inventoryService;
         private List<StoreBookInventoryViewModel> _allItems;
         
