@@ -101,15 +101,30 @@ namespace BookStoreManagement.Services
             PermissionService.RequireStaffOrAdmin();
             keyword = Trim(keyword);
             int? resolvedStoreId = ResolveStoreIdForRead(storeId);
-            if (CurrentSession.IsStaff) return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
-            return string.IsNullOrWhiteSpace(keyword) ? _salesOrderRepository.GetAll() : _salesOrderRepository.Search(keyword, resolvedStoreId);
+            
+            var orders = string.IsNullOrWhiteSpace(keyword) ? _salesOrderRepository.GetAll() : _salesOrderRepository.Search(keyword, resolvedStoreId);
+            
+            if (CurrentSession.IsStaff)
+            {
+                orders = orders.Where(x => x.StaffId == CurrentSession.UserId).ToList();
+            }
+            return orders;
         }
 
         public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             PermissionService.RequireStaffOrAdmin();
-            if (CurrentSession.IsStaff) return _salesOrderRepository.GetByStaffId(CurrentSession.UserId);
-            return _salesOrderRepository.GetByDateRange(fromDate, toDate);
+            var orders = _salesOrderRepository.GetByDateRange(fromDate, toDate);
+            
+            if (CurrentSession.IsStaff)
+            {
+                orders = orders.Where(x => x.StaffId == CurrentSession.UserId).ToList();
+            }
+            else if (storeId.HasValue)
+            {
+                orders = orders.Where(x => x.StoreId == storeId.Value).ToList();
+            }
+            return orders;
         }
 
         public bool CancelOrder(int salesOrderId)
@@ -215,15 +230,28 @@ namespace BookStoreManagement.Services
             PermissionService.RequireStaffOrAdmin();
             keyword = Trim(keyword);
             int? resolvedStoreId = ResolveStoreIdForRead(storeId);
-            if (CurrentSession.IsStaff) return await _salesOrderRepository.GetByStaffIdAsync(CurrentSession.UserId);
-            return string.IsNullOrWhiteSpace(keyword) ? await _salesOrderRepository.GetAllAsync() : await _salesOrderRepository.SearchAsync(keyword, resolvedStoreId);
+            
+            var orders = string.IsNullOrWhiteSpace(keyword) ? await _salesOrderRepository.GetAllAsync() : await _salesOrderRepository.SearchAsync(keyword, resolvedStoreId);
+            if (CurrentSession.IsStaff)
+            {
+                orders = orders.Where(x => x.StaffId == CurrentSession.UserId).ToList();
+            }
+            return orders;
         }
 
         public async Task<List<SalesOrderListViewModel>> GetByDateRangeAsync(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             PermissionService.RequireStaffOrAdmin();
-            if (CurrentSession.IsStaff) return await _salesOrderRepository.GetByStaffIdAsync(CurrentSession.UserId);
-            return await _salesOrderRepository.GetByDateRangeAsync(fromDate, toDate);
+            var orders = await _salesOrderRepository.GetByDateRangeAsync(fromDate, toDate);
+            if (CurrentSession.IsStaff)
+            {
+                orders = orders.Where(x => x.StaffId == CurrentSession.UserId).ToList();
+            }
+            else if (storeId.HasValue)
+            {
+                orders = orders.Where(x => x.StoreId == storeId.Value).ToList();
+            }
+            return orders;
         }
 
         public async Task<bool> CancelOrderAsync(int salesOrderId)

@@ -72,6 +72,39 @@ namespace BookStoreManagement.Themes
             dgv.DefaultCellStyle.SelectionBackColor = ButtonFill; 
             dgv.DefaultCellStyle.SelectionForeColor = ButtonText;
 
+            // Save columns if it's a Guna2DataGridView to prevent them from being cleared
+            System.Windows.Forms.DataGridViewColumn[] savedCols = null;
+            if (dgv is Guna.UI2.WinForms.Guna2DataGridView && dgv.Columns.Count > 0)
+            {
+                savedCols = new System.Windows.Forms.DataGridViewColumn[dgv.Columns.Count];
+                dgv.Columns.CopyTo(savedCols, 0);
+            }
+
+            if (dgv is Guna.UI2.WinForms.Guna2DataGridView gunaDgv)
+            {
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.ForeColor = TextPrimary;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionBackColor = ButtonFill;
+                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionForeColor = ButtonText;
+                
+                gunaDgv.ThemeStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.GridColor = TextBoxBorder;
+                
+                gunaDgv.ThemeStyle.HeaderStyle.BackColor = Background;
+                gunaDgv.ThemeStyle.HeaderStyle.ForeColor = TextSecondary;
+                
+                gunaDgv.ThemeStyle.RowsStyle.BackColor = CardBackground;
+                gunaDgv.ThemeStyle.RowsStyle.ForeColor = TextPrimary;
+                gunaDgv.ThemeStyle.RowsStyle.SelectionBackColor = ButtonFill;
+                gunaDgv.ThemeStyle.RowsStyle.SelectionForeColor = ButtonText;
+            }
+
+            // Restore columns if they were cleared
+            if (savedCols != null && dgv.Columns.Count == 0)
+            {
+                dgv.Columns.AddRange(savedCols);
+            }
+
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
             dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;
