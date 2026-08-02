@@ -394,8 +394,8 @@ private void ApplyTheme()
                 var row = dgvInvoices.Rows[rowIndex];
                 row.Tag = item;
                 
-                row.Cells["OrderCode"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
-                row.Cells["TotalAmount"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
+                row.Cells["Code"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
+                row.Cells["Amount"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
             }
 
             paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
