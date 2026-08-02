@@ -430,33 +430,61 @@ namespace BookStoreManagement.UserControls
 
         private void RenderHistoryPage()
         {
-            
-            dgvHistory.Rows.Clear();
-            if (_shiftHistory == null || _shiftHistory.Count == 0)
+            try
             {
-                paginationControl.UpdatePagination(0, 1, _pageSize);
-                return;
+                if (dgvHistory.Columns.Count == 0)
+                {
+                    dgvHistory.Columns.Add("Id", "ID");
+                    dgvHistory.Columns["Id"].Width = 80;
+                    dgvHistory.Columns.Add("Ngày", "Ngày");
+                    dgvHistory.Columns.Add("ShiftName", "Ca");
+                    dgvHistory.Columns.Add("Thời gian", "Bắt đầu - Kết thúc");
+                    dgvHistory.Columns.Add("Revenue", "Doanh số (đ)");
+                    dgvHistory.Columns["Revenue"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    dgvHistory.Columns.Add("Trạng thái", "Trạng thái");
+                    dgvHistory.Columns["Trạng thái"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                    
+                    var actionCol = new System.Windows.Forms.DataGridViewTextBoxColumn
+                    {
+                        Name = "Thao tác",
+                        HeaderText = "Thao tác",
+                        Width = 100,
+                        DefaultCellStyle = { Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter }
+                    };
+                    dgvHistory.Columns.Add(actionCol);
+                }
+
+                dgvHistory.Rows.Clear();
+                if (_shiftHistory == null || _shiftHistory.Count == 0)
+                {
+                    paginationControl.UpdatePagination(0, 1, _pageSize);
+                    return;
+                }
+
+                int skip = (_currentPage - 1) * _pageSize;
+                var pageItems = _shiftHistory.Skip(skip).Take(_pageSize).ToList();
+
+                foreach (var item in pageItems)
+                {
+                    string timeStr = $"{item.StartTime:HH:mm} - {(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm") : "Đang mở")}";
+                    
+                    int rowIndex = dgvHistory.Rows.Add(
+                        "#" + item.Id,
+                        item.StartTime.ToString("dd/MM/yyyy"),
+                        item.ShiftName,
+                        timeStr,
+                        item.Revenue.ToString("N0") + " đ",
+                        item.Status == "Đã đóng" ? "Đã đóng" : "Đang mở",
+                        "Chi tiết"
+                    );
+                    dgvHistory.Rows[rowIndex].Tag = item;
+                }
+                paginationControl.UpdatePagination(_shiftHistory.Count, _currentPage, _pageSize);
             }
-
-            int skip = (_currentPage - 1) * _pageSize;
-            var pageItems = _shiftHistory.Skip(skip).Take(_pageSize).ToList();
-
-            foreach (var item in pageItems)
+            catch (System.Exception ex)
             {
-                string timeStr = $"{item.StartTime:HH:mm} - {(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm") : "Đang mở")}";
-                
-                int rowIndex = dgvHistory.Rows.Add(
-                    "#" + item.Id,
-                    item.StartTime.ToString("dd/MM/yyyy"),
-                    item.ShiftName,
-                    timeStr,
-                    item.Revenue.ToString("N0") + " ₫",
-                    item.Status == "Đã đóng" ? "Đã đóng" : "Đang mở",
-                    "Chi tiết"
-                );
-                dgvHistory.Rows[rowIndex].Tag = item;
+                System.Windows.Forms.MessageBox.Show(ex.Message, "Lỗi StaffMyShiftsControl", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
-            paginationControl.UpdatePagination(_shiftHistory.Count, _currentPage, _pageSize);
         }
 
         private void DgvHistory_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)

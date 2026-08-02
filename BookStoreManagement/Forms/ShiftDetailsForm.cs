@@ -111,22 +111,27 @@ namespace BookStoreManagement.Forms
 
                 lblRevenue.Text = $"Doanh số: {orders.Sum(o => o.TotalAmount):N0} đ ({orders.Count} đơn)";
 
-                if (dgvOrders.Columns.Count == 0)
+                try
                 {
+                    dgvOrders.Columns.Clear();
                     dgvOrders.Columns.Add("Id", "Mã HĐ");
                     dgvOrders.Columns.Add("Time", "Thời gian");
                     dgvOrders.Columns.Add("Total", "Tổng tiền");
                     dgvOrders.Columns["Total"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-                }
 
-                dgvOrders.Rows.Clear();
-                foreach (var order in orders)
+                    dgvOrders.Rows.Clear();
+                    foreach (var order in orders)
+                    {
+                        dgvOrders.Rows.Add(
+                            order.Id,
+                            order.OrderDate.ToString("HH:mm:ss"),
+                            order.TotalAmount.ToString("N0") + " đ"
+                        );
+                    }
+                }
+                catch (System.Exception ex)
                 {
-                    dgvOrders.Rows.Add(
-                        order.Id,
-                        order.OrderDate.ToString("HH:mm:ss"),
-                        order.TotalAmount.ToString("N0") + " ₫"
-                    );
+                    System.Windows.Forms.MessageBox.Show(ex.Message, "Lỗi ShiftDetailsForm", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 }
             }
         }
