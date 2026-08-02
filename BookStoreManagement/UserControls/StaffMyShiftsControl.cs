@@ -348,6 +348,7 @@ namespace BookStoreManagement.UserControls
                     this.BeginInvoke(new Action(() => {
                         if (this.IsDisposed) return;
                         var openForm = new StartShiftForm();
+                        openForm.TopMost = true; // Ensure it doesn't hide behind main window!
                         var parentForm = this.FindForm();
                         if (openForm.ShowDialog(parentForm) == DialogResult.OK)
                         {
@@ -355,8 +356,7 @@ namespace BookStoreManagement.UserControls
                         }
                     }));
                 }
-
-                if (_activeShift != null)
+                else
                 {
                     lblCurrentShiftTitle.Text = $"Ca hiện tại ({_activeShift.ShiftName})";
                     lblEmployeeInfo.Text = $"Nhân viên: {CurrentSession.FullName} (ID: EMP-{CurrentSession.UserId})";
@@ -374,15 +374,6 @@ namespace BookStoreManagement.UserControls
                     lblOrders.Text = _currentOrders.ToString();
 
                     _timer.Start();
-                }
-                else
-                {
-                    lblCurrentShiftTitle.Text = "Không có ca";
-                    lblEmployeeInfo.Text = "";
-                    lblStartTime.Text = "-";
-                    lblRevenue.Text = "0 đ";
-                    lblOrders.Text = "0";
-                    lblTimer.Text = "00:00:00";
                 }
 
                 _shiftHistory = _shiftService.GetShiftHistory();

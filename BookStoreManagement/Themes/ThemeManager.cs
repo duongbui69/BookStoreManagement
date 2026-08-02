@@ -53,68 +53,72 @@ namespace BookStoreManagement.Themes
 
         public static void ApplyDataGridViewStyle(System.Windows.Forms.DataGridView dgv)
         {
-            if (dgv == null) return;
-            
-            dgv.EnableHeadersVisualStyles = false;
-            dgv.RowHeadersVisible = false;
-            dgv.AllowUserToAddRows = false;
-            dgv.AllowUserToResizeRows = false;
-            dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            dgv.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
-            
-            if (dgv.RowTemplate.Height < 50) dgv.RowTemplate.Height = 50;
-
-            dgv.BackgroundColor = CardBackground;
-            dgv.GridColor = TextBoxBorder;
-            
-            dgv.DefaultCellStyle.BackColor = CardBackground;
-            dgv.DefaultCellStyle.ForeColor = TextPrimary;
-            dgv.DefaultCellStyle.SelectionBackColor = ButtonFill; 
-            dgv.DefaultCellStyle.SelectionForeColor = ButtonText;
-
-            // Save columns if it's a Guna2DataGridView to prevent them from being cleared
-            System.Windows.Forms.DataGridViewColumn[] savedCols = null;
-            if (dgv is Guna.UI2.WinForms.Guna2DataGridView && dgv.Columns.Count > 0)
-            {
-                savedCols = new System.Windows.Forms.DataGridViewColumn[dgv.Columns.Count];
-                dgv.Columns.CopyTo(savedCols, 0);
-            }
-
-            if (dgv is Guna.UI2.WinForms.Guna2DataGridView gunaDgv)
-            {
-                gunaDgv.ThemeStyle.AlternatingRowsStyle.BackColor = CardBackground;
-                gunaDgv.ThemeStyle.AlternatingRowsStyle.ForeColor = TextPrimary;
-                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionBackColor = ButtonFill;
-                gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionForeColor = ButtonText;
+            try {
+                if (dgv == null) return;
                 
-                gunaDgv.ThemeStyle.BackColor = CardBackground;
-                gunaDgv.ThemeStyle.GridColor = TextBoxBorder;
+                dgv.EnableHeadersVisualStyles = false;
+                dgv.RowHeadersVisible = false;
+                dgv.AllowUserToAddRows = false;
+                dgv.AllowUserToResizeRows = false;
+                dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+                dgv.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
                 
-                gunaDgv.ThemeStyle.HeaderStyle.BackColor = Background;
-                gunaDgv.ThemeStyle.HeaderStyle.ForeColor = TextSecondary;
+                if (dgv.RowTemplate.Height < 50) dgv.RowTemplate.Height = 50;
+
+                dgv.BackgroundColor = CardBackground;
+                dgv.GridColor = TextBoxBorder;
                 
-                gunaDgv.ThemeStyle.RowsStyle.BackColor = CardBackground;
-                gunaDgv.ThemeStyle.RowsStyle.ForeColor = TextPrimary;
-                gunaDgv.ThemeStyle.RowsStyle.SelectionBackColor = ButtonFill;
-                gunaDgv.ThemeStyle.RowsStyle.SelectionForeColor = ButtonText;
-            }
+                dgv.DefaultCellStyle.BackColor = CardBackground;
+                dgv.DefaultCellStyle.ForeColor = TextPrimary;
+                dgv.DefaultCellStyle.SelectionBackColor = ButtonFill; 
+                dgv.DefaultCellStyle.SelectionForeColor = ButtonText;
 
-            // Restore columns if they were cleared
-            if (savedCols != null && dgv.Columns.Count == 0)
-            {
-                dgv.Columns.AddRange(savedCols);
-            }
+                // Save columns if it's a Guna2DataGridView to prevent them from being cleared
+                System.Windows.Forms.DataGridViewColumn[] savedCols = null;
+                if (dgv is Guna.UI2.WinForms.Guna2DataGridView && dgv.Columns.Count > 0)
+                {
+                    savedCols = new System.Windows.Forms.DataGridViewColumn[dgv.Columns.Count];
+                    dgv.Columns.CopyTo(savedCols, 0);
+                }
 
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
-            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dgv.ColumnHeadersDefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            
-            foreach (System.Windows.Forms.DataGridViewColumn col in dgv.Columns)
-            {
-                col.HeaderCell.Style.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-                col.HeaderCell.Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                if (dgv is Guna.UI2.WinForms.Guna2DataGridView gunaDgv)
+                {
+                    gunaDgv.ThemeStyle.AlternatingRowsStyle.BackColor = CardBackground;
+                    gunaDgv.ThemeStyle.AlternatingRowsStyle.ForeColor = TextPrimary;
+                    gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionBackColor = ButtonFill;
+                    gunaDgv.ThemeStyle.AlternatingRowsStyle.SelectionForeColor = ButtonText;
+                    
+                    gunaDgv.ThemeStyle.BackColor = CardBackground;
+                    gunaDgv.ThemeStyle.GridColor = TextBoxBorder;
+                    
+                    gunaDgv.ThemeStyle.HeaderStyle.BackColor = Background;
+                    gunaDgv.ThemeStyle.HeaderStyle.ForeColor = TextSecondary;
+                    
+                    gunaDgv.ThemeStyle.RowsStyle.BackColor = CardBackground;
+                    gunaDgv.ThemeStyle.RowsStyle.ForeColor = TextPrimary;
+                    gunaDgv.ThemeStyle.RowsStyle.SelectionBackColor = ButtonFill;
+                    gunaDgv.ThemeStyle.RowsStyle.SelectionForeColor = ButtonText;
+                }
+
+                // Restore columns if they were cleared
+                if (savedCols != null && dgv.Columns.Count == 0)
+                {
+                    dgv.Columns.AddRange(savedCols);
+                }
+
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
+                dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;
+                dgv.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                dgv.ColumnHeadersDefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                
+                foreach (System.Windows.Forms.DataGridViewColumn col in dgv.Columns)
+                {
+                    col.HeaderCell.Style.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                    col.HeaderCell.Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                }
+            } catch (Exception ex) {
+                System.Windows.Forms.MessageBox.Show("Theme Error: " + ex.Message);
             }
         }
     }

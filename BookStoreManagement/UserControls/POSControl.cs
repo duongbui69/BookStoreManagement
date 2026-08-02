@@ -600,23 +600,27 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
 
         private async void POSControl_Load(object sender, EventArgs e)
         {
-            await LoadCustomersAsync();
-            if (this.IsDisposed) return;
-            _categories = await _categoryService.GetActiveAsync();
-            if (this.IsDisposed) return;
-            
-            cbCategories.Items.Clear();
-            cbCategories.Items.Add("Tất cả");
-            foreach (var cat in _categories)
-            {
-                cbCategories.Items.Add(cat.CategoryName);
+            try {
+                await LoadCustomersAsync();
+                if (this.IsDisposed) return;
+                _categories = await _categoryService.GetActiveAsync();
+                if (this.IsDisposed) return;
+                
+                cbCategories.Items.Clear();
+                cbCategories.Items.Add("Tất cả");
+                foreach (var cat in _categories)
+                {
+                    cbCategories.Items.Add(cat.CategoryName);
+                }
+                cbCategories.SelectedIndex = 0;
+                
+                int currentStoreId = CurrentSession.StoreId ?? 1;
+                
+                _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
+                if (!this.IsDisposed) FilterBooks();
+            } catch (Exception ex) {
+                System.Windows.Forms.MessageBox.Show("POS Load Error: " + ex.Message + "\n" + ex.StackTrace);
             }
-            cbCategories.SelectedIndex = 0;
-            
-            int currentStoreId = CurrentSession.StoreId ?? 1;
-            
-            _allBooks = await _inventoryService.GetByStoreIdAsync(currentStoreId);
-            if (!this.IsDisposed) FilterBooks();
         }
 
         private void FilterBooks()
