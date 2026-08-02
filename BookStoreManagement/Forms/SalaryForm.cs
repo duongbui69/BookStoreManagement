@@ -143,7 +143,6 @@ namespace BookStoreManagement.Forms
             {
                 if (col.Name != "HourlyRate") col.ReadOnly = true;
             }
-            dgvData.Columns["HourlyRate"].DefaultCellStyle.BackColor = Color.LightYellow;
 
             if (dgvData.Columns["StaffId"] != null) dgvData.Columns["StaffId"].Visible = false;
             if (dgvData.Columns["UserCode"] != null) dgvData.Columns["UserCode"].HeaderText = "Mã NV";
