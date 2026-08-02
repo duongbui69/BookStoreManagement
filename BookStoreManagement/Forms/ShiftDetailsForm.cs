@@ -111,6 +111,14 @@ namespace BookStoreManagement.Forms
 
                 lblRevenue.Text = $"Doanh số: {orders.Sum(o => o.TotalAmount):N0} đ ({orders.Count} đơn)";
 
+                if (dgvOrders.Columns.Count == 0)
+                {
+                    dgvOrders.Columns.Add("Id", "Mã HĐ");
+                    dgvOrders.Columns.Add("Time", "Thời gian");
+                    dgvOrders.Columns.Add("Total", "Tổng tiền");
+                    dgvOrders.Columns["Total"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                }
+
                 dgvOrders.Rows.Clear();
                 foreach (var order in orders)
                 {
