@@ -341,6 +341,8 @@ private void ApplyTheme()
                                                      (x.CustomerName?.ToLower().Contains(keyword) == true)).ToList();
                 }
 
+                if (this.IsDisposed) return;
+
                 UpdateSummaryCards();
 
                 _currentPage = 1;
@@ -366,39 +368,74 @@ private void ApplyTheme()
 
         private void RenderCurrentPage()
         {
-            dgvInvoices.Rows.Clear();
-            if (_allItems == null || _allItems.Count == 0)
+            try
             {
-                paginationControl.UpdatePagination(0, 1, _pageSize);
-                return;
+                if (dgvInvoices.Columns.Count == 0)
+                {
+                    dgvInvoices.Columns.Add("Id", "ID");
+                    dgvInvoices.Columns["Id"].Visible = false;
+                    
+                    dgvInvoices.Columns.Add("Code", "MÃ HĐ");
+                    dgvInvoices.Columns["Code"].Width = 100;
+                    
+                    dgvInvoices.Columns.Add("Time", "THỜI GIAN");
+                    dgvInvoices.Columns.Add("Customer", "KHÁCH HÀNG");
+                    
+                    dgvInvoices.Columns.Add("Amount", "TỔNG TIỀN");
+                    dgvInvoices.Columns["Amount"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    
+                    dgvInvoices.Columns.Add("PaymentMethod", "PT THANH TOÁN");
+                    dgvInvoices.Columns["PaymentMethod"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                    dgvInvoices.Columns["PaymentMethod"].Width = 140;
+                    
+                    var actionCol = new System.Windows.Forms.DataGridViewTextBoxColumn
+                    {
+                        Name = "Action",
+                        HeaderText = "THAO TÁC",
+                        Width = 100,
+                        DefaultCellStyle = { Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter }
+                    };
+                    dgvInvoices.Columns.Add(actionCol);
+                }
+
+                dgvInvoices.Rows.Clear();
+                if (_allItems == null || _allItems.Count == 0)
+                {
+                    paginationControl.UpdatePagination(0, 1, _pageSize);
+                    return;
+                }
+
+                int skip = (_currentPage - 1) * _pageSize;
+                var pageItems = _allItems.Skip(skip).Take(_pageSize).ToList();
+
+                foreach (var item in pageItems)
+                {
+                    string timeStr = $"{item.OrderDate:HH:mm} - {item.OrderDate:dd/MM}";
+                    string paymentStr = MapPaymentMethod(item.PaymentMethod);
+
+                    int rowIndex = dgvInvoices.Rows.Add(
+                        item.Id,
+                        item.OrderCode,
+                        timeStr,
+                        item.CustomerName ?? "Khách lẻ",
+                        item.TotalAmount.ToString("N0") + " đ",
+                        paymentStr,
+                        "Chi tiết"
+                    );
+
+                    var row = dgvInvoices.Rows[rowIndex];
+                    row.Tag = item;
+                    
+                    row.Cells["Code"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
+                    row.Cells["Amount"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
+                }
+
+                paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
             }
-
-            int skip = (_currentPage - 1) * _pageSize;
-            var pageItems = _allItems.Skip(skip).Take(_pageSize).ToList();
-
-            foreach (var item in pageItems)
+            catch (System.Exception ex)
             {
-                string timeStr = $"{item.OrderDate:HH:mm} - {item.OrderDate:dd/MM}";
-                string paymentStr = MapPaymentMethod(item.PaymentMethod);
-
-                int rowIndex = dgvInvoices.Rows.Add(
-                    item.Id,
-                    item.OrderCode,
-                    timeStr,
-                    item.CustomerName ?? "Khách lẻ",
-                    item.TotalAmount.ToString("N0") + " ₫",
-                    paymentStr,
-                    "Chi tiết"
-                );
-
-                var row = dgvInvoices.Rows[rowIndex];
-                row.Tag = item;
-                
-                row.Cells["Code"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
-                row.Cells["Amount"].Style.Font = new Font(dgvInvoices.Font, FontStyle.Bold);
+                System.Windows.Forms.MessageBox.Show(ex.Message, "Lỗi StaffMyInvoicesControl", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
-
-            paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
         }
 
         private string MapPaymentMethod(string pm)

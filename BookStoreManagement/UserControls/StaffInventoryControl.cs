@@ -284,6 +284,8 @@ private void ApplyTheme()
                 string keyword = txtSearch.Text.Trim();
                 _allItems = await _inventoryService.SearchAsync(keyword, CurrentSession.StoreId.Value);
 
+                if (this.IsDisposed) return;
+                
                 _currentPage = 1;
                 CalculatePageSize(); // Ensure page size is correct before rendering
                 RenderCurrentPage();
@@ -296,39 +298,64 @@ private void ApplyTheme()
 
         private void RenderCurrentPage()
         {
-            dgvInventory.Rows.Clear();
-            if (_allItems == null || _allItems.Count == 0)
+            try
             {
-                paginationControl.UpdatePagination(0, 1, _pageSize);
-                return;
-            }
-
-            int skip = (_currentPage - 1) * _pageSize;
-            var pageItems = _allItems.Skip(skip).Take(_pageSize).ToList();
-
-            foreach (var item in pageItems)
-            {
-                int rowIndex = dgvInventory.Rows.Add(
-                    item.BookCode,
-                    item.Title,
-                    item.AuthorName ?? "Unknown",
-                    item.CategoryName,
-                    item.ShelfLocation ?? "Chưa xếp kệ",
-                    item.Quantity,
-                    GetStatusText(item.Quantity, item.MinStock)
-                );
-
-                var row = dgvInventory.Rows[rowIndex];
-                row.Tag = item; // Store item for custom painting
-                
-                if (item.Quantity == 0)
+                if (dgvInventory.Columns.Count == 0)
                 {
-                    row.Cells["Tồn kho"].Style.ForeColor = Color.Firebrick;
-                    row.Cells["Tồn kho"].Style.Font = new Font(dgvInventory.Font, FontStyle.Bold);
+                    dgvInventory.Columns.Add("Code", "MÃ SÁCH");
+                    dgvInventory.Columns["Code"].Width = 100;
+                    dgvInventory.Columns.Add("Name", "TÊN SÁCH");
+                    dgvInventory.Columns["Name"].FillWeight = 200;
+                    dgvInventory.Columns.Add("Tác giả", "TÁC GIẢ");
+                    dgvInventory.Columns.Add("Category", "THỂ LOẠI");
+                    dgvInventory.Columns.Add("Location", "VỊ TRÍ KỆ");
+                    dgvInventory.Columns.Add("Tồn kho", "TỒN KHO");
+                    dgvInventory.Columns["Tồn kho"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                    dgvInventory.Columns["Tồn kho"].Width = 100;
+                    
+                    dgvInventory.Columns.Add("Trạng thái", "TRẠNG THÁI");
+                    dgvInventory.Columns["Trạng thái"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+                    dgvInventory.Columns["Trạng thái"].Width = 120;
                 }
-            }
 
-            paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
+                dgvInventory.Rows.Clear();
+                if (_allItems == null || _allItems.Count == 0)
+                {
+                    paginationControl.UpdatePagination(0, 1, _pageSize);
+                    return;
+                }
+
+                int skip = (_currentPage - 1) * _pageSize;
+                var pageItems = _allItems.Skip(skip).Take(_pageSize).ToList();
+
+                foreach (var item in pageItems)
+                {
+                    int rowIndex = dgvInventory.Rows.Add(
+                        item.BookCode,
+                        item.Title,
+                        item.AuthorName ?? "Unknown",
+                        item.CategoryName,
+                        item.ShelfLocation ?? "Chưa xếp kệ",
+                        item.Quantity,
+                        GetStatusText(item.Quantity, item.MinStock)
+                    );
+
+                    var row = dgvInventory.Rows[rowIndex];
+                    row.Tag = item; // Store item for custom painting
+                    
+                    if (item.Quantity == 0)
+                    {
+                        row.Cells["Tồn kho"].Style.ForeColor = Color.Firebrick;
+                        row.Cells["Tồn kho"].Style.Font = new Font(dgvInventory.Font, FontStyle.Bold);
+                    }
+                }
+
+                paginationControl.UpdatePagination(_allItems.Count, _currentPage, _pageSize);
+            }
+            catch (System.Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message, "Lỗi StaffInventoryControl", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
 

@@ -401,6 +401,8 @@ private void ApplyTheme()
 
                 var orderMatch = orders.FirstOrDefault(o => o.OrderCode.Equals(keyword, StringComparison.OrdinalIgnoreCase)) ?? orders.First();
 
+                if (this.IsDisposed) return;
+                
                 await LoadOrderDetailsAsync(orderMatch);
             }
             catch (Exception ex)
@@ -421,6 +423,8 @@ private void ApplyTheme()
                     ClearData();
                     return;
                 }
+
+                if (this.IsDisposed) return;
 
                 // Update Info Panel
                 lblInvoiceCode.Text = _currentOrder.OrderCode;
@@ -447,6 +451,37 @@ private void ApplyTheme()
                 }
 
                 // Populate Grid
+                if (dgvItems.Columns.Count == 0)
+                {
+                    dgvItems.Columns.Add("STT", "STT");
+                    dgvItems.Columns["STT"].Width = 50;
+                    dgvItems.Columns["STT"].ReadOnly = true;
+                    
+                    dgvItems.Columns.Add("Product", "SẢN PHẨM");
+                    dgvItems.Columns["Product"].FillWeight = 200;
+                    dgvItems.Columns["Product"].ReadOnly = true;
+                    
+                    dgvItems.Columns.Add("Price", "ĐƠN GIÁ");
+                    dgvItems.Columns["Price"].ReadOnly = true;
+                    
+                    dgvItems.Columns.Add("BuyQty", "SL MUA");
+                    dgvItems.Columns["BuyQty"].ReadOnly = true;
+                    
+                    dgvItems.Columns.Add("ReturnQty", "SL TRẢ");
+                    
+                    var reasonCol = new System.Windows.Forms.DataGridViewComboBoxColumn
+                    {
+                        Name = "Reason",
+                        HeaderText = "LÝ DO",
+                        FlatStyle = System.Windows.Forms.FlatStyle.Flat
+                    };
+                    reasonCol.Items.AddRange("Khách đổi ý", "Hàng lỗi", "Giao sai mẫu", "Lý do khác");
+                    dgvItems.Columns.Add(reasonCol);
+                    
+                    dgvItems.Columns.Add("Refund", "TIỀN HOÀN");
+                    dgvItems.Columns["Refund"].ReadOnly = true;
+                }
+
                 dgvItems.Rows.Clear();
                 int stt = 1;
                 foreach (var detail in _currentOrderDetails)
@@ -454,7 +489,7 @@ private void ApplyTheme()
                     int rowIndex = dgvItems.Rows.Add(
                         stt++,
                         $"{detail.Title}\nCode: {detail.BookCode}",
-                        detail.UnitPrice.ToString("N0") + " ₫",
+                        detail.UnitPrice.ToString("N0") + " đ",
                         detail.Quantity,
                         0, // Default return qty is 0
                         "Khách đổi ý", // Default reason
