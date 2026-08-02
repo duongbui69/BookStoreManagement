@@ -79,15 +79,17 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 using var orderCommand = new SqlCommand(insertOrderSql, connection, transaction);
                 AddParameter(orderCommand, "@OrderCode", order.OrderCode);
                 AddParameter(orderCommand, "@UserId", order.UserId);
                 AddParameter(orderCommand, "@CustomerId", order.CustomerId);
+                AddParameter(orderCommand, "@StoreId", order.StoreId);
+                AddParameter(orderCommand, "@TotalAmount", order.TotalAmount);
                 AddParameter(orderCommand, "@PaymentMethod", order.PaymentMethod);
                 AddParameter(orderCommand, "@OrderStatus", order.OrderStatus);
                 AddParameter(orderCommand, "@Note", order.Note);
@@ -286,9 +288,9 @@ namespace BookStoreManagement.Repositories
             await ExecuteTransactionAsync(async (connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @UserId, @CustomerId, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 orderId = await connection.ExecuteScalarAsync<int>(insertOrderSql, new
@@ -296,6 +298,8 @@ namespace BookStoreManagement.Repositories
                     OrderCode = order.OrderCode,
                     UserId = order.UserId,
                     CustomerId = order.CustomerId,
+                    StoreId = order.StoreId,
+                    TotalAmount = order.TotalAmount,
                     PaymentMethod = order.PaymentMethod,
                     OrderStatus = order.OrderStatus,
                     Note = order.Note

@@ -66,6 +66,12 @@ namespace BookStoreManagement.Services
             return await _repo.GetPagedEmployeesAsync(page, pageSize, departmentFilter, statusFilter, searchTerm);
         }
 
+        
+        public async System.Threading.Tasks.Task<bool> UpdateHourlyRateAsync(int staffId, decimal rate)
+        {
+            return await _userRepo.UpdateHourlyRateAsync(staffId, rate);
+        }
+
         public async System.Threading.Tasks.Task<List<BookStoreManagement.Models.SalaryViewModel>> GetSalaryReportAsync(int month, int year)
         {
             return await _repo.GetSalaryReportAsync(month, year);

@@ -33,12 +33,19 @@ namespace BookStoreManagement.Services
             string orderCode = _salesOrderRepository.GenerateOrderCode();
             while (_salesOrderRepository.IsOrderCodeExists(orderCode)) orderCode = _salesOrderRepository.GenerateOrderCode();
 
+            decimal totalAmount = 0;
+            if (details != null)
+            {
+                foreach (var detail in details) totalAmount += detail.LineTotal;
+            }
+
             var order = new SalesOrder
             {
                 OrderCode = orderCode,
                 StoreId = resolvedStoreId,
                 UserId = CurrentSession.UserId,
                 CustomerId = customerId,
+                TotalAmount = totalAmount,
                 PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? AppConstants.PaymentMethods.Cash : paymentMethod.Trim(),
                 OrderStatus = AppConstants.OrderStatuses.Completed,
                 Note = TrimNullable(note)
@@ -140,12 +147,19 @@ namespace BookStoreManagement.Services
             string orderCode = await _salesOrderRepository.GenerateOrderCodeAsync();
             while (await _salesOrderRepository.IsOrderCodeExistsAsync(orderCode)) orderCode = await _salesOrderRepository.GenerateOrderCodeAsync();
 
+            decimal totalAmount = 0;
+            if (details != null)
+            {
+                foreach (var detail in details) totalAmount += detail.LineTotal;
+            }
+
             var order = new SalesOrder
             {
                 OrderCode = orderCode,
                 StoreId = resolvedStoreId,
                 UserId = CurrentSession.UserId,
                 CustomerId = customerId,
+                TotalAmount = totalAmount,
                 PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? AppConstants.PaymentMethods.Cash : paymentMethod.Trim(),
                 OrderStatus = AppConstants.OrderStatuses.Completed,
                 Note = TrimNullable(note)

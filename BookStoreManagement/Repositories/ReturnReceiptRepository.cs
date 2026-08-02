@@ -78,9 +78,9 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertReceiptSql = @"
-                    INSERT INTO ReturnReceipts (ReturnCode, SalesOrderId, StoreId, CustomerId, UserId, Note)
+                    INSERT INTO ReturnReceipts (ReturnCode, SalesOrderId, StoreId, CustomerId, UserId, TotalRefundAmount, ReturnStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@ReturnCode, @SalesOrderId, @StoreId, @CustomerId, @UserId, @Note);
+                    VALUES (@ReturnCode, @SalesOrderId, @StoreId, @CustomerId, @UserId, @TotalRefundAmount, @ReturnStatus, @Note);
                 ";
 
                 using var receiptCommand = new SqlCommand(insertReceiptSql, connection, transaction);
@@ -89,6 +89,8 @@ namespace BookStoreManagement.Repositories
                 AddParameter(receiptCommand, "@StoreId", receipt.StoreId);
                 AddParameter(receiptCommand, "@CustomerId", receipt.CustomerId);
                 AddParameter(receiptCommand, "@UserId", receipt.UserId);
+                AddParameter(receiptCommand, "@TotalRefundAmount", receipt.TotalRefundAmount);
+                AddParameter(receiptCommand, "@ReturnStatus", receipt.ReturnStatus);
                 AddParameter(receiptCommand, "@Note", receipt.Note);
 
                 int returnReceiptId = Convert.ToInt32(receiptCommand.ExecuteScalar());
@@ -281,9 +283,9 @@ namespace BookStoreManagement.Repositories
             await ExecuteTransactionAsync(async (connection, transaction) =>
             {
                 const string insertReceiptSql = @"
-                    INSERT INTO ReturnReceipts (ReturnCode, SalesOrderId, StoreId, CustomerId, UserId, Note)
+                    INSERT INTO ReturnReceipts (ReturnCode, SalesOrderId, StoreId, CustomerId, UserId, TotalRefundAmount, ReturnStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@ReturnCode, @SalesOrderId, @StoreId, @CustomerId, @UserId, @Note);
+                    VALUES (@ReturnCode, @SalesOrderId, @StoreId, @CustomerId, @UserId, @TotalRefundAmount, @ReturnStatus, @Note);
                 ";
                 returnReceiptId = await Dapper.SqlMapper.ExecuteScalarAsync<int>(connection, insertReceiptSql, new {
                     receipt.ReturnCode,
@@ -291,6 +293,8 @@ namespace BookStoreManagement.Repositories
                     receipt.StoreId,
                     receipt.CustomerId,
                     receipt.UserId,
+                    receipt.TotalRefundAmount,
+                    receipt.ReturnStatus,
                     receipt.Note
                 }, transaction);
 

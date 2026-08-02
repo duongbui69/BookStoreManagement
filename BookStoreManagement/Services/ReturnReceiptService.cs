@@ -25,6 +25,12 @@ namespace BookStoreManagement.Services
             string code = _repository.GenerateReturnCode();
             while (_repository.IsReturnCodeExists(code)) code = _repository.GenerateReturnCode();
 
+            decimal totalRefund = 0;
+            if (details != null)
+            {
+                foreach (var detail in details) totalRefund += detail.Quantity * detail.UnitPrice;
+            }
+
             var receipt = new ReturnReceipt
             {
                 ReturnCode = code,
@@ -32,6 +38,8 @@ namespace BookStoreManagement.Services
                 StoreId = resolvedStoreId,
                 CustomerId = customerId,
                 UserId = CurrentSession.UserId,
+                TotalRefundAmount = totalRefund,
+                ReturnStatus = "Processing",
                 Note = TrimNullable(note)
             };
 
@@ -108,6 +116,12 @@ namespace BookStoreManagement.Services
             string code = _repository.GenerateReturnCode();
             while (await _repository.IsReturnCodeExistsAsync(code)) code = _repository.GenerateReturnCode();
 
+            decimal totalRefund = 0;
+            if (details != null)
+            {
+                foreach (var detail in details) totalRefund += detail.Quantity * detail.UnitPrice;
+            }
+
             var receipt = new ReturnReceipt
             {
                 ReturnCode = code,
@@ -115,6 +129,8 @@ namespace BookStoreManagement.Services
                 StoreId = resolvedStoreId,
                 CustomerId = customerId,
                 UserId = CurrentSession.UserId,
+                TotalRefundAmount = totalRefund,
+                ReturnStatus = "Processing",
                 Note = TrimNullable(note)
             };
 

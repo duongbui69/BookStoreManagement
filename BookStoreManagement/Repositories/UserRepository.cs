@@ -67,6 +67,14 @@ namespace BookStoreManagement.Repositories
             }, sql, parameters => AddParameter(parameters, "@Id", id));
         }
 
+        
+        public async System.Threading.Tasks.Task<bool> UpdateHourlyRateAsync(int id, decimal rate)
+        {
+            const string sql = "UPDATE Users SET HourlyRate = @Rate WHERE Id = @Id";
+            int rows = await ExecuteAsync(sql, new { Rate = rate, Id = id });
+            return rows > 0;
+        }
+
         public async System.Threading.Tasks.Task<User?> GetByIdAsync(int id)
         {
             const string sql = @"SELECT u.Id, u.RoleId, u.Username, u.PasswordHash, u.FullName, u.Phone, u.Email, u.Address, u.IsActive, u.CreatedAt, u.UpdatedAt, u.HourlyRate 

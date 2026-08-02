@@ -757,7 +757,8 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
                         });
                     }
 
-                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, _selectedPaymentMethod, "Bán tại quầy", details);
+                    string dbPaymentMethod = _selectedPaymentMethod == "Tiền mặt" ? BookStoreManagement.Models.AppConstants.PaymentMethods.Cash : BookStoreManagement.Models.AppConstants.PaymentMethods.Banking;
+                    int orderId = await _orderService.CreateOrderAsync(storeId, customerId, dbPaymentMethod, "Bán tại quầy", details);
 
                     MessageBox.Show("Thanh toán thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _cart.Clear();

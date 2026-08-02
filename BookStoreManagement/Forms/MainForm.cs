@@ -32,10 +32,13 @@ namespace BookStoreManagement.Forms
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             ApplyTheme();
 
-            // Load Dashboard by default for Admin, POS for Staff
+            this.Shown += MainForm_Shown;
+        }
+
+        private void MainForm_Shown(object? sender, EventArgs e)
+        {
             if (CurrentSession.IsStaff)
             {
-
                 BtnPOS_Click(this, EventArgs.Empty);
             }
             else

@@ -47,21 +47,30 @@ namespace BookStoreManagement.Forms
             btnCalculate = new Guna2Button { Text = "Tính lương", Location = new Point(390, 65), Width = 120, Height = 36, BorderRadius = 4, Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
             btnCalculate.Click += BtnCalculate_Click;
             
+            
             dgvData = new Guna2DataGridView
             {
                 Location = new Point(24, 120),
                 Size = new Size(935, 380),
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                ReadOnly = true,
+                ReadOnly = false,
+                EditMode = DataGridViewEditMode.EditOnEnter,
                 RowHeadersVisible = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
             
+            dgvData.CellEndEdit += DgvData_CellEndEdit;
+            dgvData.DataError += (s, e) => { e.Cancel = true; };
             lblTotalSalary = new Label { Text = "Tổng quỹ lương: 0 ₫", Location = new Point(24, 520), AutoSize = true, Font = new Font("Segoe UI", 14F, FontStyle.Bold), ForeColor = Color.Red };
 
             this.Controls.AddRange(new Control[] { lblTitle, lblMonth, cbMonth, lblYear, cbYear, btnCalculate, dgvData, lblTotalSalary });
+
+            Guna2Button btnClose = new Guna2Button { Text = "Đóng", Location = new Point(840, 520), Width = 120, Height = 36, BorderRadius = 4, Font = new Font("Segoe UI", 10F, FontStyle.Bold), FillColor = Color.Gray };
+            btnClose.Click += (s, e) => this.Close();
+            this.Controls.Add(btnClose);
+
         }
 
         private void LoadMonthsAndYears()
@@ -99,8 +108,43 @@ namespace BookStoreManagement.Forms
             lblTotalSalary.Text = $"Tổng quỹ lương: {total:N0} ₫";
         }
 
+        
+        private async void DgvData_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && dgvData.Columns[e.ColumnIndex].Name == "HourlyRate")
+            {
+                var row = dgvData.Rows[e.RowIndex];
+                if (row.Cells["StaffId"].Value != null && row.Cells["HourlyRate"].Value != null)
+                {
+                    if (decimal.TryParse(row.Cells["HourlyRate"].Value.ToString(), out decimal newRate))
+                    {
+                        int staffId = (int)row.Cells["StaffId"].Value;
+                        await _hrService.UpdateHourlyRateAsync(staffId, newRate);
+                        
+                        decimal totalHours = Convert.ToDecimal(row.Cells["TotalHours"].Value);
+                        row.Cells["TotalSalary"].Value = newRate * totalHours;
+                        
+                        decimal total = 0;
+                        foreach(DataGridViewRow r in dgvData.Rows) 
+                        {
+                            if (r.Cells["TotalSalary"].Value != null)
+                                total += Convert.ToDecimal(r.Cells["TotalSalary"].Value);
+                        }
+                        lblTotalSalary.Text = $"Tổng quỹ lương: {total:N0} đ";
+                    }
+                }
+            }
+        }
+
         private void FormatGrid()
         {
+            
+            foreach (DataGridViewColumn col in dgvData.Columns)
+            {
+                if (col.Name != "HourlyRate") col.ReadOnly = true;
+            }
+            dgvData.Columns["HourlyRate"].DefaultCellStyle.BackColor = Color.LightYellow;
+
             if (dgvData.Columns["StaffId"] != null) dgvData.Columns["StaffId"].Visible = false;
             if (dgvData.Columns["UserCode"] != null) dgvData.Columns["UserCode"].HeaderText = "Mã NV";
             if (dgvData.Columns["FullName"] != null) dgvData.Columns["FullName"].HeaderText = "Họ và Tên";

@@ -440,6 +440,8 @@ SELECT
     so.Id,
     so.OrderCode,
     so.OrderDate,
+    so.StoreId,
+    st.StoreName,
     u.Id AS StaffId,
     u.FullName AS StaffName,
     c.Id AS CustomerId,
@@ -449,6 +451,7 @@ SELECT
     so.OrderStatus,
     so.Note
 FROM SalesOrders so
+JOIN Stores st ON so.StoreId = st.Id
 JOIN Users u ON so.UserId = u.Id
 LEFT JOIN Customers c ON so.CustomerId = c.Id;
 GO
