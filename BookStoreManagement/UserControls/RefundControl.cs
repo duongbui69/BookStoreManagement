@@ -388,11 +388,18 @@ namespace BookStoreManagement.UserControls
 
         private async Task LoadDataAsync()
         {
-            var storeId = CurrentSession.StoreId ?? 1;
             try
             {
                 var result = await _returnRepo.GetAllAsync();
-                _allRefunds = result.Where(r => r.StoreId == storeId).ToList();
+                if (CurrentSession.IsAdmin)
+                {
+                    _allRefunds = result.ToList();
+                }
+                else
+                {
+                    var storeId = CurrentSession.StoreId ?? 1;
+                    _allRefunds = result.Where(r => r.StoreId == storeId).ToList();
+                }
                 ApplyFilters();
                 UpdateKpi();
             }
