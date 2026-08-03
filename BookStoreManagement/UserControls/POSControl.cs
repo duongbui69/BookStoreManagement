@@ -189,6 +189,25 @@ namespace BookStoreManagement.UserControls
             };
             
             var btnScan = CreateOutlineButton("Quét mã", 545, 15);
+            btnScan.Click += (s, e) => {
+                using (var scanForm = new BookStoreManagement.Forms.BarcodeScanDialog())
+                {
+                    if (scanForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        string code = scanForm.ScannedBarcode.ToLower();
+                        var book = _allBooks.FirstOrDefault(b => b.BookCode.ToLower() == code || (b.ISBN != null && b.ISBN.ToLower() == code));
+                        if (book != null)
+                        {
+                            AddToCart(book);
+                        }
+                        else
+                        {
+                            System.Windows.Forms.MessageBox.Show("Không tìm thấy sách với mã: " + code, "Lỗi", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+            };
+
             
             pnlTop.Controls.Add(cbCategories);
             pnlTop.Controls.Add(txtSearch);
