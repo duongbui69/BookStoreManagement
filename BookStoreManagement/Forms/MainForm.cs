@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
 using BookStoreManagement.Interfaces;
@@ -10,6 +11,8 @@ namespace BookStoreManagement.Forms
     public partial class MainForm : Form
     {
         private User _currentUser;
+        private Label _notifBadge;
+        private NotificationPanel _notifPanel;
 
 
         public MainForm(User user)
@@ -703,9 +706,44 @@ namespace BookStoreManagement.Forms
                 BorderRadius = 4,
                 FillColor = Color.Transparent,
                 Text = "🔔",
-                Font = new Font("Segoe UI Emoji", 12F)
+                Font = new Font("Segoe UI Emoji", 12F),
+                Cursor = Cursors.Hand
             };
+
+            // Badge label for unread count
+            _notifBadge = new Label
+            {
+                Size = new Size(18, 18),
+                Location = new Point(313, 8),
+                BackColor = Color.FromArgb(231, 76, 60),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 7F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Text = "0",
+                Visible = false
+            };
+            _notifBadge.Region = System.Drawing.Region.FromHrgn(
+                CreateRoundRectRgn(0, 0, 18, 18, 18, 18));
+
+            btnNotif.Click += (s, e) =>
+            {
+                if (_notifPanel != null && !_notifPanel.IsDisposed)
+                {
+                    _notifPanel.Close();
+                    _notifPanel = null;
+                    return;
+                }
+                _notifPanel = new NotificationPanel(btnNotif);
+                _notifPanel.FormClosed += async (ns, ne) =>
+                {
+                    // refresh badge after closing
+                    await System.Threading.Tasks.Task.Delay(100);
+                };
+                _notifPanel.Show(this);
+            };
+
             pnlRight.Controls.Add(btnNotif);
+            pnlRight.Controls.Add(_notifBadge);
 
             panelTop.Controls.Add(pnlLeft);
             panelTop.Controls.Add(pnlRight);
@@ -717,5 +755,8 @@ namespace BookStoreManagement.Forms
             lblClock.Tag = "ThemeTextPrimary";
             btnNotif.Tag = "ThemeTextSecondary";
         }
+
+        [DllImport("Gdi32.dll")]
+        private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
     }
 }
