@@ -114,22 +114,21 @@ namespace BookStoreManagement.UserControls
 
         private void BuildHeader()
         {
-            // Giảm chiều cao xuống 60px để cho grid thêm không gian
-            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.Transparent };
+            pnlHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 82, BackColor = Color.Transparent };
 
             lblTitle = new Label
             {
                 Text = "Sổ kho",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(0, 0)
+                Location = new Point(0, 4)
             };
             lblSubTitle = new Label
             {
                 Text = "Nhật ký toàn bộ biến động nhập / xuất tồn kho",
                 Font = new Font("Segoe UI", 10F),
                 AutoSize = true,
-                Location = new Point(2, 44)
+                Location = new Point(2, 48)
             };
             btnExport = new Guna2Button
             {
