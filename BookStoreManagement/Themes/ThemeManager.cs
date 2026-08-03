@@ -58,45 +58,15 @@ namespace BookStoreManagement.Themes
         public static Font FontButton => new Font("Segoe UI", 9F, FontStyle.Bold);
         public static Font FontSmall => new Font("Segoe UI", 8.5F, FontStyle.Regular);
 
-        public static void ApplyTypography(System.Windows.Forms.Control parent)
+                public static void ApplyTypography(System.Windows.Forms.Control parent)
         {
             if (parent == null) return;
 
             foreach (System.Windows.Forms.Control c in parent.Controls)
             {
-                if (c is System.Windows.Forms.Label lbl)
+                if (c.Font != null && c.Font.Name != "Segoe UI")
                 {
-                    if (lbl.Name.StartsWith("lblTitle") || (lbl.Tag != null && lbl.Tag.ToString() == "Title"))
-                    {
-                        lbl.Font = FontTitle;
-                    }
-                    else if (lbl.Name.StartsWith("lblSubTitle") || (lbl.Tag != null && lbl.Tag.ToString() == "Subtitle"))
-                    {
-                        lbl.Font = FontSubtitle;
-                    }
-                    else
-                    {
-                        if (lbl.Font.Size >= 14) lbl.Font = FontTitle;
-                        else if (lbl.Font.Size >= 11) lbl.Font = FontSubtitle;
-                        else if (lbl.Font.Bold) lbl.Font = FontHeader;
-                        else lbl.Font = FontBody;
-                    }
-                }
-                else if (c is Guna.UI2.WinForms.Guna2Button btn)
-                {
-                    btn.Font = FontButton;
-                }
-                else if (c is System.Windows.Forms.Button sysBtn)
-                {
-                    sysBtn.Font = FontButton;
-                }
-                else if (c is Guna.UI2.WinForms.Guna2TextBox tb)
-                {
-                    tb.Font = FontBody;
-                }
-                else if (c is Guna.UI2.WinForms.Guna2ComboBox cb)
-                {
-                    cb.Font = FontBody;
+                    c.Font = new System.Drawing.Font("Segoe UI", c.Font.Size, c.Font.Style);
                 }
                 
                 if (c.HasChildren)
@@ -105,6 +75,8 @@ namespace BookStoreManagement.Themes
                 }
             }
         }
+
+
 
         public static void ApplyDataGridViewStyle(System.Windows.Forms.DataGridView dgv)
         {
