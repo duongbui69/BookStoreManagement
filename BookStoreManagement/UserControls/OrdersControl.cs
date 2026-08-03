@@ -174,6 +174,7 @@ namespace BookStoreManagement.UserControls
             dgvOrders.CellMouseEnter += DgvOrders_CellMouseEnter;
             dgvOrders.CellMouseLeave += DgvOrders_CellMouseLeave;
             dgvOrders.CellClick += DgvOrders_CellClick;
+            dgvOrders.CellDoubleClick += DgvOrders_CellDoubleClick;
             dgvOrders.CurrentCellDirtyStateChanged += DgvOrders_CurrentCellDirtyStateChanged;
             dgvOrders.CellValueChanged += DgvOrders_CellValueChanged;
             
@@ -222,6 +223,31 @@ namespace BookStoreManagement.UserControls
         private async void OrdersControl_Load(object? sender, EventArgs e)
         {
             await LoadDataAsync();
+        }
+
+        private void DgvOrders_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            // Ignore header row
+            if (e.RowIndex < 0) return;
+
+            try
+            {
+                var row = dgvOrders.Rows[e.RowIndex];
+                var idCell = row.Cells["Id"];
+                if (idCell?.Value == null || idCell.Value == DBNull.Value) return;
+
+                int orderId = Convert.ToInt32(idCell.Value);
+
+                using (var form = new InvoiceForm(orderId))
+                {
+                    form.ShowDialog(this.FindForm());
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi mở chi tiết đơn hàng: " + ex.Message, "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void ThemeManager_ThemeChanged(object? sender, EventArgs e)
