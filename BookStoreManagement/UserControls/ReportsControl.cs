@@ -90,9 +90,9 @@ namespace BookStoreManagement.UserControls
 
             // 2. Metric Cards
             pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter + 20) };
-            cardRevenue = CreateMetricCard("Tổng Doanh Thu", "1,245,000,000 đ", "+12.5% so với tháng trước", true);
-            cardOrders = CreateMetricCard("Tổng Đơn Hàng", "4,521", "-2.1% so với tháng trước", false);
-            cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "34", "Cần nhập hàng khẩn cấp", false, true);
+            cardRevenue = CreateMetricCard("Tổng Doanh Thu", "1,245,000,000 đ", "", true);
+            cardOrders = CreateMetricCard("Tổng Đơn Hàng", "4,521", "", false);
+            cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "34", "", false, true);
             
             pnlMetrics.Controls.AddRange(new Control[] { cardRevenue, cardOrders, cardLowStock });
             pnlMetrics.Resize += (s, e) => 
@@ -209,8 +209,8 @@ namespace BookStoreManagement.UserControls
             var lblTitle = new Label { Name = "TitleLabel", Text = title, Font = new Font("Segoe UI", 10F, FontStyle.Bold), AutoSize = true, Location = new Point(76, 17), BackColor = Color.Transparent };
             var lblVal = new Label { Name = "ValueLabel", Text = val, Font = new Font("Segoe UI", 18F, FontStyle.Bold), AutoSize = true, Location = new Point(74, 38), BackColor = Color.Transparent };
             
-            var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(76, 70), BackColor = Color.Transparent };
-            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Padding = new Padding(2), BackColor = Color.Transparent };
+            var pnlBadge = new Guna2Panel { Name = "BadgePanel", BorderRadius = 4, AutoSize = true, Location = new Point(76, 70), BackColor = Color.Transparent, Visible = false };
+            var lblBadge = new Label { Name = "BadgeLabel", Text = subText, Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Padding = new Padding(2), BackColor = Color.Transparent, Visible = false };
             pnlBadge.Controls.Add(lblBadge);
 
             // Store info in Tag
@@ -239,21 +239,19 @@ namespace BookStoreManagement.UserControls
             if (_stats == null) return;
             
 
-            string revGrowthSign = _stats.RevenueGrowth >= 0 ? "+" : "";
             UpdateMetricCard(cardRevenue, 
                 $"{_stats.TotalRevenue:N0} đ", 
-                $"{revGrowthSign}{_stats.RevenueGrowth:N1}% so với tháng trước", 
+                "", 
                 _stats.RevenueGrowth >= 0);
 
-            string ordGrowthSign = _stats.OrdersGrowth >= 0 ? "+" : "";
             UpdateMetricCard(cardOrders, 
                 $"{_stats.TotalOrders:N0}", 
-                $"{ordGrowthSign}{_stats.OrdersGrowth:N1}% so với tháng trước", 
+                "", 
                 _stats.OrdersGrowth >= 0);
 
             UpdateMetricCard(cardLowStock, 
                 $"{_stats.LowStockCount}", 
-                null, 
+                "", 
                 false, true);
             
             UpdateGrids();
