@@ -208,6 +208,7 @@ namespace BookStoreManagement.UserControls
             dgvInvoices.Columns.Add(actionCol);
 
             dgvInvoices.CellPainting += DgvInvoices_CellPainting;
+            dgvInvoices.CellContentClick += DgvInvoices_CellContentClick;
             
             dgvInvoices.Resize += DgvInvoices_Resize;
             
@@ -390,7 +391,7 @@ private void ApplyTheme()
                     
                     var actionCol = new System.Windows.Forms.DataGridViewTextBoxColumn
                     {
-                        Name = "Action",
+                        Name = "Thao tác",
                         HeaderText = "THAO TÁC",
                         Width = 100,
                         DefaultCellStyle = { Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter }
