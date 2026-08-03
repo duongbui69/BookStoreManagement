@@ -374,46 +374,40 @@ namespace BookStoreManagement.UserControls
                 }
 
                 int numPoints = _stats.MonthlyRevenue.Count;
-                if (numPoints > 1)
+                if (numPoints > 0)
                 {
-                    PointF[] points = new PointF[numPoints];
+                    float stepX = (float)chartWidth / numPoints;
+                    float barWidth = stepX * 0.6f;
                     int idx = 0;
-                    float stepX = (float)chartWidth / (numPoints - 1);
 
                     foreach (var kvp in _stats.MonthlyRevenue.OrderBy(k => k.Key))
                     {
                         DateTime m = kvp.Key;
                         decimal rev = kvp.Value;
                         
-                        float x = paddingX + idx * stepX;
-                        float y = pnlChart.Height - paddingY - (float)(rev / maxVal) * chartHeight;
+                        float xCenter = paddingX + (idx * stepX) + (stepX / 2);
+                        float barHeight = (float)(rev / maxVal) * chartHeight;
+                        float x = xCenter - (barWidth / 2);
+                        float y = pnlChart.Height - paddingY - barHeight;
                         
-                        points[idx] = new PointF(x, y);
+                        // Draw Bar
+                        if (barHeight > 0)
+                        {
+                            RectangleF barRect = new RectangleF(x, y, barWidth, barHeight);
+                            using (var brush = new LinearGradientBrush(barRect, ThemeManager.ButtonFill, Color.FromArgb(141, 188, 215), LinearGradientMode.Vertical))
+                            {
+                                g.FillRectangle(brush, barRect);
+                            }
+                        }
 
+                        // Draw Label
                         using (var b = new SolidBrush(ThemeManager.TextSecondary))
                         {
                             string lbl = m.ToString("MM/yy");
                             var size = g.MeasureString(lbl, font2);
-                            g.DrawString(lbl, font2, b, x - size.Width / 2, pnlChart.Height - paddingY + 10);
+                            g.DrawString(lbl, font2, b, xCenter - size.Width / 2, pnlChart.Height - paddingY + 10);
                         }
                         idx++;
-                    }
-
-                    // Draw line
-                    using (var penLine = new Pen(ThemeManager.ButtonFill, 3))
-                    {
-                        g.DrawLines(penLine, points);
-                    }
-
-                    // Draw points
-                    using (var brushPoint = new SolidBrush(ThemeManager.CardBackground))
-                    using (var penPoint = new Pen(ThemeManager.ButtonFill, 2))
-                    {
-                        foreach (var p in points)
-                        {
-                            g.FillEllipse(brushPoint, p.X - 4, p.Y - 4, 8, 8);
-                            g.DrawEllipse(penPoint, p.X - 4, p.Y - 4, 8, 8);
-                        }
                     }
                 }
             }
