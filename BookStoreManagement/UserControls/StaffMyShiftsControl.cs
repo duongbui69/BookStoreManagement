@@ -459,12 +459,17 @@ namespace BookStoreManagement.UserControls
                 {
                     string timeStr = $"{item.StartTime:HH:mm} - {(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm") : "Đang mở")}";
                     
+                    decimal displayRevenue = item.Revenue;
+                    if (_activeShift != null && item.Id == _activeShift.Id) {
+                        displayRevenue = _currentRevenue;
+                    }
+
                     int rowIndex = dgvHistory.Rows.Add(
                         "#" + item.Id,
                         item.StartTime.ToString("dd/MM/yyyy"),
                         item.ShiftName,
                         timeStr,
-                        item.Revenue.ToString("N0") + " đ",
+                        displayRevenue.ToString("N0") + " đ",
                         item.Status == "Đã đóng" ? "Đã đóng" : "Đang mở",
                         "Chi tiết"
                     );
