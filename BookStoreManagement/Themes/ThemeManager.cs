@@ -51,12 +51,12 @@ namespace BookStoreManagement.Themes
         public static Color ButtonText => IsDarkMode ? DarkButtonText : LightButtonText;
         public static Color HoverColor => IsDarkMode ? DarkHoverColor : LightHoverColor;
 
-                public static Font FontTitle => new Font("Inter", 18F, FontStyle.Bold);
-        public static Font FontSubtitle => new Font("Inter", 12F, FontStyle.Regular);
-        public static Font FontHeader => new Font("Inter", 10F, FontStyle.Bold);
-        public static Font FontBody => new Font("Inter", 10F, FontStyle.Regular);
-        public static Font FontButton => new Font("Inter", 9F, FontStyle.Bold);
-        public static Font FontSmall => new Font("Inter", 8.5F, FontStyle.Regular);
+                public static Font FontTitle => new Font("Segoe UI", 18F, FontStyle.Bold);
+        public static Font FontSubtitle => new Font("Segoe UI", 12F, FontStyle.Regular);
+        public static Font FontHeader => new Font("Segoe UI", 10F, FontStyle.Bold);
+        public static Font FontBody => new Font("Segoe UI", 10F, FontStyle.Regular);
+        public static Font FontButton => new Font("Segoe UI", 9F, FontStyle.Bold);
+        public static Font FontSmall => new Font("Segoe UI", 8.5F, FontStyle.Regular);
 
         public static void ApplyTypography(System.Windows.Forms.Control parent)
         {
