@@ -314,25 +314,25 @@ namespace BookStoreManagement.Forms
 
                 var hrSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý Nhân viên", BtnHR_Click },
-                    { "Quản lý Tài khoản", BtnAccount_Click },
-                    { "Quản lý Chi nhánh", BtnStores_Click }
+                    { "Nhân viên", BtnHR_Click },
+                    { "Tài khoản", BtnAccount_Click },
+                    { "Chi nhánh", BtnStores_Click }
                 };
                 AddAccordionMenu("Quản lý Nhân sự", "group", hrSub);
 
                 var customerSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý Khách hàng", BtnCustomer_Click },
-                    { "Quản lý Giao dịch (Đơn/Hóa đơn)", BtnOrders_Click },
-                    { "Quản lý Đổi/Trả", BtnRefunds_Click }
+                    { "Khách hàng", BtnCustomer_Click },
+                    { "Giao dịch (Đơn/Hóa đơn)", BtnOrders_Click },
+                    { "Đổi/Trả", BtnRefunds_Click }
                 };
                 AddAccordionMenu("Quản lý Khách hàng", "groups", customerSub);
 
                 var masterSub = new Dictionary<string, EventHandler>
                 {
-                    { "Quản lý Tác giả", BtnAuthor_Click },
-                    { "Quản lý NXB", BtnPublisher_Click },
-                    { "Quản lý Nhà cung cấp", BtnSupplier_Click }
+                    { "Tác giả", BtnAuthor_Click },
+                    { "NXB", BtnPublisher_Click },
+                    { "Nhà cung cấp", BtnSupplier_Click }
                 };
                 AddAccordionMenu("Quản lý Danh mục", "category", masterSub);
                 
