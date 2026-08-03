@@ -426,7 +426,9 @@ namespace BookStoreManagement.UserControls
                 }
 
                 Rectangle textRect = new Rectangle(e.CellBounds.Left + 45, e.CellBounds.Top, e.CellBounds.Width - 45, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, name, e.CellStyle.Font, textRect, BookStoreManagement.Themes.ThemeManager.TextPrimary, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                bool isSelected = (e.State & DataGridViewElementStates.Selected) != 0;
+                Color textColor = isSelected ? e.CellStyle.SelectionForeColor : BookStoreManagement.Themes.ThemeManager.TextPrimary;
+                TextRenderer.DrawText(e.Graphics, name, e.CellStyle.Font, textRect, textColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
                 
                 e.Handled = true;
             }
@@ -445,10 +447,14 @@ namespace BookStoreManagement.UserControls
                 int iconX = e.CellBounds.Left + 10;
                 int iconY = e.CellBounds.Top + (e.CellBounds.Height - iconSize) / 2;
 
-                DrawIcon(e.Graphics, new Rectangle(iconX, iconY, iconSize, iconSize), icon, ThemeManager.TextSecondary);
+                bool isSelected = (e.State & DataGridViewElementStates.Selected) != 0;
+                Color iconColor = isSelected ? e.CellStyle.SelectionForeColor : ThemeManager.TextSecondary;
+                Color textColor = isSelected ? e.CellStyle.SelectionForeColor : BookStoreManagement.Themes.ThemeManager.TextPrimary;
+
+                DrawIcon(e.Graphics, new Rectangle(iconX, iconY, iconSize, iconSize), icon, iconColor);
 
                 Rectangle textRect = new Rectangle(iconX + iconSize + 5, e.CellBounds.Top, e.CellBounds.Width - iconSize - 15, e.CellBounds.Height);
-                TextRenderer.DrawText(e.Graphics, payment, e.CellStyle.Font, textRect, BookStoreManagement.Themes.ThemeManager.TextPrimary, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                TextRenderer.DrawText(e.Graphics, payment, e.CellStyle.Font, textRect, textColor, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
 
                 e.Handled = true;
             }
@@ -483,7 +489,7 @@ namespace BookStoreManagement.UserControls
                 Color bgColor = Color.FromArgb(20, 100, 100, 100);
                 Color textColor = Color.Gray;
 
-                if (status.ToLower().Contains("hoàn thành") || status.ToLower() == "hoàn thành")
+                if (status.ToLower().Contains("hoàn thành") || status.ToLower() == "completed")
                 {
                     bgColor = Color.FromArgb(20, 34, 197, 94);
                     textColor = Color.FromArgb(34, 197, 94);
@@ -498,7 +504,7 @@ namespace BookStoreManagement.UserControls
                     bgColor = Color.FromArgb(20, 245, 158, 11); // Orange
                     textColor = Color.FromArgb(245, 158, 11);
                 }
-                else if (status.ToLower().Contains("hủy") || status.ToLower() == "hủy")
+                else if (status.ToLower().Contains("hủy") || status.ToLower() == "cancelled" || status.ToLower() == "canceled")
                 {
                     bgColor = Color.FromArgb(20, 239, 68, 68); // Red
                     textColor = Color.FromArgb(239, 68, 68);
@@ -511,6 +517,8 @@ namespace BookStoreManagement.UserControls
                     int x = e.CellBounds.Left + (e.CellBounds.Width - width) / 2;
                     int y = e.CellBounds.Top + (e.CellBounds.Height - height) / 2;
                     int radius = 12;
+                    bool isSelected = (e.State & DataGridViewElementStates.Selected) != 0;
+                    if (isSelected) textColor = e.CellStyle.SelectionForeColor;
                     
                     path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
                     path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90);
