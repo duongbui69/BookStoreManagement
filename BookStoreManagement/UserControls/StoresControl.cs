@@ -34,6 +34,9 @@ namespace BookStoreManagement.UserControls
         {
             _repository = new StoreRepository();
             InitializeUI();
+            ApplyTheme();
+            Themes.ThemeManager.ThemeChanged += (s, e) => ApplyTheme();
+            _ = LoadDataAsync();
         }
 
         private void InitializeUI()
