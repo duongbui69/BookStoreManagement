@@ -17,6 +17,7 @@ namespace BookStoreManagement.Forms
             InitializeComponent();
             _currentUser = user;
             lblUsername.Text = _currentUser.FullName;
+            if (!string.IsNullOrEmpty(_currentUser.FullName)) btnAvatar.Text = _currentUser.FullName.Substring(0, 1).ToUpper();
             
             InitializeTopBar();
             InitializeSidebarFooter();
@@ -606,6 +607,7 @@ namespace BookStoreManagement.Forms
             lblRole.Parent = panelUserProfile;
 
             btnAvatar.Location = new Point(20, 20);
+            btnAvatar.TextOffset = new Point(1, 1);
             lblUsername.Location = new Point(65, 20);
             lblRole.Location = new Point(65, 42);
             lblRole.Text = _currentUser.RoleId == 1 ? "Quản trị hệ thống" : "Nhân viên";
