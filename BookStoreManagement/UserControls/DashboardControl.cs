@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BookStoreManagement.Events;
 using BookStoreManagement.Services;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
@@ -212,7 +213,17 @@ namespace BookStoreManagement.UserControls
 
         private async void DashboardControl_Load(object sender, EventArgs e)
         {
+            GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
+            GlobalEvents.TransactionCompleted += OnTransactionCompleted;
             await LoadDataAsync();
+        }
+
+        private async void OnTransactionCompleted()
+        {
+            if (this.IsHandleCreated && !this.IsDisposed)
+            {
+                this.Invoke((System.Windows.Forms.MethodInvoker)async delegate { await LoadDataAsync(); });
+            }
         }
 
         private void LoadData()

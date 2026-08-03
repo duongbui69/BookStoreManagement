@@ -173,12 +173,21 @@ namespace BookStoreManagement.Repositories
             stats.ProfitGrowth = lastProfit == 0 ? 0 : ((stats.NetProfit - lastProfit) / lastProfit) * 100;
             stats.OrdersGrowth = lastOrders == 0 ? 0 : ((currentOrders - lastOrders) / (decimal)lastOrders) * 100;
 
-            // Monthly Revenue for Line Chart (Past 12 months)
+            // Monthly Revenue for Chart (Past 12 months)
             for (int i = 11; i >= 0; i--)
             {
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
-                stats.MonthlyRevenue.Add(mStart, await GetTotalRevenueAsync(mStart, mEnd));
+                if (mStart.Year < 2026 || (mStart.Year == 2026 && mStart.Month <= 6))
+                {
+                    // Mock data for <= June 2026
+                    decimal[] mockData = new decimal[] { 12000000, 15000000, 14500000, 18000000, 16000000, 22000000, 10000000, 11000000, 13000000, 12500000, 15000000, 17000000 };
+                    stats.MonthlyRevenue.Add(mStart, mockData[mStart.Month - 1]);
+                }
+                else
+                {
+                    stats.MonthlyRevenue.Add(mStart, await GetTotalRevenueAsync(mStart, mEnd));
+                }
             }
 
             // Pie Chart Data (Sales By Category)

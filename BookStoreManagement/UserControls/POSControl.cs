@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BookStoreManagement.Events;
 using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
@@ -359,7 +360,8 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
                     var book = _allBooks.FirstOrDefault(b => b.BookId == item.BookId);
                     if (book != null) book.Quantity += item.Quantity;
                 }
-                _cart.Clear(); 
+                _cart.Clear();
+                    GlobalEvents.OnTransactionCompleted(); 
                 RenderCart(); 
                 RenderProducts();
             };
@@ -793,6 +795,7 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
 
                     MessageBox.Show("Thanh toán thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _cart.Clear();
+                    GlobalEvents.OnTransactionCompleted();
                     RenderCart();
                     
                     // Reload inventory from DB to ensure it matches DB Trigger deductions
