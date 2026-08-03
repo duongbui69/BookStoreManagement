@@ -120,6 +120,7 @@ namespace BookStoreManagement.UserControls
                 Font = new Font("Segoe UI", 9F)
             };
             dtpFrom.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            dtpFrom.Visible = false;
 
             dtpTo = new Guna.UI2.WinForms.Guna2DateTimePicker
             {
@@ -127,7 +128,8 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(430, 16),
                 BorderRadius = 6,
                 Format = DateTimePickerFormat.Short,
-                Font = new Font("Segoe UI", 9F)
+                Font = new Font("Segoe UI", 9F),
+                Visible = false
             };
 
             btnFilter = new Guna.UI2.WinForms.Guna2Button
@@ -137,7 +139,8 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(100, 36),
                 Location = new Point(580, 16),
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Visible = false
             };
             btnFilter.Click += async (s, e) => await LoadDataAsync();
             
@@ -329,11 +332,25 @@ private void ApplyTheme()
         {
             try
             {
-                // Load only today's data for current staff by default (shift)
-                DateTime today = DateTime.Today;
-                DateTime endOfToday = today.AddDays(1).AddTicks(-1);
+                var shiftService = new ShiftService();
+                var activeShift = shiftService.GetActiveShift();
                 
-                _allItems = await _salesOrderService.GetByDateRangeAsync(today, endOfToday, CurrentSession.StoreId);
+                DateTime fromTime;
+                DateTime toTime;
+                
+                if (activeShift != null)
+                {
+                    fromTime = activeShift.StartTime;
+                    toTime = DateTime.Now;
+                }
+                else
+                {
+                    fromTime = dtpFrom.Value.Date;
+                    toTime = dtpTo.Value.Date.AddDays(1).AddTicks(-1);
+                }
+                
+                _allItems = (await _salesOrderService.GetByDateRangeAsync(fromTime, toTime, CurrentSession.StoreId))
+                            .Where(x => x.StaffId == CurrentSession.UserId).ToList();
 
                 // Apply search filter if any
                 string keyword = txtSearch.Text.Trim().ToLower();
