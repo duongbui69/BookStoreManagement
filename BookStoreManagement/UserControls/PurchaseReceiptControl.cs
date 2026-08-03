@@ -388,6 +388,9 @@ namespace BookStoreManagement.UserControls
         private void DisplayPage()
         {
             if (this.IsDisposed) return;
+            
+            pagination.UpdatePagination(_filteredReceipts.Count, _currentPage, PageSize);
+            
             dgvReceipts.Rows.Clear();
             var paged = _filteredReceipts.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
 
