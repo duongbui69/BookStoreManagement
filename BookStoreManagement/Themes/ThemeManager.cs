@@ -19,8 +19,8 @@ namespace BookStoreManagement.Themes
         public static Color DarkBackground = Color.FromArgb(16, 17, 22);
         public static Color DarkCardBackground = Color.FromArgb(24, 25, 32);
         public static Color DarkSidebar = Color.FromArgb(10, 35, 55);
-        public static Color DarkTextPrimary = Color.White;
-        public static Color DarkTextSecondary = Color.FromArgb(160, 160, 165);
+        public static Color DarkTextPrimary = Color.FromArgb(245, 245, 250);
+        public static Color DarkTextSecondary = Color.FromArgb(170, 170, 175);
         public static Color DarkTextBoxBackground = Color.FromArgb(18, 19, 24);
         public static Color DarkTextBoxBorder = Color.FromArgb(40, 40, 45);
         public static Color DarkButtonFill = Color.FromArgb(180, 185, 255); // The Light Purple/Blue
@@ -31,8 +31,8 @@ namespace BookStoreManagement.Themes
         public static Color LightBackground = Color.FromArgb(245, 246, 250);
         public static Color LightCardBackground = Color.White;
         public static Color LightSidebar = Color.FromArgb(220, 235, 250);
-        public static Color LightTextPrimary = Color.FromArgb(30, 30, 30);
-        public static Color LightTextSecondary = Color.Gray;
+        public static Color LightTextPrimary = Color.FromArgb(20, 20, 20);
+        public static Color LightTextSecondary = Color.FromArgb(100, 100, 100);
         public static Color LightTextBoxBackground = Color.FromArgb(250, 250, 253);
         public static Color LightTextBoxBorder = Color.FromArgb(220, 220, 225);
         public static Color LightButtonFill = Color.FromArgb(41, 128, 185);
@@ -50,6 +50,61 @@ namespace BookStoreManagement.Themes
         public static Color ButtonFill => IsDarkMode ? DarkButtonFill : LightButtonFill;
         public static Color ButtonText => IsDarkMode ? DarkButtonText : LightButtonText;
         public static Color HoverColor => IsDarkMode ? DarkHoverColor : LightHoverColor;
+
+                public static Font FontTitle => new Font("Inter", 18F, FontStyle.Bold);
+        public static Font FontSubtitle => new Font("Inter", 12F, FontStyle.Regular);
+        public static Font FontHeader => new Font("Inter", 10F, FontStyle.Bold);
+        public static Font FontBody => new Font("Inter", 10F, FontStyle.Regular);
+        public static Font FontButton => new Font("Inter", 9F, FontStyle.Bold);
+        public static Font FontSmall => new Font("Inter", 8.5F, FontStyle.Regular);
+
+        public static void ApplyTypography(System.Windows.Forms.Control parent)
+        {
+            if (parent == null) return;
+
+            foreach (System.Windows.Forms.Control c in parent.Controls)
+            {
+                if (c is System.Windows.Forms.Label lbl)
+                {
+                    if (lbl.Name.StartsWith("lblTitle") || (lbl.Tag != null && lbl.Tag.ToString() == "Title"))
+                    {
+                        lbl.Font = FontTitle;
+                    }
+                    else if (lbl.Name.StartsWith("lblSubTitle") || (lbl.Tag != null && lbl.Tag.ToString() == "Subtitle"))
+                    {
+                        lbl.Font = FontSubtitle;
+                    }
+                    else
+                    {
+                        if (lbl.Font.Size >= 14) lbl.Font = FontTitle;
+                        else if (lbl.Font.Size >= 11) lbl.Font = FontSubtitle;
+                        else if (lbl.Font.Bold) lbl.Font = FontHeader;
+                        else lbl.Font = FontBody;
+                    }
+                }
+                else if (c is Guna.UI2.WinForms.Guna2Button btn)
+                {
+                    btn.Font = FontButton;
+                }
+                else if (c is System.Windows.Forms.Button sysBtn)
+                {
+                    sysBtn.Font = FontButton;
+                }
+                else if (c is Guna.UI2.WinForms.Guna2TextBox tb)
+                {
+                    tb.Font = FontBody;
+                }
+                else if (c is Guna.UI2.WinForms.Guna2ComboBox cb)
+                {
+                    cb.Font = FontBody;
+                }
+                
+                if (c.HasChildren)
+                {
+                    ApplyTypography(c);
+                }
+            }
+        }
 
         public static void ApplyDataGridViewStyle(System.Windows.Forms.DataGridView dgv)
         {
@@ -109,13 +164,13 @@ namespace BookStoreManagement.Themes
                 dgv.ColumnHeadersDefaultCellStyle.BackColor = Background;
                 dgv.ColumnHeadersDefaultCellStyle.ForeColor = TextSecondary;
                 dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = Background;
-                dgv.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                dgv.ColumnHeadersDefaultCellStyle.Font = FontHeader;
                 dgv.ColumnHeadersDefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
                 
                 foreach (System.Windows.Forms.DataGridViewColumn col in dgv.Columns)
                 {
                     col.HeaderCell.Style.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-                    col.HeaderCell.Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                    col.HeaderCell.Style.Font = FontHeader;
                 }
             } catch (Exception ex) {
                 System.Windows.Forms.MessageBox.Show("Theme Error: " + ex.Message);

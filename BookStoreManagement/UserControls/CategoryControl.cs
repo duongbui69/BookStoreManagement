@@ -445,6 +445,7 @@ namespace BookStoreManagement.UserControls
 
         private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             bool isDark = ThemeManager.IsDarkMode;
             
             pnlContent.BackColor = isDark ? Color.FromArgb(18, 18, 18) : Color.FromArgb(243, 244, 246);

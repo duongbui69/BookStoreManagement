@@ -484,6 +484,7 @@ namespace BookStoreManagement.Forms
 
         private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             this.BackColor = Themes.ThemeManager.Background;
             panelMain.BackColor = Themes.ThemeManager.Background;
             panelSidebar.BackColor = Themes.ThemeManager.Sidebar;

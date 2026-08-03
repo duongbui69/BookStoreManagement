@@ -262,6 +262,7 @@ namespace BookStoreManagement.UserControls
 
         private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             this.BackColor = ThemeManager.Background;
             dgvDetails.BackgroundColor = ThemeManager.CardBackground;
             dgvDetails.DefaultCellStyle.BackColor = ThemeManager.CardBackground;

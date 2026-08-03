@@ -195,6 +195,7 @@ namespace BookStoreManagement.UserControls
         }
 private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             this.BackColor = ThemeManager.Background;
             if (lblTitle != null) lblTitle.ForeColor = ThemeManager.TextPrimary;
             if (lblSubtitle != null) lblSubtitle.ForeColor = ThemeManager.TextSecondary;

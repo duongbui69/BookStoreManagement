@@ -154,6 +154,7 @@ namespace BookStoreManagement.UserControls
 
         private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             lblInfo.ForeColor = ThemeManager.TextSecondary;
         }
     

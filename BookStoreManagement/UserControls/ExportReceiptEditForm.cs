@@ -202,6 +202,7 @@ namespace BookStoreManagement.UserControls
 
         private void ApplyTheme()
         {
+            BookStoreManagement.Themes.ThemeManager.ApplyTypography(this);
             this.BackColor = ThemeManager.CardBackground;
 
             pnlHeader.BackColor = ThemeManager.CardBackground;
