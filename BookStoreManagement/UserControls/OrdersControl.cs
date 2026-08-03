@@ -27,9 +27,9 @@ namespace BookStoreManagement.UserControls
         private Guna.UI2.WinForms.Guna2TextBox txtSearch;
         private Guna.UI2.WinForms.Guna2Button btnDeleteMultiple;
         private Guna.UI2.WinForms.Guna2Button btnAdd;
-        private ComboBox cbStatus;
-        private DateTimePicker dtpFrom;
-        private DateTimePicker dtpTo;
+        private Guna.UI2.WinForms.Guna2ComboBox cbStatus;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpFrom;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpTo;
 
         private Panel pnlGridContainer;
         private DataGridView dgvOrders;
@@ -75,44 +75,63 @@ namespace BookStoreManagement.UserControls
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubTitle });
 
             // 2. Filters Bar
-            pnlFilters = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0) };
+            pnlFilters = new Guna.UI2.WinForms.Guna2Panel { Dock = DockStyle.Top, Height = 60, Margin = new Padding(0, 0, 0, 10), BorderRadius = 8, BorderThickness = 1 };
             
             txtSearch = new Guna.UI2.WinForms.Guna2TextBox
             {
                 PlaceholderText = "Tìm theo mã, tên khách...",
                 Size = new Size(220, 36),
-                Location = new Point(0, 12),
-                BorderRadius = 6,
+                Location = new Point(12, 12),
+                BorderRadius = 4,
                 Font = new Font("Segoe UI", 9F)
             };
             txtSearch.TextChanged += async (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; await LoadDataAsync(); };
 
-            Label lblStatus = new Label { Text = "Trạng thái:", AutoSize = true, Location = new Point(230, 22), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            cbStatus = new ComboBox { Location = new Point(310, 18), Width = 140, Font = new Font("Segoe UI", 9F), DropDownStyle = ComboBoxStyle.DropDownList };
-            cbStatus.Items.AddRange(new object[] { "Tất cả", "Chờ duyệt", "Hoàn thành", "Đã hủy" });
+            cbStatus = new Guna.UI2.WinForms.Guna2ComboBox 
+            { 
+                Location = new Point(245, 12), 
+                Size = new Size(160, 36), 
+                Font = new Font("Segoe UI", 9F), 
+                BorderRadius = 4 
+            };
+            cbStatus.Items.AddRange(new object[] { "Tất cả trạng thái", "Hoàn thành", "Đã hủy" });
             cbStatus.SelectedIndex = 0;
             cbStatus.SelectedIndexChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
-            Label lblTime = new Label { Text = "Thời gian:", AutoSize = true, Location = new Point(470, 22), Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            dtpFrom = new DateTimePicker { Location = new Point(545, 18), Width = 110, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
+            dtpFrom = new Guna.UI2.WinForms.Guna2DateTimePicker 
+            { 
+                Location = new Point(415, 12), 
+                Size = new Size(130, 36), 
+                Format = DateTimePickerFormat.Short, 
+                Font = new Font("Segoe UI", 9F),
+                BorderRadius = 4
+            };
             dtpFrom.Value = DateTime.Now.AddDays(-30);
             dtpFrom.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
             
-            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(660, 20), Font = new Font("Segoe UI", 11F) };
-            dtpTo = new DateTimePicker { Location = new Point(680, 18), Width = 110, Format = DateTimePickerFormat.Short, Font = new Font("Segoe UI", 9F) };
+            Label lblDash = new Label { Text = "-", AutoSize = true, Location = new Point(550, 20), Font = new Font("Segoe UI", 11F) };
+            
+            dtpTo = new Guna.UI2.WinForms.Guna2DateTimePicker 
+            { 
+                Location = new Point(570, 12), 
+                Size = new Size(130, 36), 
+                Format = DateTimePickerFormat.Short, 
+                Font = new Font("Segoe UI", 9F),
+                BorderRadius = 4
+            };
             dtpTo.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
-            btnDeleteMultiple = new Guna.UI2.WinForms.Guna2Button { Text = "Xóa mục đã chọn", Size = new Size(140, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Visible = false };
+            btnDeleteMultiple = new Guna.UI2.WinForms.Guna2Button { Text = "Xóa đã chọn", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
-            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ TẠO ĐƠN HÀNG MỚI", Size = new Size(180, 36), BorderRadius = 6, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ TẠO ĐƠN", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
-            pnlFilters.Controls.AddRange(new Control[] { txtSearch, lblStatus, cbStatus, lblTime, dtpFrom, lblDash, dtpTo, btnDeleteMultiple, btnAdd });
+            pnlFilters.Controls.AddRange(new Control[] { txtSearch, cbStatus, dtpFrom, lblDash, dtpTo, btnDeleteMultiple, btnAdd });
             pnlFilters.Resize += (s, e) =>
             {
-                btnAdd.Location = new Point(pnlFilters.Width - 180, 12);
-                btnDeleteMultiple.Location = new Point(pnlFilters.Width - 330, 12);
+                btnAdd.Location = new Point(pnlFilters.Width - 142, 12);
+                btnDeleteMultiple.Location = new Point(pnlFilters.Width - 280, 12);
             };
 
             // 3. Grid Container
@@ -266,11 +285,23 @@ namespace BookStoreManagement.UserControls
             lblTitle.ForeColor = ThemeManager.TextPrimary;
             lblSubTitle.ForeColor = ThemeManager.TextSecondary;
             
+            pnlFilters.BorderColor = ThemeManager.TextBoxBorder;
+            
             if (txtSearch != null)
             {
                 txtSearch.FillColor = ThemeManager.TextBoxBackground;
                 txtSearch.ForeColor = ThemeManager.TextPrimary;
                 txtSearch.BorderColor = ThemeManager.TextBoxBorder;
+                
+                cbStatus.FillColor = ThemeManager.TextBoxBackground;
+                cbStatus.ForeColor = ThemeManager.TextPrimary;
+                cbStatus.BorderColor = ThemeManager.TextBoxBorder;
+                
+                dtpFrom.FillColor = ThemeManager.TextBoxBackground;
+                dtpFrom.ForeColor = ThemeManager.TextPrimary;
+                
+                dtpTo.FillColor = ThemeManager.TextBoxBackground;
+                dtpTo.ForeColor = ThemeManager.TextPrimary;
             }
 
             btnAdd.FillColor = ThemeManager.ButtonFill;
@@ -290,10 +321,11 @@ namespace BookStoreManagement.UserControls
             {
                 var orders = await _service.GetByDateRangeAsync(dtpFrom.Value.Date, dtpTo.Value.Date.AddDays(1).AddTicks(-1), null);
                 
-                string statusFilter = cbStatus.SelectedItem?.ToString() ?? "Tất cả";
-                if (statusFilter != "Tất cả")
+                string statusFilter = cbStatus.SelectedItem?.ToString() ?? "Tất cả trạng thái";
+                if (statusFilter != "Tất cả trạng thái")
                 {
-                    orders = orders.Where(o => o.OrderStatus == statusFilter).ToList();
+                    string dbStatus = statusFilter == "Hoàn thành" ? "Completed" : (statusFilter == "Đã hủy" ? "Cancelled" : statusFilter);
+                    orders = orders.Where(o => o.OrderStatus == dbStatus).ToList();
                 }
 
                 if (!string.IsNullOrWhiteSpace(_currentSearchTerm))
