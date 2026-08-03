@@ -157,6 +157,7 @@ namespace BookStoreManagement.UserControls
                 Location = new Point(12, 12),
                 BorderRadius = 4
             };
+            txtSearch.TextChanged += (s, e) => ApplyFilters();
 
             cbStatus = new Guna2ComboBox
             {
