@@ -222,7 +222,7 @@ namespace BookStoreManagement.Repositories
             string sql = @"
                 SELECT * FROM vw_SalesOrderList
                 WHERE OrderDate >= @FromDate
-                  AND OrderDate < DATEADD(DAY, 1, @ToDate)
+                  AND OrderDate <= @ToDate
             ";
             // if (storeId.HasValue) sql += " AND StoreId = @StoreId";
             sql += " ORDER BY OrderDate DESC;";
@@ -234,8 +234,8 @@ namespace BookStoreManagement.Repositories
                 return orders;
             }, sql, parameters =>
             {
-                AddParameter(parameters, "@FromDate", fromDate.Date);
-                AddParameter(parameters, "@ToDate", toDate.Date);
+                AddParameter(parameters, "@FromDate", fromDate);
+                AddParameter(parameters, "@ToDate", toDate);
                 // if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
@@ -397,10 +397,10 @@ namespace BookStoreManagement.Repositories
             string sql = @"
                 SELECT * FROM vw_SalesOrderList
                 WHERE OrderDate >= @FromDate
-                  AND OrderDate < DATEADD(DAY, 1, @ToDate)
+                  AND OrderDate <= @ToDate
             ";
             sql += " ORDER BY OrderDate DESC;";
-            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { FromDate = fromDate.Date, ToDate = toDate.Date });
+            var items = await QueryAsync<SalesOrderListViewModel>(sql, new { FromDate = fromDate, ToDate = toDate });
             return System.Linq.Enumerable.ToList(items);
         }
 
