@@ -18,15 +18,23 @@ namespace BookStoreManagement.Forms
             InitializeComponent();
             _authService = new AuthService();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            
+
+            // Strip outer shell to only show login card
+            this.Controls.Remove(pnlTitleBar);
+            loginCard.Dock = DockStyle.Fill;
+            this.ClientSize = new Size(467, 554);
+            loginCard.Controls.Add(btnClose);
+            btnClose.Location = new Point(this.Width - btnClose.Width, 0);
+            btnClose.BringToFront();
+
             // Set initial state for icons
             txtUsername.IconLeft = CreateEmojiImage("👤", 20);
             txtPassword.IconLeft = CreateEmojiImage("🔒", 20);
             txtPassword.IconRight = CreateEmojiImage("👁", 18);
-            
+
             txtUsername.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
             txtPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
-            
+
             ApplyTheme();
         }
 
@@ -39,7 +47,7 @@ namespace BookStoreManagement.Forms
         {
             // Main Background
             this.BackColor = ThemeManager.Background;
-            
+
             // Title Bar
             pnlTitleBar.BackColor = ThemeManager.CardBackground;
             lblTitleText.ForeColor = ThemeManager.TextPrimary;
@@ -54,7 +62,7 @@ namespace BookStoreManagement.Forms
 
             // Login Card
             loginCard.FillColor = ThemeManager.CardBackground;
-            
+
             // Header Section
             pnlHeaderIcon.FillColor = ThemeManager.ButtonFill;
             lblHeaderIcon.BackColor = Color.Transparent;
@@ -87,13 +95,13 @@ namespace BookStoreManagement.Forms
             chkRemember.UncheckedState.BorderColor = ThemeManager.TextBoxBorder;
             chkRemember.CheckedState.FillColor = ThemeManager.ButtonFill;
             chkRemember.CheckedState.BorderColor = ThemeManager.ButtonFill;
-            
+
             lblForgot.ForeColor = ThemeManager.ButtonFill;
 
             // Action Button
             btnLogin.FillColor = ThemeManager.ButtonFill;
             btnLogin.ForeColor = ThemeManager.ButtonText;
-            
+
             // Footer
             lblVersion.ForeColor = ThemeManager.TextSecondary;
             lblCopyright.ForeColor = ThemeManager.TextSecondary;
