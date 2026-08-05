@@ -11,6 +11,8 @@ namespace BookStoreManagement.Models
         public int? CustomerId { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal ActualAmount { get; set; }
         public string PaymentMethod { get; set; } = AppConstants.PaymentMethods.Cash;
         public string OrderStatus { get; set; } = AppConstants.OrderStatuses.Completed;
         public string? Note { get; set; }

@@ -14,7 +14,7 @@ using BookStoreManagement.ViewModels;
 
 namespace BookStoreManagement.UserControls
 {
-    public partial class OrdersControl : UserControl, ISearchableControl
+    public partial class OrdersControl : UserControl, ISearchableControl, IRefreshable
     {
         private readonly SalesOrderService _service;
 
@@ -55,8 +55,29 @@ namespace BookStoreManagement.UserControls
         {
             _service = new SalesOrderService();
             InitializeUI();
-            ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            BookStoreManagement.Events.GlobalEvents.TransactionCompleted += OnTransactionCompleted;
             this.Load += OrdersControl_Load;
+            
+            this.Disposed += (s, e) => {
+                BookStoreManagement.Themes.ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+                BookStoreManagement.Events.GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
+            };
+        }
+
+        public async System.Threading.Tasks.Task RefreshDataAsync()
+        {
+            if (!this.IsDisposed) await LoadDataAsync();
+        }
+
+        private async void OnTransactionCompleted()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(OnTransactionCompleted));
+                return;
+            }
+            if (!this.IsDisposed) await LoadDataAsync();
         }
 
         private void InitializeUI()
@@ -121,7 +142,7 @@ namespace BookStoreManagement.UserControls
             };
             dtpTo.ValueChanged += async (s, e) => { _currentPage = 1; await LoadDataAsync(); };
 
-            btnDeleteMultiple = new Guna.UI2.WinForms.Guna2Button { Text = "Xóa đã chọn", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Visible = false };
+            btnDeleteMultiple = new Guna.UI2.WinForms.Guna2Button { Text = "Hủy đơn đã chọn", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand, Visible = false };
             btnDeleteMultiple.Click += BtnDeleteMultiple_Click;
 
             btnAdd = new Guna.UI2.WinForms.Guna2Button { Text = "+ TẠO ĐƠN", Size = new Size(130, 36), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
@@ -173,6 +194,8 @@ namespace BookStoreManagement.UserControls
             dgvOrders.Columns.Add("OrderDate", "Ngày Tạo");
             dgvOrders.Columns.Add("CustomerName", "Khách Hàng");
             dgvOrders.Columns.Add("TotalAmount", "Tổng Tiền (VNĐ)");
+            dgvOrders.Columns.Add("RefundAmount", "Số tiền hoàn");
+            dgvOrders.Columns.Add("ActualAmount", "Thực nhận");
             dgvOrders.Columns.Add("PaymentMethod", "Thanh Toán");
             dgvOrders.Columns.Add("OrderStatus", "Trạng thái");
             dgvOrders.Columns.Add("Actions", "Thao tác");
@@ -352,6 +375,8 @@ namespace BookStoreManagement.UserControls
                         ord.OrderDate.ToString("dd/MM/yyyy HH:mm"),
                         string.IsNullOrEmpty(ord.CustomerName) ? "Khách vãng lai" : ord.CustomerName,
                         ord.TotalAmount.ToString("N0") + " ₫",
+                        ord.RefundAmount > 0 ? "-" + ord.RefundAmount.ToString("N0") + " ₫" : "0 ₫",
+                        ord.ActualAmount.ToString("N0") + " ₫",
                         ord.PaymentMethod,
                         ord.OrderStatus,
                         ""

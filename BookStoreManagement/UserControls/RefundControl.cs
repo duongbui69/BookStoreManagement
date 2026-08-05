@@ -522,15 +522,15 @@ namespace BookStoreManagement.UserControls
                 Color delColor  = (hoveredRow == e.RowIndex && delRect.Contains(dgv.PointToClient(Cursor.Position)))
                     ? Color.FromArgb(186, 26, 26) : ThemeManager.TextSecondary;
 
-                DrawIcon(e.Graphics, viewRect, "\ue8f4", viewColor);
-                DrawIcon(e.Graphics, delRect,  "\ue872", delColor);
+                DrawIcon(e.Graphics, viewRect, "👁️", viewColor);
+                DrawIcon(e.Graphics, delRect,  "🗑️", delColor);
                 e.Handled = true;
             }
         }
 
         private static void DrawIcon(Graphics g, Rectangle rect, string iconCode, Color color)
         {
-            using var iconFont = new Font("Material Symbols Outlined", 13F, FontStyle.Regular, GraphicsUnit.Point);
+            using var iconFont = new Font("Segoe UI Emoji", 12F, FontStyle.Regular, GraphicsUnit.Point);
             TextRenderer.DrawText(g, iconCode, iconFont, rect, color,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }

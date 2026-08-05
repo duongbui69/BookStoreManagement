@@ -14,6 +14,8 @@ namespace BookStoreManagement.ViewModels
         public int? CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal ActualAmount { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
         public string OrderStatus { get; set; } = string.Empty;
         public string? Note { get; set; }

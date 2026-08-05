@@ -13,7 +13,7 @@ using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public class StaffMyShiftsControl : UserControl
+    public class StaffMyShiftsControl : UserControl, BookStoreManagement.Interfaces.IRefreshable
     {
         private ShiftService _shiftService;
         private SalesOrderService _salesOrderService;
@@ -67,11 +67,23 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
 
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            BookStoreManagement.Events.GlobalEvents.TransactionCompleted += OnTransactionCompleted;
             this.Disposed += (s, e) => { 
                 ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged; 
+                BookStoreManagement.Events.GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
                 _timer?.Stop();
                 _timer?.Dispose();
             };
+        }
+
+        private async void OnTransactionCompleted()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(OnTransactionCompleted));
+                return;
+            }
+            if (!this.IsDisposed) await RefreshDataAsync();
         }
 
         private void ThemeManager_ThemeChanged(object? sender, EventArgs e)
@@ -336,7 +348,18 @@ namespace BookStoreManagement.UserControls
             LoadData();
         }
 
-        public void LoadData()
+        public async Task RefreshDataAsync()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => LoadData()));
+                return;
+            }
+            if (!this.IsDisposed) LoadData();
+            await Task.CompletedTask;
+        }
+
+        private void LoadData()
         {
             try
             {
@@ -367,7 +390,7 @@ namespace BookStoreManagement.UserControls
                     var orders = _salesOrderService.GetByDateRange(_activeShift.StartTime, DateTime.Now)
                                     .Where(x => x.StaffId == CurrentSession.UserId).ToList();
                     
-                    _currentRevenue = orders.Sum(x => x.TotalAmount);
+                    _currentRevenue = orders.Sum(x => x.ActualAmount);
                     _currentOrders = orders.Count;
 
                     lblRevenue.Text = _currentRevenue.ToString("N0") + " ₫";

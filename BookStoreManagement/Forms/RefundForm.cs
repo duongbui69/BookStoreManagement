@@ -321,7 +321,7 @@ namespace BookStoreManagement.Forms
                         int returnQty = 0;
                         if (row.Cells["colReturnQty"].Value != null)
                         {
-                            int.TryParse(row.Cells["colReturnQty"].Value.ToString(), out returnQty);
+                            int.TryParse(row.Cells["colReturnQty"].Value?.ToString(), out returnQty);
                         }
 
                         if (returnQty > item.Quantity)
@@ -382,7 +382,7 @@ namespace BookStoreManagement.Forms
                     {
                         int returnQty = 0;
                         if (row.Cells["colReturnQty"].Value != null)
-                            int.TryParse(row.Cells["colReturnQty"].Value.ToString(), out returnQty);
+                            int.TryParse(row.Cells["colReturnQty"].Value?.ToString(), out returnQty);
 
                         if (returnQty > 0)
                         {
@@ -408,12 +408,27 @@ namespace BookStoreManagement.Forms
                 return;
             }
 
+            // Kiểm tra: số tiền hoàn không được vượt quá tổng đơn hàng gốc
+            decimal alreadyRefunded = _currentOrder.RefundAmount;
+            decimal maxCanRefund = _currentOrder.TotalAmount - alreadyRefunded;
+            if (totalRefund > maxCanRefund)
+            {
+                MessageBox.Show(
+                    $"Số tiền hoàn ({totalRefund:N0} ₫) vượt quá số tiền có thể hoàn!\n" +
+                    $"Tổng đơn gốc: {_currentOrder.TotalAmount:N0} ₫\n" +
+                    $"Đã hoàn trước: {alreadyRefunded:N0} ₫\n" +
+                    $"Tối đa có thể hoàn: {maxCanRefund:N0} ₫",
+                    "Lỗi xác thực", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             receipt.TotalRefundAmount = totalRefund;
 
             try
             {
                 _returnRepo.CreateReturn(receipt, details);
                 MessageBox.Show("Tạo phiếu trả thành công!");
+                BookStoreManagement.Events.GlobalEvents.OnTransactionCompleted();
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
@@ -423,24 +438,17 @@ namespace BookStoreManagement.Forms
             }
         }
 
-        private void UpdateRefundStatus()
+        private async void UpdateRefundStatus()
         {
             try
             {
-                // In a real app we'd have UpdateAsync. For now, we simulate or execute raw SQL.
                 string status = cboStatus.SelectedItem.ToString() ?? "Đang xử lý";
                 string note = txtNote.Text;
                 
-                string sql = "UPDATE ReturnReceipts SET ReturnStatus = @Status, Note = @Note WHERE Id = @Id";
-                var conn = DbConnectionFactory.CreateConnection();
-                conn.Open();
-                var cmd = new Microsoft.Data.SqlClient.SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Status", status);
-                cmd.Parameters.AddWithValue("@Note", note);
-                cmd.Parameters.AddWithValue("@Id", _refundId);
-                cmd.ExecuteNonQuery();
+                await _returnRepo.UpdateStatusAsync(_refundId, status, note);
                 
                 MessageBox.Show("Cập nhật thành công!");
+                BookStoreManagement.Events.GlobalEvents.OnTransactionCompleted();
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

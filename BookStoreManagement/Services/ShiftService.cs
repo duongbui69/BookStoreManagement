@@ -62,7 +62,7 @@ namespace BookStoreManagement.Services
             {
                 if (order.StaffId == CurrentSession.UserId)
                 {
-                    totalRevenue += order.TotalAmount;
+                    totalRevenue += order.ActualAmount;
                     totalOrdersCount++;
                 }
             }

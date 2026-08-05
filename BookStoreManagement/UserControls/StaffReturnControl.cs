@@ -20,6 +20,7 @@ namespace BookStoreManagement.UserControls
         private ReturnReceiptService _returnService;
         private SalesOrderListViewModel? _currentOrder;
         private List<SalesOrderDetailFullViewModel> _currentOrderDetails;
+        private System.Windows.Forms.Timer _searchDebounce;
 
         // UI Components
         private Guna.UI2.WinForms.Guna2Panel pnlContent;
@@ -75,12 +76,14 @@ namespace BookStoreManagement.UserControls
             _orderService = new SalesOrderService();
             _returnService = new ReturnReceiptService();
             _currentOrderDetails = new List<SalesOrderDetailFullViewModel>();
+            _searchDebounce = new System.Windows.Forms.Timer { Interval = 600 };
+            _searchDebounce.Tick += async (s, e) => { _searchDebounce.Stop(); await SearchInvoiceAsync(); };
 
             InitializeUI();
             ApplyTheme();
 
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Disposed += (s, e) => { ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged; };
+            this.Disposed += (s, e) => { ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged; _searchDebounce.Dispose(); };
         }
 
         private void ThemeManager_ThemeChanged(object? sender, EventArgs e)
@@ -130,8 +133,9 @@ namespace BookStoreManagement.UserControls
                 Size = new Size(250, 36),
                 Location = new Point(20, 75)
             };
-            txtSearch.TextChanged += async (s, e) => {
-                await SearchInvoiceAsync();
+            txtSearch.TextChanged += (s, e) => {
+                _searchDebounce.Stop();
+                _searchDebounce.Start();
             };
             pnlSearch.Controls.AddRange(new Control[] { lblTitle, lblSubtitle, txtSearch });
 
@@ -658,6 +662,7 @@ private void ApplyTheme()
             var confirmResult = MessageBox.Show($"Xác nhận trả hàng và hoàn số tiền {lblTotalRefundAmount.Text}?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirmResult != DialogResult.Yes) return;
 
+            btnConfirm.Enabled = false;
             try
             {
                 if (!CurrentSession.StoreId.HasValue)
@@ -680,6 +685,10 @@ private void ApplyTheme()
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Lỗi khi lưu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnConfirm.Enabled = true;
             }
         }
     }

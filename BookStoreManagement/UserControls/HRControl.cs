@@ -40,8 +40,9 @@ namespace BookStoreManagement.UserControls
         private PaginationControl paginationControl;
 
         private int _currentPage = 1;
-        private int _pageSize = 5;
+        private int _pageSize = 10;
 
+        private System.Windows.Forms.Timer _searchDebounce;
         private int _hoveredRowIndex = -1;
         private int _hoveredAction = 0;
         private string _currentBranch = "All Departments";
@@ -58,6 +59,8 @@ namespace BookStoreManagement.UserControls
         public HRControl()
         {
             _service = new HRService();
+            _searchDebounce = new System.Windows.Forms.Timer { Interval = 500 };
+            _searchDebounce.Tick += async (s, e) => { _searchDebounce.Stop(); await LoadDataAsync(); };
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
             this.Load += HRControl_Load;
@@ -90,7 +93,7 @@ namespace BookStoreManagement.UserControls
                 BorderRadius = 6,
                 Font = new Font("Segoe UI", 9F)
             };
-            txtSearch.TextChanged += async (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; await LoadDataAsync(); };
+            txtSearch.TextChanged += (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; _searchDebounce.Stop(); _searchDebounce.Start(); };
 
             cbBranch = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(230, 12), BorderRadius = 6, Font = new Font("Segoe UI", 9F) };
             cbBranch.Items.AddRange(new object[] { "All Departments", "Logistics", "IT", "Doanh số" });

@@ -21,6 +21,8 @@ namespace BookStoreManagement.Repositories
                 CustomerId = GetNullableInt(reader, "CustomerId"),
                 OrderDate = GetDateTime(reader, "OrderDate"),
                 TotalAmount = GetDecimal(reader, "TotalAmount"),
+                RefundAmount = GetNullableDecimal(reader, "RefundAmount") ?? 0m,
+                ActualAmount = GetNullableDecimal(reader, "ActualAmount") ?? GetDecimal(reader, "TotalAmount"),
                 PaymentMethod = GetString(reader, "PaymentMethod"),
                 OrderStatus = GetString(reader, "OrderStatus"),
                 Note = GetNullableString(reader, "Note")
@@ -41,6 +43,8 @@ namespace BookStoreManagement.Repositories
                 CustomerId = GetNullableInt(reader, "CustomerId"),
                 CustomerName = GetString(reader, "CustomerName"),
                 TotalAmount = GetDecimal(reader, "TotalAmount"),
+                RefundAmount = GetNullableDecimal(reader, "RefundAmount") ?? 0m,
+                ActualAmount = GetNullableDecimal(reader, "ActualAmount") ?? GetDecimal(reader, "TotalAmount"),
                 PaymentMethod = GetString(reader, "PaymentMethod"),
                 OrderStatus = GetString(reader, "OrderStatus"),
                 Note = GetNullableString(reader, "Note")
@@ -79,9 +83,9 @@ namespace BookStoreManagement.Repositories
             return ExecuteTransaction((connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, 0, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 using var orderCommand = new SqlCommand(insertOrderSql, connection, transaction);
@@ -133,7 +137,9 @@ namespace BookStoreManagement.Repositories
                     AddParameter(deductStoreCmd, "@StoreId", order.StoreId);
                     AddParameter(deductStoreCmd, "@BookId", detail.BookId);
                     AddParameter(deductStoreCmd, "@Qty", detail.Quantity);
-                    deductStoreCmd.ExecuteNonQuery();
+                    int storeRowsAffected = deductStoreCmd.ExecuteNonQuery();
+                    if (storeRowsAffected == 0)
+                        throw new Exception($"Không đủ hàng trong kho cửa hàng (BookId={detail.BookId}).");
 
                     // Ghi lịch sử thiếu hàng
                     const string logSql = @"
@@ -170,7 +176,8 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetById(int id)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate,
+                       TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE Id = @Id;
             ";
@@ -184,7 +191,8 @@ namespace BookStoreManagement.Repositories
         public SalesOrder? GetByOrderCode(string orderCode)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate,
+                       TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE OrderCode = @OrderCode;
             ";
@@ -241,7 +249,7 @@ namespace BookStoreManagement.Repositories
                     OR OrderStatus LIKE N'%' + @Keyword + N'%'
                 )
             ";
-            // if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
             sql += " ORDER BY OrderDate DESC;";
 
             return ExecuteQuery(command =>
@@ -250,12 +258,12 @@ namespace BookStoreManagement.Repositories
                 while (reader.Read()) orders.Add(MapOrderList(reader));
                 return orders;
             }, sql, parameters =>
-            {
                 AddParameter(parameters, "@Keyword", keyword);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
-        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate)
+        public List<SalesOrderListViewModel> GetByDateRange(DateTime fromDate, DateTime toDate, int? storeId = null)
         {
             var orders = new List<SalesOrderListViewModel>();
             string sql = @"
@@ -263,7 +271,7 @@ namespace BookStoreManagement.Repositories
                 WHERE OrderDate >= @FromDate
                   AND OrderDate <= @ToDate
             ";
-            // if (storeId.HasValue) sql += " AND StoreId = @StoreId";
+            if (storeId.HasValue) sql += " AND StoreId = @StoreId";
             sql += " ORDER BY OrderDate DESC;";
 
             return ExecuteQuery(command =>
@@ -275,7 +283,7 @@ namespace BookStoreManagement.Repositories
             {
                 AddParameter(parameters, "@FromDate", fromDate);
                 AddParameter(parameters, "@ToDate", toDate);
-                // if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
+                if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
         }
 
@@ -296,17 +304,72 @@ namespace BookStoreManagement.Repositories
 
         public bool CancelOrder(int salesOrderId)
         {
-            const string sql = @"
-                UPDATE SalesOrders
-                SET OrderStatus = @OrderStatus
-                WHERE Id = @Id
-                  AND OrderStatus = @CompletedStatus;
-            ";
-            return ExecuteNonQuery(sql, parameters =>
+            return ExecuteTransaction((connection, transaction) =>
             {
-                AddParameter(parameters, "@Id", salesOrderId);
-                AddParameter(parameters, "@OrderStatus", AppConstants.OrderStatuses.Cancelled);
-                AddParameter(parameters, "@CompletedStatus", AppConstants.OrderStatuses.Completed);
+                // 1. Lấy thông tin đơn hàng để lấy StoreId và UserId
+                const string getOrderSql = @"
+                    SELECT Id, StoreId, UserId, OrderStatus FROM SalesOrders WHERE Id = @Id;";
+                using var getCmd = new SqlCommand(getOrderSql, connection, transaction);
+                AddParameter(getCmd, "@Id", salesOrderId);
+                int storeId = 0; int userId = 0; string currentStatus = "";
+                using (var rdr = getCmd.ExecuteReader())
+                {
+                    if (!rdr.Read()) return 0;
+                    storeId = (int)rdr["StoreId"];
+                    userId = (int)rdr["UserId"];
+                    currentStatus = rdr["OrderStatus"].ToString() ?? "";
+                }
+                if (currentStatus != AppConstants.OrderStatuses.Completed) return 0;
+
+                // 2. Cập nhật trạng thái đơn
+                const string cancelSql = @"
+                    UPDATE SalesOrders SET OrderStatus = @OrderStatus
+                    WHERE Id = @Id AND OrderStatus = @CompletedStatus;";
+                using var cancelCmd = new SqlCommand(cancelSql, connection, transaction);
+                AddParameter(cancelCmd, "@Id", salesOrderId);
+                AddParameter(cancelCmd, "@OrderStatus", AppConstants.OrderStatuses.Cancelled);
+                AddParameter(cancelCmd, "@CompletedStatus", AppConstants.OrderStatuses.Completed);
+                int affected = cancelCmd.ExecuteNonQuery();
+                if (affected == 0) return 0;
+
+                // 3. Lấy danh sách sản phẩm của đơn
+                const string getDetailsSql = @"
+                    SELECT BookId, Quantity FROM SalesOrderDetails WHERE SalesOrderId = @SalesOrderId;";
+                using var detailCmd = new SqlCommand(getDetailsSql, connection, transaction);
+                AddParameter(detailCmd, "@SalesOrderId", salesOrderId);
+                var books = new List<(int BookId, int Qty)>();
+                using (var rdr = detailCmd.ExecuteReader())
+                    while (rdr.Read())
+                        books.Add(((int)rdr["BookId"], (int)rdr["Quantity"]));
+
+                // 4. Hoàn lại tồn kho và ghi lịch sử
+                foreach (var (bookId, qty) in books)
+                {
+                    const string restockSql = @"
+                        UPDATE Books SET Quantity = Quantity + @Qty WHERE Id = @BookId;
+                        IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                            UPDATE StoreBookInventories SET Quantity = Quantity + @Qty, UpdatedAt = SYSDATETIME()
+                            WHERE StoreId = @StoreId AND BookId = @BookId;";
+                    using var restockCmd = new SqlCommand(restockSql, connection, transaction);
+                    AddParameter(restockCmd, "@BookId", bookId);
+                    AddParameter(restockCmd, "@Qty", qty);
+                    AddParameter(restockCmd, "@StoreId", storeId);
+                    restockCmd.ExecuteNonQuery();
+
+                    const string logSql = @"
+                        INSERT INTO InventoryTransactions
+                            (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                        VALUES
+                            (@StoreId, @BookId, @UserId, 'CANCEL', @Qty, 'SalesOrder', @RefId, N'Hoàn kho do hủy đơn', SYSDATETIME());";
+                    using var logCmd = new SqlCommand(logSql, connection, transaction);
+                    AddParameter(logCmd, "@StoreId", storeId);
+                    AddParameter(logCmd, "@BookId", bookId);
+                    AddParameter(logCmd, "@UserId", userId);
+                    AddParameter(logCmd, "@Qty", qty);
+                    AddParameter(logCmd, "@RefId", salesOrderId);
+                    logCmd.ExecuteNonQuery();
+                }
+                return affected;
             }) > 0;
         }
 
@@ -327,9 +390,9 @@ namespace BookStoreManagement.Repositories
             await ExecuteTransactionAsync(async (connection, transaction) =>
             {
                 const string insertOrderSql = @"
-                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, PaymentMethod, OrderStatus, Note)
+                    INSERT INTO SalesOrders (OrderCode, UserId, CustomerId, StoreId, TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note)
                     OUTPUT INSERTED.Id
-                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
+                    VALUES (@OrderCode, @UserId, @CustomerId, @StoreId, @TotalAmount, 0, @TotalAmount, @PaymentMethod, @OrderStatus, @Note);
                 ";
 
                 orderId = await connection.ExecuteScalarAsync<int>(insertOrderSql, new
@@ -409,7 +472,8 @@ namespace BookStoreManagement.Repositories
         public async Task<SalesOrder?> GetByIdAsync(int id)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate,
+                       TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE Id = @Id;
             ";
@@ -419,7 +483,8 @@ namespace BookStoreManagement.Repositories
         public async Task<SalesOrder?> GetByOrderCodeAsync(string orderCode)
         {
             const string sql = @"
-                SELECT Id, OrderCode, UserId, CustomerId, OrderDate, TotalAmount, PaymentMethod, OrderStatus, Note
+                SELECT Id, OrderCode, StoreId, UserId, CustomerId, OrderDate,
+                       TotalAmount, RefundAmount, ActualAmount, PaymentMethod, OrderStatus, Note
                 FROM SalesOrders
                 WHERE OrderCode = @OrderCode;
             ";
@@ -490,13 +555,62 @@ namespace BookStoreManagement.Repositories
 
         public async Task<bool> CancelOrderAsync(int salesOrderId)
         {
-            const string sql = @"
-                UPDATE SalesOrders
-                SET OrderStatus = @OrderStatus
-                WHERE Id = @Id
-                  AND OrderStatus = @CompletedStatus;
-            ";
-            return await ExecuteAsync(sql, new { Id = salesOrderId, OrderStatus = AppConstants.OrderStatuses.Cancelled, CompletedStatus = AppConstants.OrderStatuses.Completed }) > 0;
+            try
+            {
+                await ExecuteTransactionAsync(async (connection, transaction) =>
+                {
+                    // 1. Lấy thông tin đơn hàng
+                    const string getOrderSql = "SELECT Id, StoreId, UserId, OrderStatus FROM SalesOrders WHERE Id = @Id;";
+                    var order = await connection.QueryFirstOrDefaultAsync<dynamic>(getOrderSql, new { Id = salesOrderId }, transaction);
+                    if (order == null || (string)order.OrderStatus != AppConstants.OrderStatuses.Completed)
+                        throw new InvalidOperationException("Không thể hủy: Đơn hàng không tồn tại hoặc chưa hoàn thành.");
+
+                    int storeId = (int)order.StoreId;
+                    int userId = (int)order.UserId;
+
+                    // 2. Cập nhật trạng thái đơn
+                    const string cancelSql = @"
+                        UPDATE SalesOrders SET OrderStatus = @OrderStatus
+                        WHERE Id = @Id AND OrderStatus = @CompletedStatus;";
+                    int affected = await connection.ExecuteAsync(cancelSql,
+                        new { Id = salesOrderId, OrderStatus = AppConstants.OrderStatuses.Cancelled, CompletedStatus = AppConstants.OrderStatuses.Completed },
+                        transaction);
+                    if (affected == 0) throw new InvalidOperationException("Không thể hủy đơn hàng.");
+
+                    // 3. Lấy danh sách chi tiết đơn hàng
+                    const string getDetailsSql = "SELECT BookId, Quantity FROM SalesOrderDetails WHERE SalesOrderId = @SalesOrderId;";
+                    var details = await connection.QueryAsync<dynamic>(getDetailsSql, new { SalesOrderId = salesOrderId }, transaction);
+
+                    // 4. Hoàn lại tồn kho và ghi lịch sử
+                    foreach (var detail in details)
+                    {
+                        int bookId = (int)detail.BookId;
+                        int qty = (int)detail.Quantity;
+
+                        const string restockSql = @"
+                            UPDATE Books SET Quantity = Quantity + @Qty WHERE Id = @BookId;
+                            IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                                UPDATE StoreBookInventories SET Quantity = Quantity + @Qty, UpdatedAt = SYSDATETIME()
+                                WHERE StoreId = @StoreId AND BookId = @BookId;";
+                        await connection.ExecuteAsync(restockSql,
+                            new { BookId = bookId, Qty = qty, StoreId = storeId }, transaction);
+
+                        const string logSql = @"
+                            INSERT INTO InventoryTransactions
+                                (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                            VALUES
+                                (@StoreId, @BookId, @UserId, 'CANCEL', @Qty, 'SalesOrder', @RefId, N'Hoàn kho do hủy đơn', SYSDATETIME());";
+                        await connection.ExecuteAsync(logSql,
+                            new { StoreId = storeId, BookId = bookId, UserId = userId, Qty = qty, RefId = salesOrderId },
+                            transaction);
+                    }
+                });
+                return true;
+            }
+            catch
+            {
+                throw; // re-throw để caller xử lý thông báo lỗi
+            }
         }
 
         public async Task<bool> IsOrderCodeExistsAsync(string orderCode)

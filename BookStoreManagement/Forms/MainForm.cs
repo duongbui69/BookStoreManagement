@@ -75,35 +75,42 @@ namespace BookStoreManagement.Forms
 
         private async void LoadControl<T>(string placeholder) where T : Control, new()
         {
-            Type type = typeof(T);
-            
-            if (CurrentSession.IsStaff && type != typeof(UserControls.StaffMyShiftsControl))
+            try
             {
-                var shiftService = new BookStoreManagement.Services.ShiftService();
-                if (shiftService.GetActiveShift() == null)
+                Type type = typeof(T);
+                
+                if (CurrentSession.IsStaff && type != typeof(UserControls.StaffMyShiftsControl))
                 {
-                    MessageBox.Show("Vui lòng bắt đầu ca làm việc trước khi thực hiện các thao tác khác!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    type = typeof(UserControls.StaffMyShiftsControl);
-                    placeholder = "Ca của tôi";
+                    var shiftService = new BookStoreManagement.Services.ShiftService();
+                    if (shiftService.GetActiveShift() == null)
+                    {
+                        MessageBox.Show("Vui lòng bắt đầu ca làm việc trước khi thực hiện các thao tác khác!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        type = typeof(UserControls.StaffMyShiftsControl);
+                        placeholder = "Ca của tôi";
+                    }
+                }
+
+                if (!_controlCache.ContainsKey(type))
+                {
+                    Control newControl = (Control)Activator.CreateInstance(type);
+                    newControl.Dock = DockStyle.Fill;
+                    _controlCache[type] = newControl;
+                }
+
+                Control controlToLoad = _controlCache[type];
+
+                // Don't dispose existing controls, just remove them from visual tree
+                panelMain.Controls.Clear();
+                panelMain.Controls.Add(controlToLoad);
+                
+                if (controlToLoad is BookStoreManagement.Interfaces.IRefreshable refreshable)
+                {
+                    await refreshable.RefreshDataAsync();
                 }
             }
-
-            if (!_controlCache.ContainsKey(type))
+            catch (Exception ex)
             {
-                Control newControl = (Control)Activator.CreateInstance(type);
-                newControl.Dock = DockStyle.Fill;
-                _controlCache[type] = newControl;
-            }
-
-            Control controlToLoad = _controlCache[type];
-
-            // Don't dispose existing controls, just remove them from visual tree
-            panelMain.Controls.Clear();
-            panelMain.Controls.Add(controlToLoad);
-            
-            if (controlToLoad is BookStoreManagement.Interfaces.IRefreshable refreshable)
-            {
-                await refreshable.RefreshDataAsync();
+                MessageBox.Show($"Lỗi tải màn hình: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

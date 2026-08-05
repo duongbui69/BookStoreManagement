@@ -56,6 +56,7 @@ namespace BookStoreManagement.UserControls
         
         private bool _isCalculatingPageSize = false;
         private System.Windows.Forms.Timer _resizeTimer;
+        private System.Windows.Forms.Timer _searchDebounceTimer;
         
         private int _hoveredRowIndex = -1;
         private int _hoveredAction = 0; // 1 = View/Edit, 2 = Delete
@@ -110,7 +111,12 @@ namespace BookStoreManagement.UserControls
             
             cbWarehouse.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
             cbCategory.SelectedIndexChanged += (s, e) => { _currentPage = 1; LoadData(); };
-            txtSearch.TextChanged += (s, e) => { _currentSearchTerm = txtSearch.Text; _currentPage = 1; LoadData(); };
+            if (_searchDebounceTimer == null)
+            {
+                _searchDebounceTimer = new System.Windows.Forms.Timer { Interval = 500 };
+                _searchDebounceTimer.Tick += (s, e) => { _searchDebounceTimer.Stop(); _currentSearchTerm = txtSearch.Text; _currentPage = 1; LoadData(); };
+            }
+            txtSearch.TextChanged += (s, e) => { _searchDebounceTimer.Stop(); _searchDebounceTimer.Start(); };
         }
 
         private void InitializeUI()
@@ -285,6 +291,8 @@ namespace BookStoreManagement.UserControls
         private async void LoadData()
         {
             if (this.IsDisposed) return;
+            try
+            {
             // Load KPIs
             var stats = await _inventoryService.GetStatsAsync();
             if (this.IsDisposed) return;
@@ -322,6 +330,12 @@ namespace BookStoreManagement.UserControls
             
             paginationControl.UpdatePagination(result.TotalCount, _currentPage, _pageSize);
             lblLastUpdated.Text = $"🕒 Cập nhật lần cuối: Hôm nay, {DateTime.Now:hh:mm tt}";
+            }
+            catch (Exception ex)
+            {
+                if (!this.IsDisposed)
+                    MessageBox.Show("Lỗi tải dữ liệu kho: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnExport_Click(object? sender, EventArgs e)
@@ -468,7 +482,7 @@ namespace BookStoreManagement.UserControls
             if (e.RowIndex >= 0 && dgvInventory.Columns[e.ColumnIndex].Name == "Actions")
             {
                 int bookId = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells[0].Value);
-                string warehouse = dgvInventory.Rows[e.RowIndex].Cells["Kho hàng"].Value.ToString();
+                string warehouse = dgvInventory.Rows[e.RowIndex].Cells["Kho hàng"].Value?.ToString() ?? "";
                 
                 if (e.X < dgvInventory.Columns[e.ColumnIndex].Width / 2)
                 {

@@ -45,6 +45,7 @@ namespace BookStoreManagement.UserControls
         private PaginationControl paginationControl;
         
         private DashboardStats currentStats;
+        private System.Windows.Forms.Timer _transactionDebounceTimer;
         private int _currentPage = 1;
         private int _pageSize = 5;
 
@@ -60,8 +61,20 @@ namespace BookStoreManagement.UserControls
             _bookService = new BookService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            _transactionDebounceTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            _transactionDebounceTimer.Tick += (s, e) => {
+                _transactionDebounceTimer.Stop();
+                if (this.IsHandleCreated && !this.IsDisposed)
+                {
+                    this.Invoke((System.Windows.Forms.MethodInvoker)async delegate { await LoadDataAsync(); });
+                }
+            };
             this.Load += DashboardControl_Load;
-        }
+            this.Disposed += (s, e) => {
+                _resizeTimer?.Dispose();
+                _transactionDebounceTimer?.Dispose();
+                GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
+            };
 
         private void InitializeUI()
         {
@@ -237,11 +250,14 @@ namespace BookStoreManagement.UserControls
             await LoadDataAsync();
         }
 
-        private async void OnTransactionCompleted()
+        private void OnTransactionCompleted()
         {
             if (this.IsHandleCreated && !this.IsDisposed)
             {
-                this.Invoke((System.Windows.Forms.MethodInvoker)async delegate { await LoadDataAsync(); });
+                this.Invoke((System.Windows.Forms.MethodInvoker)delegate {
+                    _transactionDebounceTimer.Stop();
+                    _transactionDebounceTimer.Start();
+                });
             }
         }
 

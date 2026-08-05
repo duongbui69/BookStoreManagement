@@ -64,13 +64,13 @@ namespace BookStoreManagement.Repositories
             // 1. Revenue
             async System.Threading.Tasks.Task<decimal> GetTotalRevenueAsync(DateTime start, DateTime end)
             {
-                return await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                return await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
                     new { Start = start, End = end });
             }
 
             decimal currentRevenue = await GetTotalRevenueAsync(currentMonthStart, now);
             decimal lastRevenue = await GetTotalRevenueAsync(lastMonthStart, currentMonthStart);
-            decimal allTimeRevenue = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders");
+            decimal allTimeRevenue = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders");
 
             stats.TotalRevenue = currentRevenue;
             stats.AllTimeRevenue = allTimeRevenue;
@@ -97,16 +97,8 @@ namespace BookStoreManagement.Repositories
                 DateTime mStart = currentMonthStart.AddMonths(-i);
                 DateTime mEnd = mStart.AddMonths(1);
                 
-                if (mStart.Year < 2026 || (mStart.Year == 2026 && mStart.Month <= 6))
-                {
-                    decimal[] mockData = new decimal[] { 12000000, 15000000, 14500000, 18000000, 16000000, 22000000, 10000000, 11000000, 13000000, 12500000, 15000000, 17000000 };
-                    stats.MonthlyRevenue.Add(mStart, mockData[mStart.Month - 1]);
-                }
-                else
-                {
-                    decimal mRev = await GetTotalRevenueAsync(mStart, mEnd);
-                    stats.MonthlyRevenue.Add(mStart, mRev);
-                }
+                decimal mRev = await GetTotalRevenueAsync(mStart, mEnd);
+                stats.MonthlyRevenue.Add(mStart, mRev);
             }
 
             // 5. Top 5 Books
@@ -169,7 +161,7 @@ namespace BookStoreManagement.Repositories
                 SELECT 
                     FORMAT(OrderDate, '{format}') AS Period,
                     COUNT(Id) AS TotalOrders,
-                    ISNULL(SUM(TotalAmount), 0) AS TotalRevenue,
+                    ISNULL(SUM(ActualAmount), 0) AS TotalRevenue,
                     MIN(OrderDate) AS SortDate
                 FROM SalesOrders
                 WHERE (@FromDate IS NULL OR CAST(OrderDate AS DATE) >= @FromDate)

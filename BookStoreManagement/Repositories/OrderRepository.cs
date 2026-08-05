@@ -22,6 +22,8 @@ namespace BookStoreManagement.Repositories
         public string CustomerEmail { get; set; } = string.Empty;
         public int ItemsCount { get; set; }
         public decimal Total { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal ActualAmount { get; set; }
         public string Status { get; set; } = string.Empty;
     }
 
@@ -35,7 +37,7 @@ namespace BookStoreManagement.Repositories
             stats.PendingOrders = ExecuteScalarInt("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Processing' OR OrderStatus = 'Awaiting'");
             stats.CompletedToday = ExecuteScalarInt("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Completed' AND CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE)");
             stats.RefundRequests = ExecuteScalarInt("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Flagged' OR OrderStatus = 'Refunded'");
-            stats.Revenue24h = ExecuteScalarDecimal("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderStatus = 'Completed' AND OrderDate >= DATEADD(day, -1, GETDATE())");
+            stats.Revenue24h = ExecuteScalarDecimal("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders WHERE OrderStatus = 'Completed' AND OrderDate >= DATEADD(day, -1, GETDATE())");
 
             return stats;
         }
@@ -76,7 +78,7 @@ namespace BookStoreManagement.Repositories
                 SELECT 
                     o.Id, o.OrderCode, o.OrderDate, ISNULL(c.FullName, 'Guest'), ISNULL(c.Email, 'N/A'), 
                     (SELECT ISNULL(SUM(Quantity), 0) FROM SalesOrderDetails d WHERE d.SalesOrderId = o.Id), 
-                    o.TotalAmount, o.OrderStatus
+                    o.TotalAmount, o.RefundAmount, o.ActualAmount, o.OrderStatus
                 FROM SalesOrders o
                 LEFT JOIN Customers c ON o.CustomerId = c.Id
                 {whereClause}
@@ -98,7 +100,9 @@ namespace BookStoreManagement.Repositories
                         CustomerEmail = reader.GetString(4),
                         ItemsCount = reader.GetInt32(5),
                         Total = reader.GetDecimal(6),
-                        Status = reader.GetString(7)
+                        RefundAmount = reader.GetDecimal(7),
+                        ActualAmount = reader.GetDecimal(8),
+                        Status = reader.GetString(9)
                     });
                 }
                 return results;
@@ -119,7 +123,7 @@ namespace BookStoreManagement.Repositories
             stats.PendingOrders = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Processing' OR OrderStatus = 'Awaiting'");
             stats.CompletedToday = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Completed' AND CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE)");
             stats.RefundRequests = await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM SalesOrders WHERE OrderStatus = 'Flagged' OR OrderStatus = 'Refunded'");
-            stats.Revenue24h = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderStatus = 'Completed' AND OrderDate >= DATEADD(day, -1, GETDATE())");
+            stats.Revenue24h = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders WHERE OrderStatus = 'Completed' AND OrderDate >= DATEADD(day, -1, GETDATE())");
 
             return stats;
         }
@@ -155,7 +159,7 @@ namespace BookStoreManagement.Repositories
                 SELECT 
                     o.Id, o.OrderCode AS OrderId, o.OrderDate AS Date, ISNULL(c.FullName, 'Guest') AS CustomerName, ISNULL(c.Email, 'N/A') AS CustomerEmail, 
                     (SELECT ISNULL(SUM(Quantity), 0) FROM SalesOrderDetails d WHERE d.SalesOrderId = o.Id) AS ItemsCount, 
-                    o.TotalAmount AS Total, o.OrderStatus AS Status
+                    o.TotalAmount AS Total, o.RefundAmount AS RefundAmount, o.ActualAmount AS ActualAmount, o.OrderStatus AS Status
                 FROM SalesOrders o
                 LEFT JOIN Customers c ON o.CustomerId = c.Id
                 {whereClause}

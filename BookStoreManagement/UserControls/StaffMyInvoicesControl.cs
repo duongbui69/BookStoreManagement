@@ -51,7 +51,22 @@ namespace BookStoreManagement.UserControls
             ApplyTheme();
 
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
-            this.Disposed += (s, e) => { ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged; };
+            BookStoreManagement.Events.GlobalEvents.TransactionCompleted += OnTransactionCompleted;
+            
+            this.Disposed += (s, e) => { 
+                ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged; 
+                BookStoreManagement.Events.GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
+            };
+        }
+
+        private async void OnTransactionCompleted()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(OnTransactionCompleted));
+                return;
+            }
+            if (!this.IsDisposed) await LoadDataAsync();
         }
 
         private void ThemeManager_ThemeChanged(object? sender, EventArgs e)
@@ -197,9 +212,13 @@ namespace BookStoreManagement.UserControls
             dgvInvoices.Columns.Add("Date", "NGÀY BÁN");
             dgvInvoices.Columns.Add("Customer", "KHÁCH HÀNG");
             dgvInvoices.Columns.Add("Amount", "TỔNG TIỀN");
+            dgvInvoices.Columns.Add("RefundAmount", "SỐ TIỀN HOÀN");
+            dgvInvoices.Columns.Add("ActualAmount", "THỰC NHẬN");
             dgvInvoices.Columns.Add("PaymentMethod", "THANH TOÁN");
             dgvInvoices.Columns["Amount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInvoices.Columns["Amount"].DefaultCellStyle.Format = "N0";
+            dgvInvoices.Columns["RefundAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvInvoices.Columns["ActualAmount"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             var actionCol = new DataGridViewTextBoxColumn
             {
@@ -385,8 +404,8 @@ private void ApplyTheme()
         private void UpdateSummaryCards()
         {
             int totalInvoices = _allItems.Count;
-            decimal shiftRevenue = _allItems.Sum(x => x.TotalAmount);
-            decimal bankTransfer = _allItems.Where(x => x.PaymentMethod == AppConstants.PaymentMethods.Banking).Sum(x => x.TotalAmount);
+            decimal shiftRevenue = _allItems.Sum(x => x.ActualAmount);
+            decimal bankTransfer = _allItems.Where(x => x.PaymentMethod == AppConstants.PaymentMethods.Banking).Sum(x => x.ActualAmount);
 
             if (cardTotal != null) cardTotal.SetValue(totalInvoices.ToString("N0"));
             if (cardRevenue != null) cardRevenue.SetValue(shiftRevenue.ToString("N0") + " ₫");
@@ -410,6 +429,12 @@ private void ApplyTheme()
                     
                     dgvInvoices.Columns.Add("Amount", "TỔNG TIỀN");
                     dgvInvoices.Columns["Amount"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    
+                    dgvInvoices.Columns.Add("RefundAmount", "SỐ TIỀN HOÀN");
+                    dgvInvoices.Columns["RefundAmount"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    
+                    dgvInvoices.Columns.Add("ActualAmount", "THỰC NHẬN");
+                    dgvInvoices.Columns["ActualAmount"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
                     
                     dgvInvoices.Columns.Add("PaymentMethod", "PT THANH TOÁN");
                     dgvInvoices.Columns["PaymentMethod"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
@@ -446,6 +471,8 @@ private void ApplyTheme()
                         timeStr,
                         item.CustomerName ?? "Khách lẻ",
                         item.TotalAmount.ToString("N0") + " đ",
+                        item.RefundAmount > 0 ? "-" + item.RefundAmount.ToString("N0") + " đ" : "0 đ",
+                        item.ActualAmount.ToString("N0") + " đ",
                         paymentStr,
                         "Chi tiết"
                     );

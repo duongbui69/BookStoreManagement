@@ -66,7 +66,7 @@ namespace BookStoreManagement.Repositories
             // Helper to get sum
             decimal GetTotalRevenue(DateTime start, DateTime end)
             {
-                return ExecuteScalarDecimal("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
+                return ExecuteScalarDecimal("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", 
                     p => {
                         AddParameter(p, "@Start", start);
                         AddParameter(p, "@End", end);
@@ -134,9 +134,12 @@ namespace BookStoreManagement.Repositories
                 JOIN Books b ON sd.BookId = b.Id
                 JOIN Categories c ON b.CategoryId = c.Id
                 JOIN SalesOrders so ON sd.SalesOrderId = so.Id
-                WHERE so.OrderDate >= @Start
+                WHERE so.OrderDate >= @Start AND so.OrderDate < @End
                 GROUP BY c.CategoryName", 
-            p => AddParameter(p, "@Start", startDate));
+            p => {
+                AddParameter(p, "@Start", startDate);
+                AddParameter(p, "@End", now.AddDays(1));
+            });
 
             // Low Stock Items
             ExecuteQuery(cmd => {
@@ -198,7 +201,7 @@ namespace BookStoreManagement.Repositories
             // Helper to get sum
             async System.Threading.Tasks.Task<decimal> GetTotalRevenueAsync(DateTime start, DateTime end)
             {
-                var result = await ExecuteScalarAsync<decimal?>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", new { Start = start, End = end });
+                var result = await ExecuteScalarAsync<decimal?>("SELECT ISNULL(SUM(ActualAmount), 0) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", new { Start = start, End = end });
                 return result ?? 0m;
             }
 

@@ -112,6 +112,7 @@ namespace BookStoreManagement.Forms
 
         private void BtnConfirm_Click(object? sender, EventArgs e)
         {
+            btnConfirm.Enabled = false;
             try
             {
                 _shiftService.CloseShift(_shiftId);
@@ -120,6 +121,7 @@ namespace BookStoreManagement.Forms
             }
             catch (Exception ex)
             {
+                btnConfirm.Enabled = true;
                 MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

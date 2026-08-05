@@ -31,13 +31,24 @@ namespace BookStoreManagement.Repositories
                 ";
 
                 const string updateBookQtySql = @"
+                    -- Kiểm tra tồn kho trước khi trừ
+                    IF (SELECT ISNULL(Quantity, 0) FROM Books WHERE Id = @BookId) < @Quantity
+                        RAISERROR(N'Sách không đủ số lượng trong kho chính để xuất.', 16, 1);
+
+                    IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                    BEGIN
+                        IF (SELECT ISNULL(Quantity, 0) FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId) < @Quantity
+                            RAISERROR(N'Sách không đủ số lượng tại kho cửa hàng để xuất.', 16, 1);
+                        UPDATE StoreBookInventories 
+                        SET Quantity = Quantity - @Quantity 
+                        WHERE StoreId = @StoreId AND BookId = @BookId;
+                    END
+                    ELSE
+                        RAISERROR(N'Sách không tồn tại trong kho cửa hàng để xuất.', 16, 1);
+
                     UPDATE Books 
                     SET Quantity = Quantity - @Quantity 
                     WHERE Id = @BookId;
-
-                    UPDATE StoreBookInventories 
-                    SET Quantity = Quantity - @Quantity 
-                    WHERE StoreId = @StoreId AND BookId = @BookId;
                 ";
 
                 const string insertInvTransSql = @"
@@ -96,13 +107,24 @@ namespace BookStoreManagement.Repositories
                 ";
 
                 const string updateBookQtySql = @"
+                    -- Kiểm tra tồn kho trước khi trừ
+                    IF (SELECT ISNULL(Quantity, 0) FROM Books WHERE Id = @BookId) < @Quantity
+                        RAISERROR(N'Sách không đủ số lượng trong kho chính để xuất.', 16, 1);
+
+                    IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                    BEGIN
+                        IF (SELECT ISNULL(Quantity, 0) FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId) < @Quantity
+                            RAISERROR(N'Sách không đủ số lượng tại kho cửa hàng để xuất.', 16, 1);
+                        UPDATE StoreBookInventories 
+                        SET Quantity = Quantity - @Quantity 
+                        WHERE StoreId = @StoreId AND BookId = @BookId;
+                    END
+                    ELSE
+                        RAISERROR(N'Sách không tồn tại trong kho cửa hàng để xuất.', 16, 1);
+
                     UPDATE Books 
                     SET Quantity = Quantity - @Quantity 
                     WHERE Id = @BookId;
-
-                    UPDATE StoreBookInventories 
-                    SET Quantity = Quantity - @Quantity 
-                    WHERE StoreId = @StoreId AND BookId = @BookId;
                 ";
 
                 const string insertInvTransSql = @"

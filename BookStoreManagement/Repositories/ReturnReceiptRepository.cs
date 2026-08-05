@@ -97,10 +97,10 @@ namespace BookStoreManagement.Repositories
 
                 const string insertDetailSql = @"
                     INSERT INTO ReturnReceiptDetails (
-                        ReturnReceiptId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
+                        ReturnReceiptId, BookId, Quantity, UnitPrice, RefundAmount, ReturnReason, IsRestock
                     )
                     VALUES (
-                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
+                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @RefundAmount, @ReturnReason, @IsRestock
                     );
                 ";
 
@@ -128,28 +128,11 @@ namespace BookStoreManagement.Repositories
                     AddParameter(detailCommand, "@BookId", detail.BookId);
                     AddParameter(detailCommand, "@Quantity", detail.Quantity);
                     AddParameter(detailCommand, "@UnitPrice", detail.UnitPrice);
+                    AddParameter(detailCommand, "@RefundAmount", detail.RefundAmount);
                     AddParameter(detailCommand, "@ReturnReason", detail.ReturnReason);
                     AddParameter(detailCommand, "@IsRestock", detail.IsRestock);
                     detailCommand.ExecuteNonQuery();
 
-                    if (detail.IsRestock)
-                    {
-                        using var restockCmd = new SqlCommand(restockSql, connection, transaction);
-                        AddParameter(restockCmd, "@StoreId", receipt.StoreId);
-                        AddParameter(restockCmd, "@BookId", detail.BookId);
-                        AddParameter(restockCmd, "@Quantity", detail.Quantity);
-                        AddParameter(restockCmd, "@UnitPrice", detail.UnitPrice);
-                        restockCmd.ExecuteNonQuery();
-
-                        using var transCmd = new SqlCommand(insertInvTransSql, connection, transaction);
-                        AddParameter(transCmd, "@StoreId", receipt.StoreId);
-                        AddParameter(transCmd, "@BookId", detail.BookId);
-                        AddParameter(transCmd, "@UserId", receipt.UserId);
-                        AddParameter(transCmd, "@Quantity", detail.Quantity);
-                        AddParameter(transCmd, "@ReferenceId", returnReceiptId);
-                        AddParameter(transCmd, "@Note", $"Hoàn trả từ phiếu {receipt.ReturnCode}");
-                        transCmd.ExecuteNonQuery();
-                    }
                 }
 
                 return returnReceiptId;
@@ -299,10 +282,10 @@ namespace BookStoreManagement.Repositories
 
                 const string insertDetailSql = @"
                     INSERT INTO ReturnReceiptDetails (
-                        ReturnReceiptId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
+                        ReturnReceiptId, BookId, Quantity, UnitPrice, RefundAmount, ReturnReason, IsRestock
                     )
                     VALUES (
-                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
+                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @RefundAmount, @ReturnReason, @IsRestock
                     );
                 ";
 
@@ -329,30 +312,19 @@ namespace BookStoreManagement.Repositories
                         detail.BookId,
                         detail.Quantity,
                         detail.UnitPrice,
+                        detail.RefundAmount,
                         detail.ReturnReason,
                         detail.IsRestock
                     }, transaction);
 
-                    if (detail.IsRestock)
-                    {
-                        await Dapper.SqlMapper.ExecuteAsync(connection, restockSql, new {
-                            StoreId = receipt.StoreId,
-                            BookId = detail.BookId,
-                            Quantity = detail.Quantity,
-                            UnitPrice = detail.UnitPrice
-                        }, transaction);
-
-                        await Dapper.SqlMapper.ExecuteAsync(connection, insertInvTransSql, new {
-                            StoreId = receipt.StoreId,
-                            BookId = detail.BookId,
-                            UserId = receipt.UserId,
-                            Quantity = detail.Quantity,
-                            ReferenceId = returnReceiptId,
-                            Note = $"Hoàn trả từ phiếu {receipt.ReturnCode}"
-                        }, transaction);
-                    }
                 }
             });
+            
+            if (receipt.ReturnStatus == "Đã hoàn tiền" && receipt.SalesOrderId.HasValue)
+            {
+                await SyncSalesOrderRefundAsync(receipt.SalesOrderId.Value);
+            }
+            
             return returnReceiptId;
         }
 
@@ -436,12 +408,101 @@ namespace BookStoreManagement.Repositories
 
         public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
         {
+            var receipt = await GetByIdAsync(id);
+            if (receipt != null && (receipt.ReturnStatus == "Đã hoàn tiền" || receipt.ReturnStatus == "Hoàn thành"))
+            {
+                throw new Exception("Không thể xóa phiếu trả hàng đã hoàn thành hoặc đã hoàn tiền.");
+            }
+
             return await System.Threading.Tasks.Task.Run(() =>
             {
                 const string sql = "DELETE FROM ReturnReceipts WHERE Id = @Id;";
                 int rowsAffected = ExecuteNonQuery(sql, parameters => AddParameter(parameters, "@Id", id));
                 return rowsAffected > 0;
             });
+        }
+
+        public async System.Threading.Tasks.Task SyncSalesOrderRefundAsync(int salesOrderId)
+        {
+            const string sql = @"
+                UPDATE SalesOrders 
+                SET RefundAmount = (
+                    SELECT ISNULL(SUM(TotalRefundAmount), 0) 
+                    FROM ReturnReceipts 
+                    WHERE SalesOrderId = @SalesOrderId AND ReturnStatus = N'Đã hoàn tiền'
+                )
+                WHERE Id = @SalesOrderId;
+
+                UPDATE SalesOrders
+                SET RefundAmount = TotalAmount
+                WHERE RefundAmount > TotalAmount AND Id = @SalesOrderId;
+
+                UPDATE SalesOrders
+                SET ActualAmount = TotalAmount - RefundAmount
+                WHERE Id = @SalesOrderId;
+            ";
+            await ExecuteAsync(sql, new { SalesOrderId = salesOrderId });
+        }
+
+        public async System.Threading.Tasks.Task UpdateStatusAsync(int id, string status, string note)
+        {
+            var receipt = await GetByIdAsync(id);
+            if (receipt == null) return;
+            string oldStatus = receipt.ReturnStatus;
+
+            await ExecuteTransactionAsync(async (connection, transaction) =>
+            {
+                const string sql = "UPDATE ReturnReceipts SET ReturnStatus = @Status, Note = @Note WHERE Id = @Id;";
+                await Dapper.SqlMapper.ExecuteAsync(connection, sql, new { Status = status, Note = note, Id = id }, transaction);
+
+                if ((status == "Đã hoàn tiền" || status == "Hoàn thành") && 
+                    oldStatus != "Đã hoàn tiền" && oldStatus != "Hoàn thành")
+                {
+                    var details = await GetDetailsAsync(id);
+                    const string restockSql = @"
+                        UPDATE Books 
+                        SET Quantity = Quantity + @Quantity 
+                        WHERE Id = @BookId;
+
+                        IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                            UPDATE StoreBookInventories SET Quantity = Quantity + @Quantity WHERE StoreId = @StoreId AND BookId = @BookId;
+                        ELSE
+                            INSERT INTO StoreBookInventories (StoreId, BookId, Quantity, MinStock, SellingPrice, IsActive, CreatedAt)
+                            VALUES (@StoreId, @BookId, @Quantity, 0, @UnitPrice, 1, SYSDATETIME());
+                    ";
+                    const string insertInvTransSql = @"
+                        INSERT INTO InventoryTransactions (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                        VALUES (@StoreId, @BookId, @UserId, 'RETURN_RECEIPT', @Quantity, 'ReturnReceipt', @ReferenceId, @Note, SYSDATETIME());
+                    ";
+
+                    foreach (var detail in details)
+                    {
+                        if (detail.IsRestock)
+                        {
+                            await Dapper.SqlMapper.ExecuteAsync(connection, restockSql, new {
+                                StoreId = receipt.StoreId,
+                                BookId = detail.BookId,
+                                Quantity = detail.Quantity,
+                                UnitPrice = detail.UnitPrice
+                            }, transaction);
+
+                            await Dapper.SqlMapper.ExecuteAsync(connection, insertInvTransSql, new {
+                                StoreId = receipt.StoreId,
+                                BookId = detail.BookId,
+                                UserId = receipt.UserId,
+                                Quantity = detail.Quantity,
+                                ReferenceId = id,
+                                Note = $"Hoàn trả từ phiếu {receipt.ReturnCode}"
+                            }, transaction);
+                        }
+                    }
+                }
+            });
+
+            if (receipt.SalesOrderId.HasValue)
+            {
+                await SyncSalesOrderRefundAsync(receipt.SalesOrderId.Value);
+            }
         }
     }
 }

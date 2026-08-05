@@ -61,11 +61,11 @@ namespace BookStoreManagement.Forms
             this.Controls.Add(pnlHeader);
 
             // Info Panel
-            pnlInfo = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(20) };
+            pnlInfo = new Guna2Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(20) };
             lblShiftId = new Guna2HtmlLabel { Text = "Ca: -", Font = new Font("Inter", 12F), Location = new Point(20, 20) };
+            lblStatus = new Guna2HtmlLabel { Text = "Trạng thái: -", Font = new Font("Inter", 12F), Location = new Point(400, 20) };
             lblTime = new Guna2HtmlLabel { Text = "Thời gian: -", Font = new Font("Inter", 12F), Location = new Point(20, 50) };
-            lblRevenue = new Guna2HtmlLabel { Text = "Doanh số: 0 đ", Font = new Font("Inter", 12F), Location = new Point(400, 20) };
-            lblStatus = new Guna2HtmlLabel { Text = "Trạng thái: -", Font = new Font("Inter", 12F), Location = new Point(400, 50) };
+            lblRevenue = new Guna2HtmlLabel { Text = "Tổng tiền ban đầu: 0 đ", Font = new Font("Inter", 12F, FontStyle.Bold), Location = new Point(20, 80) };
             pnlInfo.Controls.AddRange(new Control[] { lblShiftId, lblTime, lblRevenue, lblStatus });
             this.Controls.Add(pnlInfo);
 
@@ -92,6 +92,11 @@ namespace BookStoreManagement.Forms
             pnlGrid.Controls.Add(dgvOrders);
             this.Controls.Add(pnlGrid);
 
+            pnlHeader.BringToFront();
+            pnlInfo.BringToFront();
+            pnlGridHeader.BringToFront();
+            pnlGrid.BringToFront();
+
             // Removed Guna2BorderlessForm to prevent UI thread deadlock
             // Guna2BorderlessForm borderlessForm = new Guna2BorderlessForm { ContainerControl = this, BorderRadius = 12 };
 
@@ -109,23 +114,35 @@ namespace BookStoreManagement.Forms
                 var orders = _orderService.GetByDateRange(shift.StartTime, shift.EndTime ?? DateTime.Now)
                              .Where(o => o.StaffId == shift.StaffId).ToList();
 
-                lblRevenue.Text = $"Doanh số: {orders.Sum(o => o.TotalAmount):N0} đ ({orders.Count} đơn)";
+                decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+                decimal totalRefund = orders.Sum(o => o.RefundAmount);
+                decimal actualRevenue = orders.Sum(o => o.ActualAmount);
+
+                lblRevenue.Text = $"Tổng tiền ban đầu: {totalRevenue:N0} đ | Hoàn: {totalRefund:N0} đ | Thực nhận (Doanh số): {actualRevenue:N0} đ";
 
                 try
                 {
                     dgvOrders.Columns.Clear();
-                    dgvOrders.Columns.Add("Id", "Mã HĐ");
+                    dgvOrders.Columns.Add("Code", "Mã HĐ");
                     dgvOrders.Columns.Add("Time", "Thời gian");
                     dgvOrders.Columns.Add("Total", "Tổng tiền");
                     dgvOrders.Columns["Total"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    
+                    dgvOrders.Columns.Add("Refund", "Tiền hoàn");
+                    dgvOrders.Columns["Refund"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                    
+                    dgvOrders.Columns.Add("Actual", "Thực nhận");
+                    dgvOrders.Columns["Actual"].DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
 
                     dgvOrders.Rows.Clear();
                     foreach (var order in orders)
                     {
                         dgvOrders.Rows.Add(
-                            order.Id,
+                            order.OrderCode,
                             order.OrderDate.ToString("HH:mm:ss"),
-                            order.TotalAmount.ToString("N0") + " đ"
+                            order.TotalAmount.ToString("N0") + " đ",
+                            order.RefundAmount > 0 ? "-" + order.RefundAmount.ToString("N0") + " đ" : "0 đ",
+                            order.ActualAmount.ToString("N0") + " đ"
                         );
                     }
                 }

@@ -476,7 +476,7 @@ namespace BookStoreManagement.UserControls
                 else if (rectDelete.Contains(mousePos))
                 {
                     int id = Convert.ToInt32(dgvCustomers.Rows[e.RowIndex].Cells["Id"].Value);
-                    string name = dgvCustomers.Rows[e.RowIndex].Cells["FullName"].Value.ToString();
+                    string name = dgvCustomers.Rows[e.RowIndex].Cells["FullName"].Value?.ToString() ?? "";
                     var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa khách hàng '{name}'?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     
                     if (result == DialogResult.Yes)

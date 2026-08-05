@@ -104,6 +104,9 @@ namespace BookStoreManagement.Repositories
 
                 foreach (var detail in details)
                 {
+                    if ((detail.SellingPrice ?? 0) <= 0)
+                        throw new Exception($"Giá bán của sản phẩm {detail.BookId} phải lớn hơn 0.");
+
                     using var detailCommand = new SqlCommand(insertDetailSql, connection, transaction);
                     AddParameter(detailCommand, "@PurchaseReceiptId", receiptId);
                     AddParameter(detailCommand, "@BookId", detail.BookId);
@@ -169,6 +172,9 @@ namespace BookStoreManagement.Repositories
 
                 foreach (var detail in details)
                 {
+                    if ((detail.SellingPrice ?? 0) <= 0)
+                        throw new Exception($"Giá bán của sản phẩm {detail.BookId} phải lớn hơn 0.");
+
                     await connection.ExecuteAsync(insertDetailSql, new 
                     {
                         PurchaseReceiptId = receiptId,

@@ -354,6 +354,8 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
             lblCartTitle = new Label { Text = "🛒 Giỏ hàng", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Location = new Point(10, 10), AutoSize = true };
             var btnClearCart = new Label { Text = "Xóa tất cả", Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.Red, Location = new Point(pnlCart.Width - 70, 12), AutoSize = true, Anchor = AnchorStyles.Top | AnchorStyles.Right, Cursor = Cursors.Hand };
             btnClearCart.Click += (s, e) => { 
+                if (MessageBox.Show("Bạn có chắc chắn muốn xóa toàn bộ giỏ hàng không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
                 // Return stock
                 foreach (var item in _cart.Values)
                 {
@@ -773,10 +775,13 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
             var confirm = MessageBox.Show($"Xác nhận thanh toán hóa đơn này bằng {_selectedPaymentMethod}?", "Thanh toán", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
+                btnCheckout.Enabled = false;
                 try
                 {
                     int storeId = CurrentSession.StoreId ?? 1;
-                    int? customerId = cboCustomer.SelectedValue != null && (int)cboCustomer.SelectedValue > 0 ? (int)cboCustomer.SelectedValue : null;
+                    int? customerId = null;
+                    if (cboCustomer.SelectedValue is int custIdVal && custIdVal > 0)
+                        customerId = custIdVal;
                     
                     var details = new List<SalesOrderDetail>();
                     foreach (var item in _cart.Values)
@@ -806,6 +811,10 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Lỗi khi thanh toán: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    btnCheckout.Enabled = true;
                 }
             }
         }
