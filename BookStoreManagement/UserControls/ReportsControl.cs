@@ -107,7 +107,7 @@ namespace BookStoreManagement.UserControls
             };
             for(int i=0; i<4; i++) pnlMetrics.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
 
-            cardAllTimeRevenue = CreateMetricCard("Tổng DT (Tất Cả)", "0 đ", "", true);
+            cardAllTimeRevenue = CreateMetricCard("Tổng DT", "0 đ", "", true);
             cardRevenue = CreateMetricCard("DT Tháng Này", "0 đ", "", true);
             cardOrders = CreateMetricCard("Đơn Tháng Này", "0", "", true);
             cardLowStock = CreateMetricCard("Sắp hết hàng", "0", "", false, true);

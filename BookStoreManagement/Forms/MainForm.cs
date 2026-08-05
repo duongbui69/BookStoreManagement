@@ -318,7 +318,7 @@ namespace BookStoreManagement.Forms
             panelSidebar.Controls.Add(navPanel);
             navPanel.BringToFront(); // Dock between pnlBrand and panelUserProfile
 
-            if (_currentUser.RoleId == 1)
+            if (CurrentSession.IsAdmin)
             {
                 // Admin Menu
                 AddMenu("Tổng quan", "dashboard", BtnDashboard_Click);
