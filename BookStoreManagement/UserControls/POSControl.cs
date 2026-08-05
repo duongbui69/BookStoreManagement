@@ -796,6 +796,7 @@ pnlCustomer.Controls.AddRange(new Control[] { lblCustTitle, btnAddCust, cboCusto
                     MessageBox.Show("Thanh toán thành công!", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _cart.Clear();
                     GlobalEvents.OnTransactionCompleted();
+                    GlobalEvents.OnRequestMyInvoicesView();
                     RenderCart();
                     
                     // Reload inventory from DB to ensure it matches DB Trigger deductions

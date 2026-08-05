@@ -14,7 +14,7 @@ using Guna.UI2.WinForms;
 
 namespace BookStoreManagement.UserControls
 {
-    public class StaffMyInvoicesControl : UserControl
+    public class StaffMyInvoicesControl : UserControl, BookStoreManagement.Interfaces.IRefreshable
     {
         private SalesOrderService _salesOrderService;
         private List<SalesOrderListViewModel> _allItems;
@@ -324,6 +324,14 @@ private void ApplyTheme()
         {
             base.OnLoad(e);
             await LoadDataAsync();
+        }
+
+        public async Task RefreshDataAsync()
+        {
+            if (!this.IsDisposed)
+            {
+                await LoadDataAsync();
+            }
         }
 
 

@@ -34,9 +34,29 @@ namespace BookStoreManagement.Forms
 
 
             BookStoreManagement.Themes.ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            BookStoreManagement.Events.GlobalEvents.RequestMyInvoicesView += GlobalEvents_RequestMyInvoicesView;
             ApplyTheme();
 
             this.Shown += MainForm_Shown;
+            this.FormClosed += (s, e) => { BookStoreManagement.Events.GlobalEvents.RequestMyInvoicesView -= GlobalEvents_RequestMyInvoicesView; };
+        }
+
+        private void GlobalEvents_RequestMyInvoicesView()
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(GlobalEvents_RequestMyInvoicesView));
+                return;
+            }
+            BtnMyInvoices_Click(this, EventArgs.Empty);
+            foreach (var btn in allMenuButtons)
+            {
+                if (btn.Text.Contains("Hóa đơn của tôi") || btn.Text.Contains("Search my invoices"))
+                {
+                    SetActiveTab(btn);
+                    break;
+                }
+            }
         }
 
         private void MainForm_Shown(object? sender, EventArgs e)
@@ -323,7 +343,7 @@ namespace BookStoreManagement.Forms
                 var customerSub = new Dictionary<string, EventHandler>
                 {
                     { "Khách hàng", BtnCustomer_Click },
-                    { "Giao dịch (Đơn/Hóa đơn)", BtnOrders_Click },
+                    { "Giao dịch", BtnOrders_Click },
                     { "Đổi/Trả", BtnRefunds_Click }
                 };
                 AddAccordionMenu("Quản lý Khách hàng", "groups", customerSub);
@@ -692,12 +712,43 @@ namespace BookStoreManagement.Forms
                 Text = DateTime.Now.ToString("HH:mm:ss"),
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(130, 16),
+                Location = new Point(80, 16),
                 BackColor = Color.Transparent
             };
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 1000, Enabled = true };
             timer.Tick += (s, e) => lblClock.Text = DateTime.Now.ToString("HH:mm:ss");
             pnlRight.Controls.Add(lblClock);
+
+            if (_currentUser.RoleId == 1)
+            {
+                Guna.UI2.WinForms.Guna2Button btnRoleToggle = new Guna.UI2.WinForms.Guna2Button
+                {
+                    Location = new Point(180, 12),
+                    Size = new Size(40, 32),
+                    BorderRadius = 4,
+                    Font = new Font("Segoe UI Emoji", 12F),
+                    TextOffset = new Point(0, 0),
+                    Text = CurrentSession.ViewAsStaff ? "👤" : "👑",
+                    FillColor = Color.Transparent,
+                    ForeColor = Themes.ThemeManager.TextPrimary,
+                    Cursor = Cursors.Hand
+                };
+                btnRoleToggle.HoverState.FillColor = Themes.ThemeManager.HoverColor;
+                btnRoleToggle.Click += (s, e) => {
+                    CurrentSession.ViewAsStaff = !CurrentSession.ViewAsStaff;
+                    btnRoleToggle.Text = CurrentSession.ViewAsStaff ? "👤" : "👑";
+                    lblRole.Text = CurrentSession.ViewAsStaff ? "NHÂN VIÊN" : "QUẢN TRỊ HỆ THỐNG";
+                    InitializeAccordionSidebar();
+                    ApplyTheme();
+                    if (CurrentSession.IsStaff) {
+                        BtnPOS_Click(this, EventArgs.Empty);
+                    } else {
+                        LoadDashboard();
+                    }
+                };
+                pnlRight.Controls.Add(btnRoleToggle);
+                btnRoleToggle.Tag = "ThemeTextPrimary";
+            }
 
             Guna.UI2.WinForms.Guna2Button btnNotif = new Guna.UI2.WinForms.Guna2Button
             {

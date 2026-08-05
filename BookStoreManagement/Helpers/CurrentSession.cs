@@ -15,8 +15,9 @@ namespace BookStoreManagement.Helpers
         public static string FullName { get; private set; } = string.Empty;
 
         public static bool IsLoggedIn => UserId > 0;
-        public static bool IsAdmin => RoleId == 1; // Assuming 1 is Admin
-        public static bool IsStaff => RoleId == 2; // Assuming 2 is Staff
+        public static bool ViewAsStaff { get; set; } = false;
+        public static bool IsAdmin => RoleId == 1 && !ViewAsStaff; // Assuming 1 is Admin
+        public static bool IsStaff => RoleId == 2 || (RoleId == 1 && ViewAsStaff); // Assuming 2 is Staff
 
         public static void SetCurrentUser(User user)
         {
@@ -40,6 +41,7 @@ namespace BookStoreManagement.Helpers
             RoleName = string.Empty;
             Username = string.Empty;
             FullName = string.Empty;
+            ViewAsStaff = false;
         }
     }
 }
