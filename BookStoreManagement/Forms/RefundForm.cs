@@ -216,6 +216,13 @@ namespace BookStoreManagement.Forms
             dgvDetails.ColumnHeadersDefaultCellStyle.ForeColor = ThemeManager.TextPrimary;
             dgvDetails.DefaultCellStyle.BackColor = ThemeManager.CardBackground;
             dgvDetails.DefaultCellStyle.ForeColor = ThemeManager.TextSecondary;
+
+            // Override theme's FullRowSelect to allow easy editing of unbound columns
+            if (_refundId == 0)
+            {
+                dgvDetails.SelectionMode = DataGridViewSelectionMode.CellSelect;
+                dgvDetails.EditMode = DataGridViewEditMode.EditOnEnter;
+            }
         }
 
         private async void RefundForm_Load(object sender, EventArgs e)
