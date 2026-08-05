@@ -46,6 +46,15 @@ namespace BookStoreManagement.UserControls
         private Guna2Panel pnlWarnings;
         private DataGridView dgvWarnings;
 
+        // Monthly Revenue Table
+        private Guna2Panel pnlRevenueTable;
+        private DataGridView dgvRevenue;
+        private Guna2DateTimePicker dtpFromDate;
+        private Guna2DateTimePicker dtpToDate;
+        private Guna2CheckBox chkByDay;
+        private Guna2Button btnFilterRevenue;
+        private Guna2Button btnClearFilterRevenue;
+
         public void PerformSearch(string keyword)
         {
             // Optional: search logic
@@ -151,7 +160,59 @@ namespace BookStoreManagement.UserControls
                 }
             };
 
+            // 5. Revenue Table with Date Filter
+            pnlRevenueTable = new Guna2Panel { Dock = DockStyle.Top, Height = 400, BorderRadius = 4, BorderThickness = 1, Margin = new Padding(0, 0, 0, gutter + 20) };
+            
+            var pnlRevHeader = new Guna2Panel { Dock = DockStyle.Top, Height = 80, CustomBorderThickness = new Padding(0,0,0,1) };
+            var lblRevTitle = new Label { Name = "TableTitle", Text = "Bảng thống kê doanh thu", Font = new Font("Segoe UI", 12F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 30) };
+            pnlRevHeader.Controls.Add(lblRevTitle);
+
+            var lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(250, 32) };
+            dtpFromDate = new Guna2DateTimePicker { Format = DateTimePickerFormat.Short, Location = new Point(320, 25), Width = 130, Height = 36, BorderRadius = 4, FillColor = Color.White, BorderColor = Color.LightGray, BorderThickness = 1 };
+            
+            var lblTo = new Label { Text = "Đến ngày:", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(470, 32) };
+            dtpToDate = new Guna2DateTimePicker { Format = DateTimePickerFormat.Short, Location = new Point(540, 25), Width = 130, Height = 36, BorderRadius = 4, FillColor = Color.White, BorderColor = Color.LightGray, BorderThickness = 1 };
+
+            chkByDay = new Guna2CheckBox { Text = "Xem theo ngày", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(690, 32), Cursor = Cursors.Hand };
+
+            btnFilterRevenue = new Guna2Button { Text = "Lọc", Size = new Size(80, 36), Location = new Point(820, 25), BorderRadius = 4, Cursor = Cursors.Hand };
+            btnClearFilterRevenue = new Guna2Button { Text = "Bỏ lọc", Size = new Size(80, 36), Location = new Point(910, 25), BorderRadius = 4, FillColor = Color.Gray, Cursor = Cursors.Hand };
+
+            btnFilterRevenue.Click += async (s, e) => await LoadRevenueTableAsync(false);
+            btnClearFilterRevenue.Click += async (s, e) => { chkByDay.Checked = false; await LoadRevenueTableAsync(true); };
+
+            pnlRevHeader.Controls.AddRange(new Control[] { lblFrom, dtpFromDate, lblTo, dtpToDate, chkByDay, btnFilterRevenue, btnClearFilterRevenue });
+
+            dgvRevenue = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                RowHeadersVisible = false,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                AllowUserToResizeRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                RowTemplate = { Height = 45 },
+                EnableHeadersVisualStyles = false,
+                ScrollBars = ScrollBars.Vertical,
+                AutoGenerateColumns = false
+            };
+            dgvRevenue.SetDoubleBuffered(true);
+
+            dgvRevenue.Columns.Add(new DataGridViewTextBoxColumn { Name = "Period", DataPropertyName = "Period", HeaderText = "Thời gian", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleCenter }, HeaderCell = { Style = { Alignment = DataGridViewContentAlignment.MiddleCenter } } });
+            dgvRevenue.Columns.Add(new DataGridViewTextBoxColumn { Name = "TotalOrders", DataPropertyName = "TotalOrders", HeaderText = "Tổng đơn hàng", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+            dgvRevenue.Columns.Add(new DataGridViewTextBoxColumn { Name = "TotalRevenue", DataPropertyName = "TotalRevenue", HeaderText = "Tổng doanh thu", DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight, Format = "N0 đ", Font = new Font("Segoe UI", 11, FontStyle.Bold) } });
+
+            pnlRevenueTable.Controls.Add(dgvRevenue);
+            pnlRevenueTable.Controls.Add(pnlRevHeader);
+            dgvRevenue.BringToFront();
+
             pnlContent.Controls.Add(pnlTables);
+            pnlContent.Controls.Add(pnlRevenueTable);
             pnlContent.Controls.Add(pnlChart);
             pnlContent.Controls.Add(pnlMetrics);
             pnlContent.Controls.Add(pnlHeader);
@@ -257,6 +318,31 @@ namespace BookStoreManagement.UserControls
             UpdateGrids();
             ApplyTheme(); // re-apply colors based on updated tags
             pnlChart.Invalidate();
+            
+            await LoadRevenueTableAsync(true);
+        }
+
+        private async System.Threading.Tasks.Task LoadRevenueTableAsync(bool reset = false)
+        {
+            if (reset)
+            {
+                dtpFromDate.Value = new DateTime(DateTime.Now.Year, 1, 1);
+                dtpToDate.Value = DateTime.Now;
+                chkByDay.Checked = false;
+            }
+
+            DateTime? from = reset ? null : (DateTime?)dtpFromDate.Value;
+            DateTime? to = reset ? null : (DateTime?)dtpToDate.Value;
+
+            var data = await _service.GetRevenueTableAsync(from, to, chkByDay.Checked);
+            dgvRevenue.Rows.Clear();
+            if (data != null)
+            {
+                foreach (var item in data)
+                {
+                    dgvRevenue.Rows.Add(item.Period, item.TotalOrders, item.TotalRevenue);
+                }
+            }
         }
 
         private void UpdateGrids()

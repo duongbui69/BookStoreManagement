@@ -20,5 +20,10 @@ namespace BookStoreManagement.Services
         {
             return await _repo.GetFinancialReportsAsync();
         }
+
+        public async System.Threading.Tasks.Task<System.Collections.Generic.List<RevenueRecord>> GetRevenueTableAsync(System.DateTime? fromDate, System.DateTime? toDate, bool groupByDay = false)
+        {
+            return await _repo.GetRevenueTableAsync(fromDate, toDate, groupByDay);
+        }
     }
 }

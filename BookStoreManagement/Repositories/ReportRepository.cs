@@ -21,6 +21,13 @@ namespace BookStoreManagement.Repositories
         public string Status { get; set; } = string.Empty;
     }
 
+    public class RevenueRecord
+    {
+        public string Period { get; set; } = string.Empty;
+        public int TotalOrders { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
     public class ReportStats
     {
         public decimal TotalRevenue { get; set; }
@@ -148,6 +155,36 @@ namespace BookStoreManagement.Repositories
             }
 
             return stats;
+        }
+
+        public async System.Threading.Tasks.Task<List<RevenueRecord>> GetRevenueTableAsync(DateTime? fromDate, DateTime? toDate, bool groupByDay = false)
+        {
+            string format = groupByDay ? "dd/MM/yyyy" : "MM/yyyy";
+            var list = new List<RevenueRecord>();
+            string sql = $@"
+                SELECT 
+                    FORMAT(OrderDate, '{format}') AS Period,
+                    COUNT(Id) AS TotalOrders,
+                    ISNULL(SUM(TotalAmount), 0) AS TotalRevenue,
+                    MIN(OrderDate) AS SortDate
+                FROM SalesOrders
+                WHERE (@FromDate IS NULL OR CAST(OrderDate AS DATE) >= @FromDate)
+                  AND (@ToDate IS NULL OR CAST(OrderDate AS DATE) <= @ToDate)
+                GROUP BY FORMAT(OrderDate, '{format}')
+                ORDER BY SortDate DESC;
+            ";
+            
+            var data = await QueryAsync<dynamic>(sql, new { FromDate = fromDate, ToDate = toDate });
+            foreach (var row in data)
+            {
+                list.Add(new RevenueRecord
+                {
+                    Period = row.Period,
+                    TotalOrders = row.TotalOrders ?? 0,
+                    TotalRevenue = row.TotalRevenue != null ? (decimal)row.TotalRevenue : 0
+                });
+            }
+            return list;
         }
     }
 }

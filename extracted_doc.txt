@@ -1,0 +1,1799 @@
+BỘ CÔNG THƯƠNG
+TRƯỜNG ĐẠI HỌC KINH TẾ - KỸ THUẬT CÔNG NGHIỆP
+KHOA CÔNG NGHỆ THÔNG TIN
+BÁO CÁO 
+ĐỀ TÀI: PHÂN TÍCH VÀ THIẾT KẾ PHẦN MỀM QUẢN LÝ
+CỬA HÀNG BÁN SÁCH KIM ĐỒNG
+Môn học: Đồ án 1
+Giảng viên hướng dẫn: Th.S Trần Thị Lan Anh
+Thành viên trong nhóm:
+1. Bùi Tùng DươngLớp: DHTI17A1HN
+2. Trương Huy ĐồngLớp: DHTI17A1HN
+3. Nguyễn Tùng DươngLớp: DHTI17A1HN
+Hà Nội, Ngày …. Tháng …. Năm 2026
+NHẬN XÉT CỦA GIÁO VIÊN HƯỚNG DẪN
+Hà Nội,ngày …. tháng …. năm 2026
+Giáo viên hướng dẫn
+(Ký tên, ghi rõ họ tên)
+MỤC LỤC
+NHẬN XÉT CỦA GIÁO VIÊN HƯỚNG DẪN3
+MỤC LỤC4
+DANH MỤC HÌNH ẢNH7
+DANH MỤC BẢNG BIỂU8
+LỜI CẢM ƠN9
+LỜI MỞ ĐẦU10
+PHÂN CÔNG NHIỆM VỤ THÀNH VIÊN11
+CHƯƠNG 1: XÁC LẬP DỰ ÁN VÀ CÔNG CỤ THỰC HIỆN11
+1.1. GIỚI THIỆU DỰ ÁN11
+1.2. LÝ DO CHỌN ĐỀ TÀI12
+1.3. MỤC TIÊU CỦA DỰ ÁN12
+1.4. PHẠM VI DỰ ÁN13
+1.5. CÔNG NGHỆ VÀ CÔNG CỤ THỰC HIỆN13
+1.6. KIẾN TRÚC DỰ ÁN15
+1.7. KẾ HOẠCH THỰC HIỆN15
+CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG16
+2.1. KHẢO SÁT HIỆN TRẠNG16
+2.2. TÁC NHÂN CỦA HỆ THỐNG16
+2.3. YÊU CẦU CHỨC NĂNG17
+2.4. YÊU CẦU PHI CHỨC NĂNG18
+2.5. PHÂN TÍCH NGHIỆP VỤ THEO MODULE18
+2.5.1. Đăng nhập và phân quyền18
+2.5.2. Quản lý cửa hàng19
+2.5.3. Quản lý nhân viên và tài khoản20
+2.5.4. Quản lý khách hàng21
+2.5.5. Quản lý sách22
+2.5.6. Quản lý tồn kho theo cửa hàng23
+2.5.7. Nhập sách24
+2.5.8. Bán sách25
+2.5.9. Trả hàng26
+2.5.10. Báo cáo và thống kê27
+2.6. DANH SÁCH CA SỬ DỤNG CHÍNH28
+2.7. QUY TẮC NGHIỆP VỤ29
+CHƯƠNG 3: THIẾT KẾ HỆ THỐNG29
+3.1. THIẾT KẾ KIẾN TRÚC TỔNG THỂ29
+3.2. THIẾT KẾ CƠ SỞ DỮ LIỆU30
+3.2.1. Nhóm bảng người dùng và cửa hàng32
+3.2.2. Nhóm bảng sách và dữ liệu nền33
+3.2.3. Nhóm bảng nghiệp vụ kho và hóa đơn33
+3.3. THIẾT KẾ MODEL VÀ VIEWMODEL34
+3.4. THIẾT KẾ REPOSITORY34
+3.5. THIẾT KẾ SERVICE35
+3.6. THIẾT KẾ BẢO MẬT VÀ PHÂN QUYỀN36
+3.7. THIẾT KẾ GIAO DIỆN37
+3.8. THIẾT KẾ CHI TIẾT CÁC BẢNG DỮ LIỆU38
+3.8.1 Stores38
+3.8.2 Users38
+3.8.3 Roles39
+3.8.4 Books39
+3.8.5 Categories40
+3.8.6 Authors40
+3.8.7 Publishers40
+3.8.8 InventoryTransactions40
+3.8.9 Customers41
+3.8.10 SalesOrders41
+3.8.11 SalesOrderDetails42
+3.8.12 Suppliers42
+3.8.13 PurchaseReceipts42
+3.8.14 PurchaseReceiptDetails43
+3.9 THIẾT KẾ XỬ LÝ GIAO DỊCH KHO43
+CHƯƠNG 4: XÂY DỰNG CHƯƠNG TRÌNH45
+4.1. CẤU TRÚC THƯ MỤC CHƯƠNG TRÌNH45
+4.2. XÂY DỰNG KẾT NỐI CƠ SỞ DỮ LIỆU45
+4.3. XÂY DỰNG CHỨC NĂNG ĐĂNG NHẬP46
+4.4. XÂY DỰNG DASHBOARD VÀ PHÂN QUYỀN GIAO DIỆN49
+4.5. XÂY DỰNG CÁC CHỨC NĂNG QUẢN TRỊ50
+4.5.1 Quản lý chi nhánh51
+4.5.2 Quản lý tài khoản52
+4.5.3 Quản lý danh mục56
+4.5.4 Quản lý tác giả58
+4.5.5 Quản lý nhà xuất bản60
+4.5.6 Quản lý nhà cung cấp62
+4.5.7 Quản lý sách64
+4.5.8 Quản lý tồn kho66
+4.5.9 Quản lý báo cáo68
+4.6. XÂY DỰNG NGHIỆP VỤ BÁN SÁCH70
+4.7. XÂY DỰNG NGHIỆP VỤ NHẬP SÁCH72
+4.8. XÂY DỰNG NGHIỆP VỤ TRẢ HÀNG74
+4.9. XÂY DỰNG CHỨC NĂNG XUẤT EXCEL75
+4.10. KIỂM THỬ CHƯƠNG TRÌNH76
+4.11. KẾT QUẢ ĐẠT ĐƯỢC78
+4.12. HẠN CHẾ78
+4.13. TỔNG KẾT VÀ HƯỚNG PHÁT TRIỂN78
+4.13.1. Tổng kết đề tài78
+4.13.2. Hướng phát triển trong tương lai79
+KẾT LUẬN VÀ ĐỀ NGHỊ80
+TÀI LIỆU THAM KHẢO81
+DANH MỤC HÌNH ẢNH
+Hình 2.1: Sơ đồ Use Case Đăng nhập và phân quyền18
+Hình 2.2: Sơ đồ Use Case Quản lý cửa hàng19
+Hình 2.3: Sơ đồ Use Case Quản lý nhân viên và tài khoản20
+Hình 2.4: Sơ đồ Use Case Quản lý khách hàng21
+Hình 2.5: Sơ đồ Use Case Quản lý sách22
+Hình 2.6: Sơ đồ Use Case Quản lý tồn kho theo cửa hàng23
+Hình 2.7: Sơ đồ Use Case Nhập sách24
+Hình 2.8: Sơ đồ Use Case Bán sách25
+Hình 2.9: Sơ đồ Use Case Trả hàng26
+Hình 2.10: Sơ đồ Use Case Báo cáo và thống kê27
+Hình 3.1: Sơ đồ kiến trúc tổng thể của hệ thống30
+Hình 3.2: Sơ đồ Thực thể - Liên kết (ERD) của hệ thống32
+Hình 3.3: Sơ đồ hoạt động (Activity Diagram) luồng xử lý Đăng nhập và Phân quyền37
+Hình 3.4: Sơ đồ luồng xử lý giao dịch kho44
+Hình 4.1: Giao diện đăng nhập48
+Hình 4.2:Giao diện Dashboard của Admin51
+Hình 4.3: Giao diện Dashboard của Staff51
+Hình 4.4: Giao diện quản lý chi nhánh53
+Hình 4.5: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý chi nhánh53
+Hình 4.6: Giao diện quản lý tài khoản54
+Hình 4.7: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tài khoản54
+Hình 4.8: Giao diện sử lý nghiệp vụ tạo tài khoản nhân viên55
+Hình 4.9: Giao diện quản lý tài khoản56
+Hình 4.10: Giao diện quản lý danh mục57
+Hình 4.11: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý danh mục58
+Hình 4.12: Giao diện quản lý tài khoản59
+Hình 4.13: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tài khoản60
+Hình 4.14: Giao diện quản lý nhà xuất bản61
+Hình 4.15: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý nhà xuất bản62
+Hình 4.16: Giao diện quản lý nhà cung cấp63
+Hình 4.17: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý nhà cung cấp64
+Hình 4.18: Giao diện quản lý sách65
+Hình 4.19: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý sách66
+Hình 4.20: Giao diện quản lý tồn kho68
+Hình 4.21: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tồn kho68
+Hình 4.22: Giao diện quản lý báo cáo70
+Hình 4.23: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý báo cáo70
+Hình 4.24: Giao diện xử lý nghiệm vụ bán sách72
+Hình 4.25: Sơ đồ tuần tự luồng xử lý nghiệp vụ bán sách72
+Hình 4.26: Giao diện xử lý nghiệm vụ nhập sách74
+Hình 4.27: Sơ đồ tuần tự luồng xử lý nghiệp vụ nhập sách75
+Hình 4.28: Giao diện xử lý nghiệm vụ trả hàng76
+Hình 4.29: Sơ đồ tuần tự luồng xử lý nghiệp vụ trả hàng76
+Hình 4.30: Sơ đồ tuần tự luồng xử lý xuất Excel77
+DANH MỤC BẢNG BIỂU
+Bảng 1.1: Thông tin nhóm thực hiện11
+Bảng 1.2: Công nghệ và công cụ sử dụng12
+Bảng 1.3: Kế hoạch thực hiện dự án14
+Bảng 2.1: Tác nhân của hệ thống15
+Bảng 2.2: Yêu cầu chức năng16
+Bảng 2.3: Yêu cầu phi chức năng17
+Bảng 2. 4: Danh sách ca sử dụng chính27
+Bảng 2.5: Quy tắc nghiệp vụ28
+Bảng 3.1: Thiết kế các tầng trong chương trình29
+Bảng 3.2: Danh sách bảng dữ liệu chính30
+Bảng 3.3: Mô tả quan hệ dữ liệu chính31
+Bảng 3.4: Một số model chính của hệ thống32
+Bảng 3.5: Thiết kế các repository32
+Bảng 3.6: Thiết kế các service33
+Bảng 4.1: Cấu trúc thư mục chương trình46
+Bảng 4.2: Các chức năng quản trị51
+Bảng 4.3: Kịch bản kiểm thử tiêu biểu78
+LỜI CẢM ƠN
+Trong quá trình thực hiện đồ án “Xây dựng chương trình quản lý chuỗi cửa hàng bán sách Kim Đồng”, nhóm sinh viên chúng em đã nhận được sự hướng dẫn, hỗ trợ và góp ý quý báu từ giảng viên hướng dẫn, thầy cô trong khoa, bạn bè và các thành viên trong nhóm. Đây là những điều kiện quan trọng giúp nhóm hoàn thiện nội dung nghiên cứu, xây dựng chương trình và trình bày báo cáo một cách có hệ thống.
+Nhóm xin gửi lời cảm ơn chân thành đến cô Trần Thị Lan Anh, giảng viên hướng dẫn đồ án, đã định hướng đề tài, góp ý về phạm vi chức năng, cách phân tích hệ thống, cách thiết kế cơ sở dữ liệu và cách trình bày sản phẩm. Những nhận xét của cô giúp nhóm hiểu rõ hơn quy trình xây dựng một phần mềm quản lý từ giai đoạn khảo sát đến giai đoạn triển khai thử nghiệm.
+Nhóm cũng xin cảm ơn các thầy cô trong khoa Công nghệ thông tin đã trang bị kiến thức nền tảng về lập trình C#, cơ sở dữ liệu, phân tích thiết kế hệ thống, kiểm thử phần mềm và kỹ năng làm việc nhóm. Các kiến thức này được vận dụng trực tiếp vào đồ án thông qua việc xây dựng ứng dụng Windows Forms kết nối SQL Server.
+Do thời gian thực hiện có hạn và kinh nghiệm phát triển phần mềm thực tế của nhóm còn hạn chế, báo cáo và chương trình không thể tránh khỏi thiếu sót. Nhóm rất mong nhận được ý kiến đóng góp của giảng viên và các bạn để tiếp tục hoàn thiện hệ thống trong các phiên bản sau.
+Chúng em xin chân thành cảm ơn!
+LỜI MỞ ĐẦU
+1. ĐẶT VẤN ĐỀ
+Trong bối cảnh chuyển đổi số ngày càng phổ biến, việc ứng dụng phần mềm vào hoạt động quản lý bán hàng đã trở thành nhu cầu cần thiết đối với nhiều cửa hàng, trong đó có cửa hàng sách. Một tiệm sách không chỉ thực hiện việc bán hàng đơn thuần mà còn phải quản lý nhiều nhóm dữ liệu như thông tin sách, tác giả, nhà xuất bản, nhà cung cấp, khách hàng, nhân viên, hóa đơn, nhập hàng, tồn kho và báo cáo doanh thu. Nếu chỉ quản lý bằng sổ sách thủ công hoặc file bảng tính rời rạc, cửa hàng dễ gặp tình trạng nhầm lẫn số lượng tồn, khó kiểm tra lịch sử bán hàng và mất nhiều thời gian tổng hợp báo cáo.
+Đề tài “Xây dựng chương trình quản lý chuỗi cửa hàng bán sách Kim Đồng” được thực hiện nhằm xây dựng một ứng dụng desktop hỗ trợ quản lý các nghiệp vụ cơ bản của một cửa hàng sách. Ứng dụng được phát triển bằng ngôn ngữ C# trên nền tảng Windows Forms, sử dụng SQL Server để lưu trữ dữ liệu. Hệ thống hướng đến việc giảm bớt thao tác thủ công, nâng cao tính chính xác trong quá trình bán sách và giúp người quản lý theo dõi hoạt động cửa hàng thuận tiện hơn.
+Trong phạm vi đồ án, nhóm xây dựng hệ thống theo mô hình nhiều tầng gồm giao diện, xử lý nghiệp vụ, truy vấn dữ liệu và cơ sở dữ liệu. Cách tổ chức này giúp mã nguồn dễ bảo trì, dễ phân công công việc cho các thành viên trong nhóm và thuận tiện khi mở rộng chức năng. Bên cạnh chức năng bán sách cơ bản, hệ thống còn hỗ trợ quản lý nhiều cửa hàng, tồn kho theo cửa hàng, xử lý trả hàng, phân quyền Admin và Staff, mã hóa mật khẩu, upload ảnh sách và xuất báo cáo Excel.
+2. MỤC TIÊU NGHIÊN CỨU
+Mục tiêu tổng quát của đồ án là phân tích, thiết kế và xây dựng phần mềm quản lý nhà sách tích hợp, hỗ trợ đầy đủ các nghiệp vụ bán hàng tại quầy, quản lý kho, quản lý đơn hàng và đổi trả, quản lý danh mục sách cùng thông tin khách hàng và nhân sự trên nhiều chi nhánh. Phần mềm được xây dựng với giao diện hiện đại, trực quan, dữ liệu lưu trữ tập trung trên cơ sở dữ liệu SQL Server và có cơ chế phân quyền rõ ràng giữa hai vai trò Quản trị viên và Nhân viên, đảm bảo mỗi vai trò chỉ truy cập được các chức năng phù hợp với trách nhiệm công việc.
+Các mục tiêu cụ thể gồm: khảo sát bài toán quản lý nhà sách; xác định các chức năng cần thiết cho hai vai trò Quản trị viên và Nhân viên; thiết kế cơ sở dữ liệu phù hợp với mô hình quản lý đa chi nhánh; xây dựng các lớp model, repository, service và form giao diện theo kiến trúc phân tầng; triển khai chức năng đăng nhập và phân quyền theo vai trò; xây dựng chức năng quản lý sách, danh mục sách, tác giả, nhà xuất bản và nhà cung cấp; xây dựng chức năng quản lý kho bao gồm nhập kho, xuất kho, sổ kho và tra cứu tồn kho; xây dựng chức năng bán hàng tại quầy (POS), quản lý đơn hàng và đổi trả hàng; xây dựng chức năng quản lý khách hàng, nhân viên, tài khoản và chi nhánh; xây dựng chức năng báo cáo thống kê doanh thu và tồn kho; kiểm thử các chức năng chính để đánh giá mức độ đáp ứng yêu cầu đặt ra.
+3. ĐỐI TƯỢNG VÀ PHẠM VI NGHIÊN CỨU
+Đối tượng nghiên cứu của đề tài là quy trình quản lý toàn bộ hoạt động kinh doanh của nhà sách, bao gồm các nghiệp vụ: quản lý sách và danh mục sách; quản lý thông tin danh mục nền như tác giả, nhà xuất bản và nhà cung cấp; quản lý khách hàng và lịch sử giao dịch; quản lý nhân viên, tài khoản và chi nhánh; quản lý bán hàng tại quầy (POS) và đơn hàng; quản lý nhập kho, xuất kho và sổ kho; quản lý đổi trả hàng; cùng chức năng thống kê báo cáo doanh thu và tồn kho. 
+Phạm vi nghiên cứu của đề tài là xây dựng ứng dụng desktop chạy trên hệ điều hành Windows, sử dụng ngôn ngữ lập trình C# với nền tảng .NET và Windows Forms. Hệ thống sử dụng SQL Server làm cơ sở dữ liệu lưu trữ tập trung và không triển khai mô hình web hoặc ứng dụng di động. Các tính năng như thanh toán trực tuyến, đồng bộ dữ liệu qua Internet, quản lý kế toán chuyên sâu và hỗ trợ đa ngôn ngữ chưa được đưa vào phạm vi của phiên bản đồ án này.
+4. PHƯƠNG PHÁP NGHIÊN CỨU
+Nhóm sử dụng phương pháp phân tích hệ thống để xác định yêu cầu từ bài toán thực tế, sau đó mô hình hóa dữ liệu và chức năng theo hướng phù hợp với đồ án phần mềm quản lý. Các nghiệp vụ được chia thành các nhóm chức năng độc lập để thuận tiện cho phân công và lập trình.
+Về xây dựng chương trình, nhóm áp dụng phương pháp phát triển theo từng module. Mỗi module gồm các lớp Model, Repository, Service và Form tương ứng. Sau khi xây dựng xong từng module, nhóm tiến hành kiểm thử thủ công bằng dữ liệu mẫu trong SQL Server để phát hiện lỗi kết nối, lỗi truy vấn, lỗi xử lý nghiệp vụ và lỗi giao diện.
+PHÂN CÔNG NHIỆM VỤ THÀNH VIÊN
+STT
+Họ và tên
+Vai trò
+Nhiệm vụ
+1
+Bùi Tùng Dương
+Nhóm trưởng
+2
+Trương Huy Đồng
+Thành viên
+3
+Nguyễn Tùng Dương
+Thành Viên
+CHƯƠNG 1: XÁC LẬP DỰ ÁN VÀ CÔNG CỤ THỰC HIỆN
+1.1. GIỚI THIỆU DỰ ÁN
+BookStoreManagement là phần mềm quản lý tiệm sách Kim Đồng được xây dựng nhằm hỗ trợ hoạt động bán sách và quản lý dữ liệu trong cửa hàng. Hệ thống cho phép người dùng đăng nhập, phân quyền theo vai trò, quản lý danh mục sách, tác giả, nhà xuất bản, nhà cung cấp, khách hàng, nhân viên, nhập sách, bán sách, trả hàng, tồn kho và thống kê doanh thu.
+Phần mềm được thiết kế dưới dạng ứng dụng Windows Forms. Đây là dạng ứng dụng desktop phù hợp với mô hình cửa hàng sử dụng máy tính tại quầy bán hàng. Nhân viên có thể thao tác trực tiếp trên giao diện, tìm kiếm sách, thêm khách hàng, lập hóa đơn và in nội dung hóa đơn. Admin có thể quản lý dữ liệu nền, theo dõi kho và xem báo cáo.
+Trong phiên bản nâng cấp, hệ thống không chỉ quản lý một cửa hàng đơn lẻ mà còn có khả năng quản lý nhiều cửa hàng. Mỗi nhân viên được gắn với một cửa hàng, mỗi cửa hàng có tồn kho riêng. Thiết kế này làm cho hệ thống linh hoạt hơn và có thể mở rộng cho mô hình chuỗi cửa hàng sách.
+Bảng 1.1: Thông tin nhóm thực hiện
+Nội dung
+Thông tin
+Tên đề tài
+Xây dựng chương trình quản lý tiệm sách Kim Đồng
+Lớp
+DHTI17A1HN
+Giảng viên hướng dẫn
+Trần Thị Lan Anh
+Thành viên 1
+Bùi Tùng Dương - Leader
+Thành viên 2
+Trương Huy Đồng
+Thành viên 3
+Nguyễn Tùng Dương
+1.2. LÝ DO CHỌN ĐỀ TÀI
+Quản lý bán sách là một bài toán gần gũi, có tính ứng dụng cao và phù hợp với nội dung học phần phân tích thiết kế hệ thống, cơ sở dữ liệu và lập trình ứng dụng. Thông qua đề tài này, nhóm có thể vận dụng nhiều kiến thức đã học như thiết kế cơ sở dữ liệu quan hệ, lập trình giao diện Windows Forms, xử lý truy vấn SQL, tổ chức mã nguồn theo nhiều tầng và kiểm thử chức năng.
+Trong thực tế, tiệm sách phải xử lý số lượng đầu sách lớn và thường xuyên thay đổi. Mỗi cuốn sách có nhiều thông tin đi kèm như mã sách, ISBN, tên sách, tác giả, nhà xuất bản, danh mục, năm xuất bản, giá bán và tình trạng kinh doanh. Nếu không có hệ thống quản lý tập trung, việc tìm kiếm và cập nhật thông tin sách sẽ mất nhiều thời gian.
+Ngoài ra, nghiệp vụ bán sách liên quan trực tiếp đến tồn kho và doanh thu. Khi bán sách, hệ thống cần kiểm tra số lượng tồn, tạo hóa đơn, trừ kho và lưu chi tiết hóa đơn. Khi nhập sách, hệ thống cần cộng kho và ghi nhận lịch sử nhập. Khi trả hàng, hệ thống cần lập phiếu trả, cập nhật kho và tính số tiền hoàn lại. Những nghiệp vụ này nếu thực hiện thủ công dễ gây sai lệch dữ liệu.
+1.3. MỤC TIÊU CỦA DỰ ÁN
+Xây dựng chương trình quản lý bán sách có giao diện thân thiện, dễ thao tác đối với nhân viên bán hàng và người quản trị.
+Thiết kế cơ sở dữ liệu SQL Server lưu trữ được các nhóm dữ liệu chính như cửa hàng, nhân viên, khách hàng, sách, kho, hóa đơn, nhập hàng, trả hàng và báo cáo.
+Tổ chức mã nguồn theo mô hình nhiều tầng để dễ bảo trì, dễ phân công và dễ mở rộng.
+Xây dựng chức năng đăng nhập và phân quyền giữa Admin và Staff.
+Xây dựng các chức năng quản lý dữ liệu nền như danh mục, tác giả, nhà xuất bản và nhà cung cấp.
+Xây dựng các chức năng nghiệp vụ chính như nhập sách, bán sách, trả hàng và quản lý tồn kho.
+Xây dựng chức năng thống kê doanh thu, sách bán chạy, sách sắp hết hàng và xuất báo cáo Excel.
+1.4. PHẠM VI DỰ ÁN
+Dự án tập trung vào việc xây dựng ứng dụng desktop phục vụ quản lý nội bộ của tiệm sách. Người dùng hệ thống gồm Admin và Staff. Admin có quyền quản trị toàn bộ hệ thống, trong khi Staff chỉ sử dụng các chức năng liên quan đến bán hàng và dữ liệu tại cửa hàng mình làm việc.
+Về dữ liệu, hệ thống quản lý các bảng chính gồm Roles, Stores, Users, Customers, Categories, Authors, Publishers, Suppliers, Books, StoreBookInventories, SalesOrders, SalesOrderDetails, PurchaseReceipts, PurchaseReceiptDetails, ReturnReceipts, ReturnReceiptDetails và InventoryTransactions.
+Về giới hạn, hệ thống chưa triển khai thanh toán online, chưa đồng bộ dữ liệu cloud, chưa kết nối máy quét mã vạch thật và chưa có cơ chế phân quyền chi tiết theo từng nút thao tác. Tuy nhiên, kiến trúc hiện tại cho phép mở rộng các chức năng này trong tương lai.
+1.5. CÔNG NGHỆ VÀ CÔNG CỤ THỰC HIỆN
+Bảng 1.2: Công nghệ và công cụ sử dụng
+Hạng mục
+Công nghệ/Công cụ
+Mục đích sử dụng
+Ngôn ngữ lập trình
+C#
+Xây dựng ứng dụng desktop, xử lý giao diện và nghiệp vụ
+Giao diện
+Windows Forms
+Thiết kế các form như đăng nhập, dashboard, quản lý sách, bán hàng và báo cáo
+Cơ sở dữ liệu
+SQL Server
+Lưu trữ dữ liệu hệ thống
+Công cụ DB
+SQL Server Management Studio
+Tạo database, chạy script, kiểm tra dữ liệu và truy vấn
+IDE
+Visual Studio
+Thiết kế giao diện, viết code, debug và build chương trình
+Kết nối DB
+Microsoft.Data.SqlClient
+Thực hiện kết nối và truy vấn SQL Server từ C#
+Mã hóa mật khẩu
+BCrypt.Net-Next
+Băm mật khẩu người dùng khi tạo tài khoản hoặc đổi mật khẩu
+Xuất Excel
+ClosedXML
+Xuất bảng dữ liệu ra file Excel
+Quản lý mã nguồn
+Git/GitHub
+Lưu trữ mã nguồn và hỗ trợ làm việc nhóm
+C# được lựa chọn vì phù hợp với môi trường phát triển ứng dụng Windows Forms. Ngôn ngữ này hỗ trợ lập trình hướng đối tượng, có hệ sinh thái thư viện phong phú và tích hợp tốt với Visual Studio. Trong dự án, C# được dùng để xây dựng toàn bộ giao diện, xử lý sự kiện, gọi service và truy vấn dữ liệu qua repository.
+SQL Server được sử dụng vì đây là hệ quản trị cơ sở dữ liệu quan hệ phổ biến, có khả năng quản lý dữ liệu tốt và hỗ trợ các ràng buộc như khóa chính, khóa ngoại, unique, check, trigger và view. Trong hệ thống, SQL Server lưu trữ toàn bộ dữ liệu về sách, người dùng, cửa hàng, khách hàng, hóa đơn, phiếu nhập, phiếu trả và lịch sử kho.
+Visual Studio là môi trường phát triển chính của dự án. Công cụ này hỗ trợ kéo thả giao diện Windows Forms, quản lý solution, cài đặt thư viện NuGet, debug lỗi, xem stack trace và build chương trình. Đây cũng là công cụ thuận tiện cho sinh viên khi phát triển ứng dụng desktop bằng C#.
+1.6. KIẾN TRÚC DỰ ÁN
+Dự án được tổ chức theo hướng nhiều tầng. Tầng Forms chịu trách nhiệm hiển thị giao diện và nhận thao tác người dùng. Tầng Services xử lý nghiệp vụ, kiểm tra dữ liệu, kiểm tra quyền và điều phối gọi repository. Tầng Repositories thực hiện các câu lệnh SQL để truy vấn hoặc cập nhật dữ liệu. Tầng Models và ViewModels chứa các lớp dữ liệu. Tầng Helpers chứa các lớp hỗ trợ như PasswordHasher và CurrentSession. Tầng Database chứa lớp tạo kết nối SQL Server.
+Việc tách tầng giúp chương trình dễ bảo trì hơn. Ví dụ, khi cần sửa nghiệp vụ bán hàng, nhóm chỉ cần sửa SalesOrderService và SalesOrderRepository mà không làm ảnh hưởng đến giao diện. Khi cần thay đổi câu lệnh SQL, nhóm có thể sửa trong repository mà không cần sửa nhiều form. Cách tổ chức này cũng giúp phân công công việc cho nhóm rõ ràng hơn.
+1.7. KẾ HOẠCH THỰC HIỆN
+Bảng 1.3: Kế hoạch thực hiện dự án
+Giai đoạn
+Nội dung
+Kết quả cần đạt
+Giai đoạn 1
+Khảo sát và xác định yêu cầu
+Xác định chức năng, vai trò người dùng, phạm vi dữ liệu
+Giai đoạn 2
+Thiết kế database
+Xây dựng bảng, khóa chính, khóa ngoại, view và dữ liệu mẫu
+Giai đoạn 3
+Xây dựng tầng dữ liệu
+Viết Models, ViewModels, RepositoryBase và các Repository
+Giai đoạn 4
+Xây dựng tầng nghiệp vụ
+Viết Services, Helpers, xử lý mã hóa mật khẩu, phân quyền, bán hàng và kho
+Giai đoạn 5
+Xây dựng giao diện
+Thiết kế LoginForm, DashboardForm, form Admin và form Staff
+Giai đoạn 6
+Kiểm thử và hoàn thiện
+Kiểm thử đăng nhập, CRUD, bán hàng, nhập hàng, trả hàng, báo cáo và sửa lỗi
+CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG
+2.1. KHẢO SÁT HIỆN TRẠNG
+Hoạt động của một tiệm sách bao gồm nhiều quy trình lặp lại hằng ngày. Nhân viên cần tiếp nhận khách, tìm sách, kiểm tra tồn kho, tư vấn, lập hóa đơn và nhận thanh toán. Người quản lý cần theo dõi nhập hàng, cập nhật giá bán, kiểm soát số lượng tồn kho và thống kê doanh thu. Nếu không có phần mềm hỗ trợ, các quy trình này thường được ghi chép thủ công hoặc lưu trong nhiều file khác nhau, dẫn đến dữ liệu thiếu nhất quán.
+Vấn đề thường gặp trong quản lý thủ công là khó kiểm tra số lượng sách thực tế tại từng cửa hàng. Khi một đầu sách bán nhanh, cửa hàng có thể không kịp nhập bổ sung nếu không có cảnh báo sắp hết hàng. Ngược lại, một số sách tồn kho lâu nhưng không được thống kê rõ ràng, làm ảnh hưởng đến vốn lưu động của cửa hàng.
+Một vấn đề khác là việc tổng hợp doanh thu thường mất thời gian. Người quản lý phải cộng từng hóa đơn, phân loại theo ngày, theo nhân viên hoặc theo cửa hàng. Nếu dữ liệu hóa đơn không được lưu trữ có cấu trúc, việc đối chiếu và kiểm tra sai sót rất khó khăn. Vì vậy, phần mềm cần lưu dữ liệu bán hàng chi tiết và có khả năng thống kê tự động.
+2.2. TÁC NHÂN CỦA HỆ THỐNG
+Bảng 2.1: Tác nhân của hệ thống
+Tác nhân
+Mô tả
+Vai trò trong hệ thống
+Admin
+Người quản trị hệ thống
+Quản lý toàn bộ dữ liệu và xem báo cáo tổng hợp
+Staff
+Nhân viên bán hàng
+Bán sách, thêm khách hàng, xem sách, kiểm tra kho và xem hóa đơn do mình lập
+Khách hàng
+Người mua sách
+Cung cấp thông tin mua hàng, nhận hóa đơn và có thể trả hàng
+Nhà cung cấp
+Đơn vị cung cấp sách
+Cung cấp sách để cửa hàng nhập kho
+2.3. YÊU CẦU CHỨC NĂNG
+Bảng 2.2: Yêu cầu chức năng
+Mã
+Chức năng
+Mô tả
+F01
+Đăng nhập
+Người dùng đăng nhập bằng tài khoản và mật khẩu, hệ thống kiểm tra trạng thái tài khoản và phân quyền.
+F02
+Quản lý cửa hàng
+Admin thêm, sửa, khóa/mở khóa và tìm kiếm cửa hàng.
+F03
+Quản lý tài khoản
+Admin quản lý nhân viên, vai trò, cửa hàng làm việc và mật khẩu.
+F04
+Quản lý khách hàng
+Admin và Staff có thể thêm, sửa, tìm kiếm khách hàng phục vụ bán hàng.
+F05
+Quản lý sách
+Admin thêm, sửa, upload ảnh, khóa/mở khóa và tìm kiếm sách.
+F06
+Quản lý danh mục, tác giả, nhà xuất bản
+Admin quản lý các dữ liệu nền phục vụ mô tả sách.
+F07
+Quản lý nhà cung cấp
+Admin quản lý đơn vị cung cấp sách khi nhập kho.
+F08
+Quản lý nhập sách
+Admin lập phiếu nhập, lưu chi tiết sách nhập, cộng tồn kho và ghi lịch sử kho.
+F09
+Quản lý bán sách
+Staff hoặc Admin lập hóa đơn bán, lưu chi tiết hóa đơn, trừ kho và ghi lịch sử kho.
+F10
+Quản lý trả hàng
+Hệ thống lập phiếu trả hàng, tính hoàn tiền, cập nhật kho và in biên lai nếu cần.
+F11
+Quản lý tồn kho
+Xem tồn kho theo cửa hàng, cảnh báo sách sắp hết và ghi lịch sử nhập xuất.
+F12
+Thống kê báo cáo
+Admin xem doanh thu, sách bán chạy, sách sắp hết hàng và xuất Excel.
+2.4. YÊU CẦU PHI CHỨC NĂNG
+Bảng 2.3: Yêu cầu phi chức năng
+Yêu cầu
+Mô tả
+Bảo mật
+Mật khẩu người dùng được mã hóa bằng BCrypt, chức năng quan trọng được kiểm tra quyền.
+Dễ sử dụng
+Giao diện đơn giản, các nút chức năng đặt tên rõ ràng, thao tác theo quy trình nghiệp vụ quen thuộc.
+Toàn vẹn dữ liệu
+Các bảng có khóa chính, khóa ngoại và các ràng buộc cần thiết để hạn chế dữ liệu sai.
+Hiệu năng
+Các truy vấn danh sách sử dụng view để giảm lặp join trong code và giúp hiển thị nhanh hơn.
+Bảo trì
+Mã nguồn chia tầng Forms, Services, Repositories, Models, Helpers và Database.
+Mở rộng
+Có thể bổ sung nhiều cửa hàng, nhiều vai trò, thanh toán trực tuyến hoặc quét mã vạch trong tương lai.
+2.5. PHÂN TÍCH NGHIỆP VỤ THEO MODULE
+2.5.1. Đăng nhập và phân quyền
+Người dùng nhập tên tài khoản và mật khẩu. Hệ thống lấy thông tin người dùng từ bảng Users, kiểm tra tài khoản còn hoạt động và xác thực mật khẩu. Sau khi xác thực thành công, thông tin người dùng được lưu vào CurrentSession. Dashboard sử dụng thông tin này để quyết định menu nào được hiển thị. Admin nhìn thấy toàn bộ chức năng quản trị, còn Staff chỉ nhìn thấy các chức năng phục vụ bán hàng tại cửa hàng mình làm việc.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.1: Sơ đồ Use Case Đăng nhập và phân quyền
+2.5.2. Quản lý cửa hàng
+Module cửa hàng lưu mã cửa hàng, tên cửa hàng, địa chỉ, số điện thoại và trạng thái hoạt động. Dữ liệu cửa hàng được dùng trong nhiều nghiệp vụ như quản lý nhân viên, tồn kho, bán hàng, nhập hàng và trả hàng. Khi một cửa hàng ngừng hoạt động, hệ thống không nên xóa cứng mà chỉ cập nhật trạng thái để bảo toàn dữ liệu lịch sử.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.2: Sơ đồ Use Case Quản lý cửa hàng
+2.5.3. Quản lý nhân viên và tài khoản
+Mỗi nhân viên có thông tin cá nhân, cửa hàng làm việc, vai trò và tài khoản đăng nhập. Admin có thể tạo tài khoản mới, reset mật khẩu, khóa hoặc mở khóa tài khoản. Mật khẩu không lưu dạng văn bản rõ mà được xử lý bằng hàm băm để tăng tính an toàn.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.3: Sơ đồ Use Case Quản lý nhân viên và tài khoản
+2.5.4. Quản lý khách hàng
+Khách hàng có thể được thêm trong quá trình bán hàng hoặc được Admin quản lý trước. Thông tin khách hàng gồm mã khách hàng, số CCCD/CMND, họ tên, số điện thoại, email, địa chỉ và trạng thái. Việc lưu khách hàng giúp cửa hàng tra cứu lịch sử mua hàng và xử lý trả hàng chính xác hơn.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.4: Sơ đồ Use Case Quản lý khách hàng
+2.5.5. Quản lý sách
+Sách là đối tượng trung tâm của hệ thống. Mỗi sách có mã sách, ISBN, tên sách, năm xuất bản, số trang, giá bán, mô tả, ảnh sách, danh mục, tác giả và nhà xuất bản. Admin chịu trách nhiệm thêm mới, cập nhật và khóa các đầu sách không còn kinh doanh.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.5: Sơ đồ Use Case Quản lý sách
+2.5.6. Quản lý tồn kho theo cửa hàng
+Tồn kho được lưu trong bảng StoreBookInventories, mỗi bản ghi thể hiện số lượng của một cuốn sách tại một cửa hàng. Cách thiết kế này giúp hệ thống biết chính xác cửa hàng nào còn sách và cửa hàng nào sắp hết. Lịch sử nhập, bán, trả và điều chỉnh kho được ghi trong InventoryTransactions.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.6: Sơ đồ Use Case Quản lý tồn kho theo cửa hàng
+2.5.7. Nhập sách
+Khi nhập sách, Admin chọn cửa hàng nhập, nhà cung cấp, nhân viên thực hiện và danh sách sách nhập. Mỗi chi tiết phiếu nhập có sách, số lượng và giá nhập. Sau khi lưu phiếu nhập, hệ thống cộng số lượng vào tồn kho của cửa hàng và ghi lịch sử kho.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.7: Sơ đồ Use Case Nhập sách
+2.5.8. Bán sách
+Khi bán sách, Staff chọn khách hàng, chọn các sách trong cửa hàng, nhập số lượng và phương thức thanh toán. Hệ thống kiểm tra tồn kho trước khi tạo hóa đơn. Nếu số lượng hợp lệ, hệ thống lưu hóa đơn, lưu chi tiết hóa đơn, trừ kho và ghi lịch sử xuất kho.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.8: Sơ đồ Use Case Bán sách
+2.5.9. Trả hàng
+Khi khách trả sách, nhân viên chọn hóa đơn gốc, chọn sách cần trả, nhập số lượng trả và lý do. Hệ thống tính số tiền hoàn lại theo đơn giá bán, tạo phiếu trả hàng và cập nhật kho nếu sách đủ điều kiện nhập lại.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.9: Sơ đồ Use Case Trả hàng
+2.5.10. Báo cáo và thống kê
+Admin có thể xem doanh thu theo ngày, doanh thu theo cửa hàng, sách bán chạy, sách sắp hết hàng và lịch sử kho. Các báo cáo giúp người quản lý theo dõi hoạt động kinh doanh và đưa ra quyết định nhập hàng phù hợp.
+Trong quá trình phân tích, module này được tách thành các thao tác nhỏ gồm hiển thị danh sách, tìm kiếm, thêm mới, cập nhật, thay đổi trạng thái và kiểm tra dữ liệu đầu vào. Cách tách này giúp việc lập trình và kiểm thử trở nên rõ ràng hơn, đồng thời giúp các thành viên trong nhóm có thể làm việc song song trên từng chức năng.
+Hình 2.10: Sơ đồ Use Case Báo cáo và thống kê
+2.6. DANH SÁCH CA SỬ DỤNG CHÍNH
+Bảng 2. 4: Danh sách ca sử dụng chính
+Mã UC
+Tên ca sử dụng
+Tác nhân
+Mô tả
+UC01
+Đăng nhập
+Admin/Staff
+Người dùng nhập tài khoản và mật khẩu để vào hệ thống.
+UC02
+Quản lý sách
+Admin
+Thêm, sửa, khóa/mở khóa và tìm kiếm sách.
+UC03
+Quản lý tồn kho
+Admin
+Xem tồn kho theo cửa hàng và điều chỉnh kho.
+UC04
+Tạo hóa đơn bán
+Admin/Staff
+Chọn khách hàng, chọn sách, nhập số lượng và tạo hóa đơn.
+UC05
+Tạo phiếu nhập
+Admin
+Chọn nhà cung cấp, cửa hàng, sách nhập và lưu phiếu nhập.
+UC06
+Tạo phiếu trả hàng
+Admin/Staff
+Chọn hóa đơn gốc, sách trả, số lượng trả và lý do trả.
+UC07
+Xem báo cáo doanh thu
+Admin
+Xem doanh thu theo ngày, tháng hoặc cửa hàng.
+UC08
+Xuất Excel
+Admin
+Xuất danh sách hoặc báo cáo ra file Excel.
+2.7. QUY TẮC NGHIỆP VỤ
+Bảng 2.5: Quy tắc nghiệp vụ
+Mã
+Nội dung
+BR01
+Tài khoản bị khóa không được đăng nhập.
+BR02
+Staff chỉ xem và thao tác dữ liệu tại cửa hàng mình làm việc, trừ các dữ liệu công khai như danh sách sách.
+BR03
+Không được bán sách nếu số lượng tồn kho tại cửa hàng không đủ.
+BR04
+Khi tạo hóa đơn bán thành công, tồn kho phải được trừ và lịch sử kho phải được ghi.
+BR05
+Khi nhập sách thành công, tồn kho phải được cộng và lịch sử kho phải được ghi.
+BR06
+Khi trả hàng hợp lệ, hệ thống tạo phiếu trả và có thể cộng lại tồn kho.
+BR07
+Không xóa cứng dữ liệu đã phát sinh giao dịch; chỉ nên khóa hoặc cập nhật trạng thái.
+BR08
+Mã sách, mã cửa hàng, mã khách hàng, mã nhân viên và mã hóa đơn không được trùng nhau.
+CHƯƠNG 3: THIẾT KẾ HỆ THỐNG
+3.1. THIẾT KẾ KIẾN TRÚC TỔNG THỂ
+Hệ thống được thiết kế theo mô hình nhiều tầng gồm Forms, Services, Repositories, Models, ViewModels, Helpers và Database. Mỗi tầng có trách nhiệm riêng, giúp giảm sự phụ thuộc giữa giao diện và xử lý dữ liệu. Khi người dùng thao tác trên form, form gọi service tương ứng. Service kiểm tra dữ liệu và quyền, sau đó gọi repository để thực hiện truy vấn SQL Server.
+Mô hình này phù hợp với đồ án Windows Forms vì dễ triển khai, dễ kiểm thử và dễ phân công. Người làm giao diện có thể tập trung vào form và sự kiện; người làm nghiệp vụ tập trung vào service; người làm dữ liệu tập trung vào database và repository. Khi cần thay đổi một phần, nhóm có thể sửa đúng tầng liên quan mà không ảnh hưởng toàn bộ chương trình.
+Bảng 3.1: Thiết kế các tầng trong chương trình
+Tầng
+Vai trò
+Forms
+Hiển thị giao diện, nhận thao tác người dùng, gọi Service
+Services
+Xử lý nghiệp vụ, kiểm tra dữ liệu, kiểm tra quyền, điều phối Repository
+Repositories
+Thực hiện truy vấn SQL và map dữ liệu từ database sang model/viewmodel
+Models
+Đại diện cho các bảng chính trong cơ sở dữ liệu
+ViewModels
+Đại diện cho dữ liệu hiển thị từ view hoặc kết quả join
+Helpers
+Chứa các lớp hỗ trợ như PasswordHasher, CurrentSession
+Database
+Chứa lớp DbConnectionFactory tạo kết nối SQL Server
+Dựa trên chức năng của từng tầng đã liệt kê ở Bảng 3.1, kiến trúc tổng thể và luồng tương tác dữ liệu của hệ thống được mô hình hóa chi tiết trong Hình 3.1 dưới đây:
+Hình 3.1: Sơ đồ kiến trúc tổng thể của hệ thống
+3.2. THIẾT KẾ CƠ SỞ DỮ LIỆU
+Cơ sở dữ liệu BookStoreDB được thiết kế theo mô hình quan hệ. Các bảng được chia thành nhóm dữ liệu người dùng, nhóm dữ liệu danh mục sách, nhóm dữ liệu nghiệp vụ bán hàng và nhóm dữ liệu kho. Thiết kế này giúp các nghiệp vụ chính có thể liên kết với nhau thông qua khóa chính và khóa ngoại.
+Trong phiên bản nâng cấp, bảng Stores được bổ sung để quản lý nhiều cửa hàng. Bảng Users lưu thông tin nhân viên và tài khoản đăng nhập. Bảng StoreBookInventories quản lý số lượng sách theo từng cửa hàng. Các bảng SalesOrders, PurchaseReceipts và ReturnReceipts lần lượt lưu nghiệp vụ bán, nhập và trả hàng.
+Bảng 3.2: Danh sách bảng dữ liệu chính
+Tên bảng
+Ý nghĩa
+Roles
+Lưu vai trò người dùng như Admin và Staff
+Stores
+Lưu thông tin cửa hàng
+Users
+Lưu thông tin nhân viên và tài khoản đăng nhập
+Customers
+Lưu thông tin khách hàng
+Categories
+Lưu danh mục sách
+Authors
+Lưu tác giả
+Publishers
+Lưu nhà xuất bản
+Suppliers
+Lưu nhà cung cấp
+Books
+Lưu thông tin đầu sách
+StoreBookInventories
+Lưu tồn kho sách theo cửa hàng
+SalesOrders
+Lưu hóa đơn bán hàng
+SalesOrderDetails
+Lưu chi tiết hóa đơn bán hàng
+PurchaseReceipts
+Lưu phiếu nhập sách
+PurchaseReceiptDetails
+Lưu chi tiết phiếu nhập sách
+ReturnReceipts
+Lưu phiếu trả hàng
+ReturnReceiptDetails
+Lưu chi tiết phiếu trả hàng
+InventoryTransactions
+Lưu lịch sử nhập, bán, trả và điều chỉnh kho
+    
+Hình 3.2: Sơ đồ Thực thể - Liên kết (ERD) của hệ thống
+3.2.1. Nhóm bảng người dùng và cửa hàng
+Nhóm bảng người dùng gồm Roles, Stores, Users và Customers. Bảng Roles xác định quyền của tài khoản. Bảng Stores lưu thông tin cửa hàng. Bảng Users lưu thông tin nhân viên, tài khoản đăng nhập, cửa hàng làm việc và vai trò. Bảng Customers lưu thông tin khách hàng phục vụ nghiệp vụ bán hàng và trả hàng.
+Việc tách Customers và Users giúp hệ thống phân biệt rõ người sử dụng phần mềm với người mua sách. Khách hàng không cần tài khoản đăng nhập, trong khi nhân viên phải có Username, PasswordHash, RoleId và StoreId để đăng nhập và phân quyền.
+3.2.2. Nhóm bảng sách và dữ liệu nền
+Nhóm bảng sách gồm Books, Categories, Authors, Publishers và Suppliers. Bảng Books là bảng trung tâm lưu thông tin đầu sách. Các bảng Categories, Authors và Publishers giúp mô tả sách rõ ràng hơn. Bảng Suppliers được sử dụng trong nghiệp vụ nhập sách từ nhà cung cấp.
+Sách được gắn với danh mục, tác giả và nhà xuất bản thông qua khóa ngoại. Điều này giúp dữ liệu không bị lặp, thuận tiện khi lọc sách theo danh mục hoặc thống kê sách theo nhà xuất bản. Khi một tác giả hoặc nhà xuất bản không còn dùng, hệ thống nên khóa trạng thái thay vì xóa để tránh ảnh hưởng đến dữ liệu sách đã phát sinh.a
+3.2.3. Nhóm bảng nghiệp vụ kho và hóa đơn
+Nhóm bảng nghiệp vụ gồm StoreBookInventories, PurchaseReceipts, PurchaseReceiptDetails, SalesOrders, SalesOrderDetails, ReturnReceipts, ReturnReceiptDetails và InventoryTransactions. Đây là nhóm bảng xử lý các thay đổi số lượng sách trong kho và các giao dịch phát sinh trong cửa hàng.
+Mỗi khi nhập sách, bán sách hoặc trả hàng, hệ thống đều phải cập nhật tồn kho và ghi lịch sử kho. Việc ghi lịch sử trong InventoryTransactions giúp người quản lý truy vết được nguyên nhân thay đổi số lượng, thời điểm thay đổi, nhân viên thực hiện và chứng từ liên quan.
+Bảng 3.3: Mô tả quan hệ dữ liệu chính
+Khóa ngoại
+Tham chiếu
+Ý nghĩa
+Users.RoleId
+Roles.Id
+Mỗi nhân viên có một vai trò
+Users.StoreId
+Stores.Id
+Mỗi nhân viên thuộc một cửa hàng
+Books.CategoryId
+Categories.Id
+Mỗi sách thuộc một danh mục
+Books.AuthorId
+Authors.Id
+Mỗi sách có thể gắn một tác giả
+Books.PublisherId
+Publishers.Id
+Mỗi sách có thể gắn một nhà xuất bản
+StoreBookInventories.StoreId
+Stores.Id
+Tồn kho gắn với cửa hàng
+StoreBookInventories.BookId
+Books.Id
+Tồn kho gắn với sách
+SalesOrders.CustomerId
+Customers.Id
+Hóa đơn có thể gắn khách hàng
+SalesOrders.StoreId
+Stores.Id
+Hóa đơn phát sinh tại một cửa hàng
+SalesOrderDetails.SalesOrderId
+SalesOrders.Id
+Chi tiết thuộc một hóa đơn
+PurchaseReceipts.SupplierId
+Suppliers.Id
+Phiếu nhập gắn với nhà cung cấp
+ReturnReceipts.SalesOrderId
+SalesOrders.Id
+Phiếu trả hàng có thể tham chiếu hóa đơn gốc
+3.3. THIẾT KẾ MODEL VÀ VIEWMODEL
+Models là các lớp C# đại diện cho bảng trong cơ sở dữ liệu. Mỗi bảng chính có một lớp model tương ứng, ví dụ Store, User, Customer, Book, SalesOrder, PurchaseReceipt và ReturnReceipt. Các model chứa thuộc tính tương ứng với cột trong bảng, không chứa logic truy vấn SQL.
+ViewModels được sử dụng cho dữ liệu hiển thị đã được join từ nhiều bảng hoặc lấy từ view trong SQL Server. Ví dụ BookListViewModel có thêm CategoryName, AuthorName, PublisherName để hiển thị danh sách sách mà không cần form tự join dữ liệu. SalesOrderListViewModel có thêm StaffName, CustomerName và StoreName để hiển thị hóa đơn dễ hiểu hơn.
+Bảng 3.4: Một số model chính của hệ thống
+Model
+Bảng tương ứng
+Vai trò
+Store
+Stores
+Quản lý thông tin cửa hàng
+User
+Users
+Quản lý nhân viên và tài khoản
+Customer
+Customers
+Quản lý khách hàng
+Book
+Books
+Quản lý đầu sách
+StoreBookInventory
+StoreBookInventories
+Quản lý tồn kho theo cửa hàng
+SalesOrder
+SalesOrders
+Quản lý hóa đơn bán
+PurchaseReceipt
+PurchaseReceipts
+Quản lý phiếu nhập
+ReturnReceipt
+ReturnReceipts
+Quản lý phiếu trả hàng
+InventoryTransaction
+InventoryTransactions
+Quản lý lịch sử kho
+3.4. THIẾT KẾ REPOSITORY
+Repository là tầng truy xuất dữ liệu. Mỗi repository phụ trách một nhóm bảng hoặc một nhóm nghiệp vụ. Ví dụ BookRepository xử lý truy vấn liên quan đến sách, SalesOrderRepository xử lý hóa đơn bán, PurchaseReceiptRepository xử lý phiếu nhập và ReportRepository xử lý báo cáo.
+Để tránh lặp code mở kết nối, đóng kết nối và xử lý tham số, hệ thống có RepositoryBase. Lớp này cung cấp các hàm dùng chung như ExecuteQuery, ExecuteNonQuery, ExecuteScalar, ExecuteTransaction, AddParameter và các hàm đọc dữ liệu từ SqlDataReader. Các repository con kế thừa RepositoryBase để sử dụng lại những hàm này.
+Bảng 3.5: Thiết kế các repository
+Repository
+Chức năng
+RepositoryBase
+Cung cấp hàm dùng chung cho các repository
+StoreRepository
+CRUD cửa hàng
+UserRepository
+Đăng nhập, quản lý nhân viên và tài khoản
+BookRepository
+Quản lý sách và tìm kiếm sách
+StoreBookInventoryRepository
+Quản lý tồn kho theo cửa hàng
+SalesOrderRepository
+Tạo và tra cứu hóa đơn bán
+PurchaseReceiptRepository
+Tạo và tra cứu phiếu nhập
+ReturnReceiptRepository
+Tạo và tra cứu phiếu trả hàng
+InventoryRepository
+Lịch sử kho, sách sắp hết, điều chỉnh kho
+ReportRepository
+Doanh thu, thống kê, sách bán chạy
+3.5. THIẾT KẾ SERVICE
+Service là tầng xử lý nghiệp vụ. Tầng này không trực tiếp thao tác giao diện mà nhận dữ liệu từ form, kiểm tra tính hợp lệ, kiểm tra quyền và gọi repository. Ví dụ khi tạo hóa đơn, SalesOrderService kiểm tra người dùng đã đăng nhập, kiểm tra sách có đủ tồn kho, kiểm tra số lượng hợp lệ rồi mới gọi SalesOrderRepository để lưu dữ liệu.
+Tầng Service giúp chương trình an toàn hơn. Nếu chỉ kiểm tra quyền ở giao diện bằng cách ẩn nút, người dùng vẫn có thể mở form hoặc gọi chức năng bằng cách khác. Khi kiểm tra quyền ở Service, hệ thống đảm bảo chức năng quan trọng chỉ được thực hiện bởi người có vai trò phù hợp.
+Bảng 3.6: Thiết kế các service
+Service
+Chức năng
+AuthService
+Đăng nhập, logout, đổi mật khẩu
+PermissionService
+Kiểm tra quyền Admin/Staff
+StoreService
+Nghiệp vụ quản lý cửa hàng
+UserService
+Nghiệp vụ quản lý nhân viên và tài khoản
+BookService
+Nghiệp vụ quản lý sách và upload ảnh
+SalesOrderService
+Nghiệp vụ bán sách
+PurchaseReceiptService
+Nghiệp vụ nhập sách
+ReturnReceiptService
+Nghiệp vụ trả hàng
+InventoryService
+Nghiệp vụ tồn kho và lịch sử kho
+ReportService
+Nghiệp vụ thống kê báo cáo
+ExcelExportService
+Xuất dữ liệu ra Excel
+3.6. THIẾT KẾ BẢO MẬT VÀ PHÂN QUYỀN
+Hệ thống có hai vai trò chính là Admin và Staff. Admin được sử dụng toàn bộ chức năng quản trị, còn Staff chỉ sử dụng các chức năng phục vụ bán hàng. Sau khi đăng nhập, thông tin người dùng hiện tại được lưu trong CurrentSession. Dashboard sử dụng CurrentSession để ẩn hoặc hiện các chức năng phù hợp.
+Mật khẩu người dùng được xử lý bằng BCrypt. Khi tạo tài khoản hoặc đổi mật khẩu, hệ thống không lưu mật khẩu gốc mà lưu chuỗi băm. Khi đăng nhập, mật khẩu người dùng nhập vào được so sánh với chuỗi băm trong database. Cách này giúp tăng độ an toàn so với lưu mật khẩu dạng văn bản rõ.
+PermissionService được sử dụng để kiểm tra quyền ở tầng nghiệp vụ. Các chức năng như quản lý tài khoản, quản lý cửa hàng, nhập sách và xem doanh thu yêu cầu quyền Admin. Các chức năng bán hàng có thể cho phép cả Admin và Staff, nhưng Staff chỉ thao tác trong phạm vi cửa hàng của mình.
+Hình 3.3: Sơ đồ hoạt động (Activity Diagram) luồng xử lý Đăng nhập và Phân quyền
+3.7. THIẾT KẾ GIAO DIỆN
+Giao diện được xây dựng bằng Windows Forms. Các form được thiết kế theo nguyên tắc đơn giản, dễ thao tác và phù hợp với nghiệp vụ. Mỗi form quản lý thường gồm khu vực nhập dữ liệu, khu vực nút chức năng và DataGridView để hiển thị danh sách.
+LoginForm là màn hình đầu tiên của hệ thống. Sau khi đăng nhập thành công, người dùng được chuyển sang DashboardForm. DashboardForm đóng vai trò menu chính và điều hướng đến các form chức năng. Các form Admin được đặt trong nhóm quản trị như StoreManagementForm, UserManagementForm, BookManagementForm, InventoryManagementForm và RevenueReportForm.
+Do yêu cầu báo cáo hiện tại chưa cần chèn sơ đồ và ảnh giao diện, nhóm sẽ bổ sung hình ảnh minh họa các form trong bản hoàn thiện. Tuy nhiên, trong quá trình xây dựng chương trình, các form được thiết kế thống nhất về cách đặt tên control, cách xử lý sự kiện và cách hiển thị thông báo lỗi.
+3.8. THIẾT KẾ CHI TIẾT CÁC BẢNG DỮ LIỆU
+3.8.1 Stores
+Bảng Stores được sử dụng để quản lý thông tin các cửa hàng chi nhánh trong hệ thống.
+Bảng 3.7: Thiết kế bảng Stores
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+StoreCode
+nvarchar
+Mã cửa hàng
+StoreName
+nvarchar
+Tên cửa hàng
+Address
+nvarchar
+Địa chỉ
+Phone
+nvarchar
+Số điện thoại
+ManagerName
+nvarchar
+Tên quản lý cửa hàng
+IsActive
+bit
+Trạng thái hoạt động
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+3.8.2 Users
+Bảng Users quản lý thông tin nhân viên, tài khoản đăng nhập và liên kết với vai trò hệ thống.
+Bảng 3.8: Thiết kế bảng Users
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+RoleId
+int
+Khóa ngoại - Vai trò
+Username
+nvarchar
+Tên đăng nhập
+PasswordHash
+nvarchar
+Mật khẩu đã băm
+FullName
+nvarchar
+Họ và tên nhân viên
+Phone
+nvarchar
+Số điện thoại
+Email
+nvarchar
+Địa chỉ Email
+Address
+nvarchar
+Địa chỉ
+IsActive
+bit
+Trạng thái hoạt động
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+Department
+nvarchar
+Phòng ban
+JoinDate
+datetime
+Ngày gia nhập/vào làm
+Status
+nvarchar
+Trạng thái nhân viên
+EmployeeId
+nvarchar
+Mã nhân viên
+3.8.3 Roles
+Bảng Roles lưu trữ danh sách các vai trò (quyền hạn) có thể gán cho nhân viên.
+Bảng 3.9: Thiết kế bảng Roles
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+RoleName
+nvarchar
+Tên vai trò (VD: Admin, Staff)
+Description
+nvarchar
+Mô tả chi tiết quyền hạn
+3.8.4 Books
+Bảng Books lưu trữ thông tin sách, bao gồm cả số lượng tồn kho theo từng khu vực phân phối.
+Bảng 3.10: Thiết kế bảng Books
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+BookCode
+nvarchar
+Mã sách
+ISBN
+nvarchar
+Mã ISBN
+Title
+nvarchar
+Tên sách
+CategoryId
+int
+Khóa ngoại - Danh mục
+AuthorId
+int
+Khóa ngoại - Tác giả
+PublisherId
+int
+Khóa ngoại - Nhà xuất bản
+SellingPrice
+decimal
+Giá bán
+Quantity
+int
+Tổng số lượng tồn
+MinStock
+int
+Ngưỡng tồn kho tối thiểu
+Description
+nvarchar
+Mô tả sách
+ImagePath
+nvarchar
+Đường dẫn ảnh
+IsActive
+bit
+Trạng thái
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+StockNorth
+int
+Tồn kho miền Bắc
+StockWest
+int
+Tồn kho miền Tây
+StockCentral
+int
+Tồn kho miền Trung
+PublishYear
+int
+Năm xuất bản
+PageCount
+int
+Số trang
+3.8.5 Categories
+Bảng Categories dùng để phân loại sách theo các danh mục/thể loại khác nhau.
+Bảng 3.11: Thiết kế bảng Categories
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+CategoryName
+nvarchar
+Tên danh mục
+Description
+nvarchar
+Mô tả danh mục
+IsActive
+bit
+Trạng thái
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+3.8.6 Authors
+Bảng Authors lưu trữ thông tin về các tác giả viết sách.
+Bảng 3.12: Thiết kế bảng Authors
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+AuthorName
+nvarchar
+Tên tác giả
+Nationality
+nvarchar
+Quốc tịch
+Description
+nvarchar
+Tiểu sử/Mô tả
+IsActive
+bit
+Trạng thái
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+3.8.7 Publishers
+Bảng Publishers lưu trữ thông tin các nhà xuất bản.
+Bảng 3.13: Thiết kế bảng Publishers
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+PublisherName
+nvarchar
+Tên nhà xuất bản
+Phone
+nvarchar
+Số điện thoại
+Email
+nvarchar
+Email
+Address
+nvarchar
+Địa chỉ
+IsActive
+bit
+Trạng thái
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+3.8.8 InventoryTransactions
+Bảng InventoryTransactions được sử dụng để ghi lại lịch sử mọi biến động về số lượng tồn kho (nhập, xuất, điều chỉnh).
+Bảng 3.14: Thiết kế bảng InventoryTransactions
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+StoreId
+int
+Khóa ngoại - Cửa hàng
+BookId
+int
+Khóa ngoại - Sách
+UserId
+int
+Khóa ngoại - Người thực hiện
+TransactionType
+nvarchar
+Loại giao dịch (Nhập, Bán...)
+QuantityChange
+int
+Số lượng thay đổi (+/-)
+ReferenceType
+nvarchar
+Loại phiếu tham chiếu
+ReferenceId
+int
+ID phiếu tham chiếu
+Note
+nvarchar
+Ghi chú
+CreatedAt
+datetime
+Ngày tạo
+3.8.9 Customers
+Bảng Customers quản lý thông tin khách hàng mua sách, phục vụ cho việc theo dõi đơn hàng và điểm thưởng.
+Bảng 3.15: Thiết kế bảng Customers
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+FullName
+nvarchar
+Tên khách hàng
+Phone
+nvarchar
+Số điện thoại
+Email
+nvarchar
+Email
+Address
+nvarchar
+Địa chỉ
+Points
+int
+Điểm tích lũy
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+CustomerCode
+nvarchar
+Mã khách hàng
+IdentityNumber
+nvarchar
+CMND/CCCD
+IsActive
+bit
+Trạng thái
+3.8.10 SalesOrders
+Bảng SalesOrders lưu thông tin chung của các hóa đơn bán hàng.
+Bảng 3.16: Thiết kế bảng SalesOrders
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+OrderCode
+nvarchar
+Mã hóa đơn
+StoreId
+int
+Khóa ngoại - Cửa hàng bán
+UserId
+int
+Khóa ngoại - Nhân viên bán
+CustomerId
+int
+Khóa ngoại - Khách hàng
+OrderDate
+datetime
+Ngày bán
+TotalAmount
+decimal
+Tổng tiền
+PaymentMethod
+nvarchar
+Phương thức thanh toán
+OrderStatus
+nvarchar
+Trạng thái đơn hàng
+Note
+nvarchar
+Ghi chú
+3.8.11 SalesOrderDetails
+Bảng SalesOrderDetails lưu thông tin chi tiết các cuốn sách và số lượng được bán trong một hóa đơn.
+Bảng 3.17: Thiết kế bảng SalesOrderDetails
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+SalesOrderId
+int
+Khóa ngoại - Hóa đơn bán
+BookId
+int
+Khóa ngoại - Sách
+Quantity
+int
+Số lượng bán
+UnitPrice
+decimal
+Đơn giá bán
+DiscountAmount
+decimal
+Tiền chiết khấu/giảm giá
+LineTotal
+decimal
+Thành tiền (Số lượng * Đơn giá - Giảm giá)
+3.8.12 Suppliers
+Bảng Suppliers quản lý thông tin các nhà cung cấp sách cho hệ thống.
+Bảng 3.18: Thiết kế bảng Suppliers
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+SupplierName
+nvarchar
+Tên nhà cung cấp
+Phone
+nvarchar
+Số điện thoại
+Email
+nvarchar
+Email
+Address
+nvarchar
+Địa chỉ
+IsActive
+bit
+Trạng thái
+CreatedAt
+datetime
+Ngày tạo
+UpdatedAt
+datetime
+Ngày cập nhật
+3.8.13 PurchaseReceipts
+Bảng PurchaseReceipts lưu thông tin chung của các phiếu nhập hàng từ nhà cung cấp.
+Bảng 3.19: Thiết kế bảng PurchaseReceipts
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+ReceiptCode
+nvarchar
+Mã phiếu nhập
+StoreId
+int
+Khóa ngoại - Cửa hàng nhập
+SupplierId
+int
+Khóa ngoại - Nhà cung cấp
+UserId
+int
+Khóa ngoại - Nhân viên tạo phiếu
+ImportDate
+datetime
+Ngày nhập
+TotalAmount
+decimal
+Tổng giá trị nhập
+Note
+nvarchar
+Ghi chú
+Status
+nvarchar
+Trạng thái (Hoàn thành, Nháp...)
+3.8.14 PurchaseReceiptDetails
+Bảng PurchaseReceiptDetails lưu thông tin chi tiết từng loại sách và số lượng được nhập kho trong một phiếu nhập.
+Bảng 3.20: Thiết kế bảng PurchaseReceiptDetails
+Tên cột
+Kiểu dữ liệu
+Mô tả
+Id
+int
+Khóa chính
+PurchaseReceiptId
+int
+Khóa ngoại - Phiếu nhập
+BookId
+int
+Khóa ngoại - Sách
+Quantity
+int
+Số lượng nhập
+ImportPrice
+decimal
+Giá nhập
+LineTotal
+decimal
+Thành tiền
+3.9 THIẾT KẾ XỬ LÝ GIAO DỊCH KHO
+Các nghiệp vụ tác động đến kho (nhập sách, bán sách) đều làm thay đổi số lượng tồn kho ở bảng Books (hoặc chi nhánh) và ghi nhận vào bảng InventoryTransactions. Vì vậy, hệ thống cần xử lý các nghiệp vụ này trong cùng một transaction để đảm bảo dữ liệu không bị lệch trong database SQL Server. Ví dụ, nếu sử dụng ASP.NET Core MVC, các nghiệp vụ này nên được gói gọn trong giao dịch (transaction) thông qua DbContext của Entity Framework hoặc ADO.NET. Nếu tạo hóa đơn thành công nhưng trừ kho thất bại, dữ liệu sẽ không nhất quán. Ngược lại, nếu trừ kho thành công nhưng chi tiết hóa đơn không được lưu, hệ thống cũng bị sai lệch.
+Trong Repository, các nghiệp vụ có nhiều bước như CreateSalesOrder hoặc CreatePurchaseReceipt được xử lý bằng lệnh ExecuteTransaction. Nếu tất cả câu lệnh SQL thực hiện thành công, transaction được commit. Nếu có lỗi, transaction rollback để đưa database về trạng thái trước đó. Đây là cơ chế quan trọng giúp bảo toàn dữ liệu trong các nghiệp vụ có nhiều bảng liên quan.
+Ngoài việc cập nhật tồn kho, hệ thống còn ghi lịch sử vào bảng InventoryTransactions. Mỗi bản ghi lịch sử thể hiện BookId, StoreId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId và Note. Nhờ đó, người quản lý có thể truy vết số lượng thay đổi chi tiết. (Lưu ý: Nghiệp vụ trả hàng hiện chưa được thiết kế thực thể riêng biệt trong schema hiện tại).
+Bảng 3.21: Các luồng thay đổi tồn kho chính
+Nghiệp vụ
+Nguồn dữ liệu
+Ảnh hưởng tồn kho
+Loại lịch sử (TransactionType)
+Nhập sách
+PurchaseReceiptDetails
+Cộng tồn kho
+Import
+Bán sách
+SalesOrderDetails
+Trừ tồn kho
+Sale
+Điều chỉnh kho
+InventoryService
+Tăng hoặc giảm tồn kho
+Adjustment
+Hình 3.4: Sơ đồ luồng xử lý giao dịch kho
+CHƯƠNG 4: XÂY DỰNG CHƯƠNG TRÌNH
+4.1. CẤU TRÚC THƯ MỤC CHƯƠNG TRÌNH
+Mã nguồn chương trình được tổ chức trong project BookStoreManagement. Các thư mục được đặt tên theo chức năng và tầng xử lý. Cách tổ chức này giúp lập trình viên dễ tìm file, dễ sửa lỗi và dễ phân công công việc trong nhóm.
+Trong giai đoạn xây dựng, nhóm ưu tiên hoàn thiện tầng Models, ViewModels, Repositories và Services trước. Sau đó, các form giao diện được phát triển dựa trên các service đã có. Cách làm này giúp giảm việc viết SQL trực tiếp trong form và làm cho code giao diện gọn hơn.
+Bảng 4.1: Cấu trúc thư mục chương trình
+Thư mục
+Thành phần
+Vai trò
+Database
+DbConnectionFactory.cs
+Tạo kết nối SQL Server
+Models
+Các class model
+Đại diện bảng database
+ViewModels
+Các class view model
+Đại diện dữ liệu hiển thị từ view hoặc join
+Repositories
+Các class repository
+Truy vấn SQL Server
+Services
+Các class service
+Xử lý nghiệp vụ và kiểm tra quyền
+Helpers
+PasswordHasher, CurrentSession
+Hỗ trợ mã hóa mật khẩu và lưu phiên đăng nhập
+Forms
+LoginForm, DashboardForm, Admin forms
+Giao diện người dùng
+4.2. XÂY DỰNG KẾT NỐI CƠ SỞ DỮ LIỆU
+Kết nối cơ sở dữ liệu của hệ thống được quản lý tập trung thông qua lớp DbConnectionFactory. Để đảm bảo tính linh hoạt, lớp này sử dụng phương thức tĩnh (static) để khởi tạo và cung cấp đối tượng SqlConnection cho các Repository sử dụng.
+Điểm nổi bật trong thiết kế này là chuỗi kết nối (Connection String) không bị gán cứng hoàn toàn vào mã nguồn. Hệ thống sử dụng đối tượng ConfigurationBuilder để tự động nạp thông tin từ tệp cấu hình appsettings.json. Đặc biệt, đoạn mã được trang bị cơ chế dự phòng (fallback): nếu tệp cấu hình bị thiếu hoặc không chứa khóa "DefaultConnection", hệ thống sẽ tự động sử dụng chuỗi kết nối mặc định trỏ đến cơ sở dữ liệu cục bộ (localdb)\mssqllocaldb. Điều này giúp hệ thống hoạt động trơn tru cả trong quá trình phát triển lẫn khi triển khai.
+Tại các lớp Repository, kết nối được mở thông qua lời gọi hàm DbConnectionFactory.CreateConnection() mỗi khi cần truy vấn. Toàn bộ quá trình thao tác dữ liệu luôn được bao bọc trong khối lệnh using. Cách làm này đảm bảo kết nối sẽ được tự động đóng và trả về hệ thống ngay khi truy vấn hoàn tất, giúp ngăn chặn triệt để tình trạng "treo" kết nối hay rò rỉ bộ nhớ (memory leak).
+Mã nguồn minh họa lớp DbConnectionFactory:
+public class DbConnectionFactory
+{
+    private static readonly string connectionString;
+    static DbConnectionFactory()
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        IConfiguration configuration = builder.Build();
+        connectionString = configuration.GetConnectionString("DefaultConnection") 
+            ?? "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=BookStoreDB;Integrated Security=True";
+    }
+    public static SqlConnection CreateConnection()
+    {
+        return new SqlConnection(connectionString);
+    }
+}
+4.3. XÂY DỰNG CHỨC NĂNG ĐĂNG NHẬP
+Chức năng đăng nhập và quản lý tài khoản được xây dựng tập trung tại lớp
+AuthService (kế thừa từ ServiceBase), đóng vai trò xử lý toàn bộ logic liên
+quan đến xác thực người dùng. Quá trình đăng nhập bắt đầu bằng việc chuẩn hóa
+chuỗi đầu vào (Trim) và kiểm tra tính hợp lệ sơ bộ.
+Khi truy xuất thông tin từ UserRepository, hệ thống thực hiện hai lớp bảo mật:
+kiểm tra trạng thái hoạt động của tài khoản (IsActive) và đối chiếu mật khẩu
+thông qua cơ chế băm an toàn (PasswordHasher.VerifyPassword). Điểm nhấn kỹ
+thuật đáng chú ý trong AuthService là tính năng nâng cấp hàm băm
+(NeedsRehash). Nếu hệ thống phát hiện hàm băm cũ không còn đạt chuẩn an toàn
+hoặc cần thay đổi chi phí xử lý (work factor), mật khẩu sẽ tự động được băm
+lại (HashPassword) và lưu vào cơ sở dữ liệu ngay trong quá trình đăng nhập.
+Điều này giúp nâng cấp bảo mật xuyên suốt mà không ảnh hưởng đến trải nghiệm
+người dùng.
+Sau khi xác thực thành công, đối tượng User được trả về và lưu trữ vào bộ nhớ
+toàn cục thông qua CurrentSession.SetCurrentUser(user), tạo tiền đề cho việc
+phân quyền (Authorization) tại các chức năng khác. Ngoài ra, AuthService còn
+đảm nhiệm các nghiệp vụ liên quan như đăng xuất (Clear session) và đổi mật
+khẩu an toàn. Quá trình đổi mật khẩu áp dụng các quy tắc kiểm tra tính hợp lệ
+nghiêm ngặt (độ dài tối thiểu 6 ký tự, xác nhận mật khẩu trùng khớp) và bắt
+buộc xác thực lại bằng mật khẩu cũ.
+Hình 4.1: Giao diện đăng nhập
+namespace BookStoreManagement.Services
+{
+    public class AuthService : ServiceBase
+    {
+        private readonly UserRepository _userRepository;
+        public AuthService()
+        {
+            _userRepository = new UserRepository();
+        }
+        public User? Login(string username, string password)
+        {
+            username = Trim(username);
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+            User? user = _userRepository.GetByUsername(username);
+            if (user == null || !user.IsActive)
+            {
+                return null;
+            }
+            if (!PasswordHasher.VerifyPassword(password, user.PasswordHash))
+            {
+                return null;
+            }
+            if (PasswordHasher.NeedsRehash(user.PasswordHash))
+            {
+                string newHash = PasswordHasher.HashPassword(password);
+                _userRepository.ChangePassword(user.Id, newHash);
+                user.PasswordHash = newHash;
+            }
+            CurrentSession.SetCurrentUser(user);
+            return user;
+        }
+        public void Logout()
+        {
+            CurrentSession.Clear();
+        }
+        public bool ChangeMyPassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            Require(CurrentSession.UserId > 0, "Please log in.");
+            User? user = _userRepository.GetById(CurrentSession.UserId);
+            Require(user != null, "Current account not found.");
+            if (!PasswordHasher.VerifyPassword(oldPassword, user!.PasswordHash))
+            {
+                throw new Exception("Old password is incorrect.");
+            }
+            ValidatePassword(newPassword, confirmPassword);
+            return _userRepository.ChangePassword(CurrentSession.UserId, PasswordHasher.HashPassword(newPassword));
+        }
+        public void ValidatePassword(string password, string? confirmPassword = null)
+        {
+            Require(!string.IsNullOrWhiteSpace(password), "Password cannot be empty.");
+            Require(password.Length >= 6, "Password must have at least 6 characters.");
+            if (confirmPassword != null)
+            {
+                Require(password == confirmPassword, "Confirmation password does not match.");
+            }
+        }
+    }
+}
+4.4. XÂY DỰNG DASHBOARD VÀ PHÂN QUYỀN GIAO DIỆN
+DashboardForm đóng vai trò là màn hình trung tâm, điều hướng chính cho người dùng ngay sau khi đăng nhập thành công vào hệ thống. Giao diện này có nhiệm vụ hiển thị lời chào cá nhân hóa, định danh vai trò hiện tại của người dùng và cung cấp hệ thống các nút chức năng thao tác nhanh.
+Ngay khi form được nạp vào bộ nhớ (Load), hệ thống kích hoạt phương thức SetupMenuByRole để truy vấn trạng thái từ phiên làm việc hiện tại thông qua CurrentSession.IsAdmin hoặc CurrentSession.IsStaff.
+Đối với vai trò Quản trị viên (Admin): Màn hình Dashboard mở rộng toàn bộ quyền năng quản lý hệ thống, hiển thị đầy đủ các nhóm chức năng bao gồm: quản lý cửa hàng, tài khoản nhân sự, danh mục đầu sách, tác giả, nhà xuất bản, nhà cung cấp, kiểm soát tồn kho, hệ thống hóa đơn, phiếu nhập hàng, quy trình trả hàng và bảng thống kê doanh thu tài chính chuyên sâu.
+Đối với vai trò Nhân viên (Staff): Giao diện được tinh chỉnh gọn gàng hơn, chỉ tập trung hiển thị các nghiệp vụ cốt lõi phục vụ bán hàng hàng ngày như: tra cứu danh sách sách, kiểm tra tồn kho tại chi nhánh làm việc, thực hiện lập hóa đơn bán sách, xử lý nghiệp vụ trả hàng và tra cứu lịch sử hóa đơn do chính nhân viên đó tạo ra.
+Cơ chế chủ động ẩn/hiện các thành phần menu không chỉ giúp giao diện trở nên trực quan, đơn giản và phù hợp với từng đối tượng người dùng mà còn hạn chế sự nhầm lẫn trong thao tác nghiệp vụ. Tuy nhiên, để đảm bảo tính bảo mật cốt lõi, hệ thống không bao giờ chỉ phụ thuộc vào giao diện để phân quyền. Tất cả các tầng dịch vụ (Service) quan trọng ở phía sau vẫn bắt buộc phải gọi PermissionService để kiểm tra lại đặc quyền hợp lệ của người dùng trước khi cho phép thực thi bất kỳ giao dịch nào.
+Hình 4.2:Giao diện Dashboard của Admin
+Hình 4.3: Giao diện Dashboard của Staff
+4.5. XÂY DỰNG CÁC CHỨC NĂNG QUẢN TRỊ
+Bảng 4.2: Các chức năng quản trị
+Chức năng
+Nội dung xây dựng
+Quản lý cửa hàng
+Admin thêm, sửa, khóa/mở khóa và tìm kiếm cửa hàng. Dữ liệu cửa hàng được dùng cho nhân viên, tồn kho, bán hàng và nhập hàng.
+Quản lý tài khoản
+Admin tạo tài khoản nhân viên, phân vai trò, gán cửa hàng làm việc, reset mật khẩu và khóa tài khoản khi cần.
+Quản lý danh mục
+Admin quản lý danh mục sách để phân loại đầu sách và hỗ trợ lọc dữ liệu.
+Quản lý tác giả
+Admin lưu thông tin tác giả để gắn với sách.
+Quản lý nhà xuất bản
+Admin quản lý nhà xuất bản, trong đó có thể có Nhà xuất bản Kim Đồng và các đơn vị khác.
+Quản lý nhà cung cấp
+Admin quản lý nhà cung cấp phục vụ nhập sách.
+Quản lý sách
+Admin thêm sách, sửa thông tin, upload ảnh, cập nhật giá bán và trạng thái kinh doanh.
+Quản lý tồn kho
+Admin xem tồn kho theo cửa hàng, sách sắp hết hàng và lịch sử kho.
+Quản lý báo cáo
+Admin xem doanh thu, sách bán chạy và xuất Excel.
+Quản lý khách hàng
+Admin cần xem danh sách khách hàng, điểm tích lũy, lịch sử mua hàng, và có thể khóa/mở khóa tài khoản khách hàng.
+Quản lý phiếu nhập 
+(Nhập hàng)
+Admin tạo các phiếu nhập hàng từ nhà cung cấp, ghi nhận số lượng sách nhập, giá nhập và tự động cộng dồn vào tồn kho.
+Quản lý hóa đơn bán
+Admin có quyền tra cứu, xem chi tiết và theo dõi trạng thái toàn bộ hóa đơn bán hàng từ tất cả các chi nhánh.
+4.5.1 Quản lý chi nhánh
+Chức năng quản lý chi nhánh (Store Management) được thiết kế dành riêng cho Quản trị viên (Admin) nhằm theo dõi và vận hành hệ thống các cơ sở kinh doanh. Giao diện hiển thị trực quan danh sách các chi nhánh dưới dạng bảng thông tin chi tiết bao gồm: Mã chi nhánh, Tên chi nhánh, Địa chỉ, Điện thoại, Người quản lý, Trạng thái (ví dụ: Đang hoạt động) và các nút thao tác nhanh (Sửa, Khóa/Xóa).
+Các nghiệp vụ chính hỗ trợ trong phân hệ này bao gồm:
+Thêm chi nhánh mới: Thông qua nút "+ Thêm Chi nhánh", mở ra giao diện nhập liệu thông tin cơ sở mới.
+Cập nhật & Thao tác: Cho phép chỉnh sửa thông tin hoặc thay đổi trạng thái hoạt động của chi nhánh trực tiếp qua các biểu tượng thao tác trên từng dòng.
+Tìm kiếm nhanh: Hỗ trợ khung tìm kiếm theo mã hoặc tên chi nhánh (Tìm theo mã, tên chi nhánh...), giúp Quản trị viên dễ dàng tra cứu khi danh sách mở rộng sang nhiều trang (hệ thống hỗ trợ phân trang ở góc dưới).
+Về mặt kiến trúc kỹ thuật, chức năng được xây dựng theo mô hình phân tầng chuẩn mực: giao diện Form tiếp nhận thao tác người dùng, gọi đến tầng dịch vụ (Service) để kiểm tra tính hợp lệ của dữ liệu và xác thực quyền hạn (RequireAdmin), sau đó chuyển giao xuống tầng Repository để thực hiện truy vấn SQL. Khi hoàn tất, giao diện tự động tải lại dữ liệu mới nhất, đảm bảo tính đồng bộ xuyên suốt cho toàn hệ thống nhân sự, tồn kho và bán hàng.
+Hình 4.4: Giao diện quản lý chi nhánh
+Hình 4.5: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý chi nhánh
+4.5.2 Quản lý tài khoản
+Admin tạo tài khoản nhân viên, phân vai trò, gán cửa hàng làm việc, reset mật khẩu và khóa tài khoản khi cần.
+Chức năng này được xây dựng theo luồng Form gọi Service, Service kiểm tra dữ liệu và quyền, sau đó Repository thực hiện truy vấn SQL. Khi thao tác thành công, giao diện tải lại danh sách để người dùng thấy dữ liệu mới nhất. Khi có lỗi, hệ thống hiển thị thông báo rõ ràng để người dùng biết nguyên nhân và cách xử lý.
+Hình 4.6: Giao diện quản lý tài khoản 
+Hình 4.7: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tài khoản
+4.5.2.1 Nghiệp vụ Tạo tài khoản nhân viên
+Khi Admin tạo tài khoản, hàm này sẽ được gọi. Nó kiểm tra quyền Admin, tự động mã hóa mật khẩu và lưu xuống Database. Việc "phân vai trò" (Role) và "gán cửa hàng" (Store) khi tạo mới cũng được gộp chung vào đối tượng Models.User truyền vào hàm này.
+Hình 4.8: Giao diện sử lý nghiệp vụ tạo tài khoản nhân viên
+public void CreateUser(Models.User user, string plainPassword)
+{
+    PermissionService.RequireAdmin();
+    user.PasswordHash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(plainPassword);
+    _userRepo.Add(user);
+}
+public async System.Threading.Tasks.Task CreateUserAsync(Models.User user, string plainPassword)
+{
+    PermissionService.RequireAdmin();
+    user.PasswordHash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(plainPassword);
+    await _userRepo.AddAsync(user);
+}
+4.5.2.2 Nghiệp vụ Phân vai trò, Gán cửa hàng (Sửa) và Khóa tài khoản
+Trong kiến trúc của bạn, các thao tác như đổi vai trò (Role), chuyển cửa hàng (Store) hay khóa/mở khóa tài khoản (thường là thuộc tính IsActive hoặc Status trong model User) đều là hành động Cập nhật thông tin. Do đó, giao diện (Form) sẽ thay đổi các thuộc tính này trên đối tượng User, sau đó gọi hàm Update để lưu lại.
+Hình 4.9: Giao diện quản lý tài khoản
+ 
+public void Update(Models.User user)
+{
+    PermissionService.RequireAdmin();
+    _userRepo.Update(user);
+}
+public async System.Threading.Tasks.Task UpdateAsync(Models.User user)
+{
+    PermissionService.RequireAdmin();
+    await _userRepo.UpdateAsync(user);
+}
+4.5.2.3 Nghiệp vụ Reset mật khẩu
+Khi nhân viên quên mật khẩu, Admin sử dụng tính năng này để cấp lại mật khẩu mới. Hàm nhận vào ID của nhân viên và mật khẩu cấp mới, sau đó mã hóa (Hash) và cập nhật thẳng xuống Database.
+public void ResetPassword(int userId, string newPlainPassword)
+{
+    PermissionService.RequireAdmin();
+    string hash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(newPlainPassword);
+    _userRepo.ChangePassword(userId, hash);
+}
+public async System.Threading.Tasks.Task ResetPasswordAsync(int userId, string newPlainPassword)
+{
+    PermissionService.RequireAdmin();
+    string hash = BookStoreManagement.Helpers.PasswordHasher.HashPassword(newPlainPassword);
+    await _userRepo.ChangePasswordAsync(userId, hash);
+}
+4.5.3 Quản lý danh mục
+Chức năng Quản lý danh mục (Category Management) cho phép Quản trị viên (Admin) thiết lập và duy trì hệ thống phân loại sách. Dữ liệu danh mục đóng vai trò rất quan trọng trong việc hệ thống hóa các đầu sách, đồng thời là nền tảng để xây dựng bộ lọc tìm kiếm (filter) đa chiều trên giao diện người dùng và hỗ trợ công tác thống kê báo cáo theo từng thể loại.
+Luồng xử lý nghiệp vụ của chức năng được triển khai nhất quán theo mô hình phân lớp. Tại tầng Dịch vụ (CategoryService), hệ thống thực hiện hai lớp kiểm duyệt trước khi tương tác với cơ sở dữ liệu: thứ nhất là xác thực quyền truy cập (RequireAdmin) để chặn các can thiệp trái phép; thứ hai là kiểm tra tính toàn vẹn của dữ liệu đầu vào (đảm bảo tên danh mục không bị bỏ trống và không bị trùng lặp). Sau khi vượt qua các bước xác thực, tầng Repository mới tiến hành thực thi câu lệnh SQL để cập nhật vào cơ sở dữ liệu.
+Nhằm mang lại trải nghiệm tương tác tốt nhất, giao diện (Form) được lập trình để tự động làm mới (refresh) danh sách (Grid) ngay khi thao tác thêm, sửa hoặc xóa diễn ra thành công. Đối với các trường hợp dữ liệu không hợp lệ, thông qua cơ chế bắt ngoại lệ (Exception Handling) từ tầng Service, hệ thống sẽ hiển thị các thông báo trực quan, giúp người dùng dễ dàng nhận biết và điều chỉnh kịp thời.
+Hình 4.10: Giao diện quản lý danh mục
+Hình 4.11: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý danh mục
+Mã nguồn minh họa:
+public int Add(Category category)
+{
+    // 1. Kiểm tra quyền Admin
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào cơ bản
+    Validate(category);
+    // 3. Chuẩn hóa chuỗi (Xóa khoảng trắng thừa)
+    category.CategoryName = Trim(category.CategoryName);
+    category.Description = TrimNullable(category.Description);
+    category.IsActive = true;
+    // 4. Kiểm tra logic nghiệp vụ: Trùng tên danh mục
+    if (_repository.IsNameExists(category.CategoryName))
+        throw new Exception("Category name already exists.");
+    // 5. Lưu xuống DB
+    return _repository.Add(category);
+}
+private void Validate(Category category)
+{
+    Require(category != null, "Invalid category data.");
+    Require(!string.IsNullOrWhiteSpace(category.CategoryName), "Category name cannot be empty.");
+    Require(category.CategoryName.Length <= 100, "Category name cannot exceed 100 chars.");
+}
+4.5.4 Quản lý tác giả
+Chức năng Quản lý tác giả (Author Management) được xây dựng nhằm giúp Quản trị viên (Admin) lưu trữ và chuẩn hóa thông tin của những người sáng tác. Dữ liệu này đóng vai trò là dữ liệu nền (Master Data), dùng để thiết lập mối quan hệ liên kết trực tiếp với các đầu sách trong hệ thống, từ đó hỗ trợ độc giả tra cứu và tìm kiếm tác phẩm theo tác giả một cách chính xác.
+Về mặt kiến trúc kỹ thuật, chức năng tiếp tục kế thừa luồng xử lý phân lớp N-Tier. Lớp dịch vụ AuthorService hoạt động như một rào chắn kiểm soát nghiệp vụ: đầu tiên, nó xác thực thẩm quyền thao tác thông qua lớp PermissionService; tiếp đó, thực hiện chuẩn hóa chuỗi (loại bỏ khoảng trắng thừa) và kiểm tra tính toàn vẹn của dữ liệu (như Tên tác giả không được để trống). Chỉ khi các điều kiện này được thỏa mãn, tầng AuthorRepository mới được phép khởi tạo kết nối và thực thi câu lệnh SQL để cập nhật dữ liệu.
+Quá trình tương tác trên giao diện được thiết kế hướng tới sự liền mạch. Mọi thao tác thành công đều kích hoạt cơ chế tải lại danh sách (Data Refresh), giúp luồng dữ liệu hiển thị luôn được cập nhật theo thời gian thực. Ngược lại, nếu phát hiện dữ liệu bất thường hoặc vi phạm quy tắc (ví dụ: trùng tên tác giả), hệ thống sẽ chủ động ném ngoại lệ (Exception) và chuyển hóa thành các hộp thoại cảnh báo rõ ràng trên màn hình, hướng dẫn người dùng cách khắc phục.
+Hình 4.12: Giao diện quản lý tài khoản
+Hình 4.13: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tài khoản
+Mã nguồn minh họa:
+public int Add(Author item)
+{
+    // 1. Yêu cầu quyền Quản trị viên
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào cơ bản
+    Validate(item);
+    // 3. Chuẩn hóa chuỗi (Cắt khoảng trắng thừa)
+    item.AuthorName = Trim(item.AuthorName);
+    item.Description = TrimNullable(item.Description);
+    item.IsActive = true;
+    // 4. Kiểm tra logic: Trùng tên tác giả
+    if (_repository.IsNameExists(item.AuthorName))
+        throw new Exception("Author name already exists.");
+    // 5. Lưu vào Database
+    return _repository.Add(item);
+}
+private void Validate(Author item)
+{
+    Require(item != null, "Invalid author data.");
+    Require(!string.IsNullOrWhiteSpace(item.AuthorName), "Author name cannot be empty.");
+    Require(item.AuthorName.Length <= 150, "Author name cannot exceed 150 chars.");
+}
+4.5.5 Quản lý nhà xuất bản
+Chức năng Quản lý nhà xuất bản (Publisher Management) cung cấp công cụ để Quản trị viên (Admin) cập nhật và lưu trữ thông tin về các đối tác phát hành sách (ví dụ: Nhà xuất bản Kim Đồng, Nhà xuất bản Trẻ, v.v.). Các thông tin này đóng vai trò là một trong những danh mục tham chiếu bắt buộc, giúp hoàn thiện hồ sơ chi tiết của từng ấn phẩm khi nhập liệu vào hệ thống.
+Tương tự như các phân hệ danh mục khác, nghiệp vụ này được triển khai theo kiến trúc N-Tier. Lớp dịch vụ PublisherService đảm nhận vai trò trung tâm xử lý logic: yêu cầu người dùng phải có đặc quyền quản trị (RequireAdmin) trước khi tiến hành bất kỳ thao tác thay đổi nào. Dữ liệu đầu vào tiếp tục đi qua các bộ lọc kiểm duyệt (Validation) để chuẩn hóa chuỗi, đảm bảo tên nhà xuất bản không bị bỏ trống và không trùng lặp với dữ liệu đã tồn tại. Sau khi các điều kiện ràng buộc được thỏa mãn, PublisherRepository mới khởi tạo kết nối và thực thi các lệnh SQL tương tác với cơ sở dữ liệu.
+Nhằm tối ưu hóa trải nghiệm người dùng (UX), màn hình giao diện (Form) được cấu hình để tự động đồng bộ (Auto-refresh) danh sách ngay khi thao tác lưu dữ liệu thành công. Trong trường hợp xảy ra lỗi do vi phạm tính toàn vẹn dữ liệu, tầng Service sẽ lập tức chặn luồng xử lý và trả về các thông báo ngoại lệ (Exception), giúp giao diện hiển thị cảnh báo rõ ràng để người dùng nhận biết và khắc phục nguyên nhân.
+Hình 4.14: Giao diện quản lý nhà xuất bản
+Hình 4.15: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý nhà xuất bản
+Mã nguồn minh họa:
+public int Add(Publisher item)
+{
+    // 1. Phân quyền: Yêu cầu quyền Quản trị viên
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào cơ bản
+    Validate(item);
+    // 3. Chuẩn hóa chuỗi văn bản (Loại bỏ khoảng trắng thừa)
+    item.PublisherName = Trim(item.PublisherName);
+    item.Phone = TrimNullable(item.Phone);
+    item.Email = TrimNullable(item.Email);
+    item.Address = TrimNullable(item.Address);
+    item.IsActive = true;
+    // 4. Kiểm tra logic nghiệp vụ: Không được trùng tên NXB
+    if (_repository.IsNameExists(item.PublisherName))
+        throw new Exception("Publisher name already exists.");
+    // 5. Lưu xuống cơ sở dữ liệu
+    return _repository.Add(item);
+}
+private void Validate(Publisher item)
+{
+    Require(item != null, "Invalid publisher data.");
+    Require(!string.IsNullOrWhiteSpace(item.PublisherName), "Publisher name cannot be empty.");
+    Require(item.PublisherName.Length <= 150, "Publisher name cannot exceed 150 chars.");
+}
+4.5.6 Quản lý nhà cung cấp
+Chức năng Quản lý nhà cung cấp (Supplier Management) được thiết kế để Quản trị viên (Admin) lưu trữ và theo dõi thông tin của các đối tác phân phối sách. Dữ liệu về nhà cung cấp là thành phần gốc không thể thiếu trong phân hệ Quản lý kho, phục vụ trực tiếp cho các nghiệp vụ lập Phiếu nhập hàng (Purchase Receipt) và đối soát lịch sử nhập kho sau này.
+Vẫn tuân thủ chặt chẽ kiến trúc N-Tier đồng bộ của toàn hệ thống, luồng nghiệp vụ tại SupplierService được bảo vệ bởi lớp kiểm duyệt phân quyền (PermissionService.RequireAdmin()). Thông tin đầu vào tiếp tục được xử lý qua các bước chuẩn hóa (cắt bỏ khoảng trắng thừa) và kiểm tra tính hợp lệ nhằm đảm bảo tên nhà cung cấp không bị để trống và hoàn toàn duy nhất, tránh tình trạng rác hoặc trùng lặp dữ liệu. Tầng SupplierRepository chỉ tiến hành mở kết nối và thực thi lệnh SQL khi toàn bộ các ràng buộc nghiệp vụ ở tầng Service đã được đáp ứng.
+Giao diện (Form) quản lý duy trì cơ chế tương tác thời gian thực: tự động làm mới (Auto-refresh) danh sách ngay khi thao tác lưu diễn ra thành công. Trong trường hợp có vi phạm logic (như trùng lặp tên), hệ thống sẽ bắt các ngoại lệ (Exception) từ tầng Service và hiển thị thành các hộp thoại cảnh báo trực quan, giúp người dùng dễ dàng nắm bắt nguyên nhân và có hướng xử lý kịp thời.
+Hình 4.16: Giao diện quản lý nhà cung cấp
+Hình 4.17: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý nhà cung cấp
+Mã nguồn minh họa:
+public int Add(Supplier item)
+{
+    // 1. Phân quyền: Yêu cầu quyền Quản trị viên
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào cơ bản
+    Validate(item);
+    // 3. Chuẩn hóa chuỗi văn bản (Loại bỏ khoảng trắng thừa)
+    item.SupplierName = Trim(item.SupplierName);
+    item.Phone = TrimNullable(item.Phone);
+    item.Email = TrimNullable(item.Email);
+    item.Address = TrimNullable(item.Address);
+    item.IsActive = true;
+    // 4. Kiểm tra logic nghiệp vụ: Không được trùng tên NCC
+    if (_repository.IsNameExists(item.SupplierName))
+        throw new Exception("Supplier name already exists.");
+    // 5. Lưu xuống cơ sở dữ liệu
+    return _repository.Add(item);
+}
+private void Validate(Supplier item)
+{
+    Require(item != null, "Invalid supplier data.");
+    Require(!string.IsNullOrWhiteSpace(item.SupplierName), "Supplier name cannot be empty.");
+    Require(item.SupplierName.Length <= 150, "Supplier name cannot exceed 150 chars.");
+}
+4.5.7 Quản lý sách
+Chức năng Quản lý sách (Book Management) là phân hệ trung tâm của toàn bộ hệ thống, cung cấp cho Quản trị viên (Admin) không gian làm việc toàn diện để thao tác với các ấn phẩm. Các nghiệp vụ chính bao gồm: khởi tạo dữ liệu sách mới, thiết lập và cập nhật giá bán, quản lý file hình ảnh (upload ảnh bìa) và điều chỉnh trạng thái kinh doanh (đang bán, ngừng kinh doanh). Thực thể Sách đóng vai trò là tâm điểm kết nối, tham chiếu trực tiếp đến các dữ liệu nền (Master Data) như Danh mục, Tác giả và Nhà xuất bản.
+Do mang tính chất phức tạp về mặt cấu trúc dữ liệu, luồng xử lý tại tầng BookService được thiết kế chặt chẽ hơn. Trước tiên, hệ thống xác thực đặc quyền quản trị thông qua PermissionService. Tiếp đó, dữ liệu đi qua bộ lọc kiểm duyệt (Validation) đa tầng: kiểm tra tính hợp lệ của chuỗi văn bản (Tên sách, mã sách), kiểm tra logic toán học (Giá bán phải lớn hơn hoặc bằng 0) và xử lý luồng I/O đối với file ảnh (lưu trữ ảnh vào thư mục hệ thống và lấy đường dẫn tương đối). Chỉ khi mọi quy tắc nghiệp vụ và ràng buộc toàn vẹn được thỏa mãn, BookRepository mới thực thi giao dịch SQL để lưu xuống cơ sở dữ liệu.
+Giao diện quản lý (Form) được thiết kế trực quan với chức năng xem trước hình ảnh (Image Preview). Ngay khi các thao tác thêm hoặc cập nhật thông tin thành công, lưới dữ liệu (Data Grid) sẽ tự động làm mới để hiển thị những thay đổi mới nhất. Mọi lỗi phát sinh trong quá trình tương tác (ví dụ: định dạng ảnh không hợp lệ, bỏ trống trường bắt buộc) đều được hệ thống bắt ngoại lệ và hiển thị thông báo chi tiết, định hướng người dùng xử lý nhanh chóng.
+Hình 4.18: Giao diện quản lý sách
+Hình 4.19: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý sách
+Mã nguồn minh họa:
+public int Add(Book book)
+{
+    // 1. Phân quyền: Yêu cầu quyền Quản trị viên (Admin)
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào (Ràng buộc nghiệp vụ)
+    Validate(book);
+    // 3. Chuẩn hóa dữ liệu (Clean data)
+    Normalize(book);
+    // 4. Kiểm tra logic duy nhất: Không được trùng Mã sách
+    if (_repository.IsBookCodeExists(book.BookCode))
+        throw new Exception("Book code already exists.");
+    // 5. Kiểm tra logic duy nhất: Không được trùng mã ISBN (nếu có nhập)
+    if (!string.IsNullOrWhiteSpace(book.ISBN) && _repository.IsISBNExists(book.ISBN))
+        throw new Exception("ISBN already exists.");
+    // 6. Gán trạng thái kinh doanh mặc định & Lưu xuống CSDL
+    book.IsActive = true;
+    return _repository.Add(book);
+}
+private void Validate(Book book)
+{
+    Require(book != null, "Invalid book data.");
+    Require(!string.IsNullOrWhiteSpace(book.BookCode), "Book code cannot be empty.");
+    Require(!string.IsNullOrWhiteSpace(book.Title), "Book title cannot be empty.");
+    // Kiểm tra liên kết Khóa ngoại
+    Require(book.CategoryId > 0, "Invalid book category.");
+    // Kiểm tra ràng buộc Toán học (Số âm)
+    Require(book.SellingPrice >= 0, "Invalid selling price.");
+    Require(book.Quantity >= 0, "Invalid total stock.");
+    Require(book.MinStock >= 0, "Invalid min stock.");
+    // Ràng buộc thời gian thực (Năm xuất bản không được lớn hơn năm hiện tại quá 1 năm)
+    if (book.PublishYear.HasValue)
+        Require(book.PublishYear.Value > 0 && book.PublishYear.Value <= DateTime.Now.Year + 1, "Invalid publication year.");
+}
+private void Normalize(Book book)
+{
+    // Chuẩn hóa Mã sách thành chữ IN HOA để dễ dàng tìm kiếm
+    book.BookCode = Trim(book.BookCode).ToUpperInvariant();
+    book.ISBN = TrimNullable(book.ISBN);
+    book.Title = Trim(book.Title);
+    book.ImagePath = TrimNullable(book.ImagePath);
+}
+4.5.8 Quản lý tồn kho
+Chức năng Quản lý tồn kho (Inventory Management) cung cấp cho Quản trị viên góc nhìn trực quan và toàn diện về trạng thái hàng hóa tại từng chi nhánh cửa hàng. Các nghiệp vụ cốt lõi bao gồm: theo dõi số lượng tồn kho theo thời gian thực phân theo từng cửa hàng, cảnh báo các đầu sách sắp hết hàng (vượt ngưỡng tối thiểu) và truy xuất lịch sử biến động kho (nhập hàng, xuất bán). Dữ liệu này giúp ban quản trị đưa ra các quyết định điều phối hàng hóa hoặc nhập thêm sách kịp thời, tránh tình trạng đứt gãy chuỗi kinh doanh.
+Về mặt kiến trúc, phân hệ này tuân thủ tuyệt đối mô hình phân tầng N-Tier. Lớp dịch vụ InventoryService (hoặc StockService) đóng vai trò kiểm soát an ninh và logic nghiệp vụ: trước khi cho phép truy vấn dữ liệu, hệ thống bắt buộc phải kiểm tra quyền hạn thông qua PermissionService (yêu cầu quyền quản lý hoặc nhân viên cấp cao). Sau đó, các tham số như mã cửa hàng (StoreId) và mã sách (BookId) được kiểm tra tính hợp lệ trước khi chuyển tiếp xuống lớp Repository thực thi các câu lệnh truy vấn SQL phức tạp hoặc các thủ tục lưu trữ (Stored Procedures).
+Giao diện quản lý được thiết kế thân thiện, cho phép lọc dữ liệu linh hoạt theo chi nhánh hoặc trạng thái cảnh báo. Khi các giao dịch làm thay đổi số lượng kho hoàn tất, giao diện sẽ tự động đồng bộ lại danh sách để phản ánh đúng thực tế cơ sở dữ liệu. Đồng thời, mọi sự cố phát sinh đều được hệ thống quản lý ngoại lệ bắt giữ và chuyển hóa thành thông báo lỗi rõ ràng, giúp người dùng dễ dàng nắm bắt nguyên nhân.
+Hình 4.20: Giao diện quản lý tồn kho
+Hình 4.21: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý tồn kho
+Mã nguồn minh họa:
+public bool UpdateStock(int bookId, string warehouse, int currentStock, int minStock)
+{
+    // 1. Kiểm tra phân quyền: Chỉ Quản trị viên mới được can thiệp thay đổi tồn kho trực tiếp
+    PermissionService.RequireAdmin();
+    // 2. Validate dữ liệu đầu vào cơ bản (Đảm bảo tính hợp lệ của số liệu)
+    Require(bookId > 0, "Invalid book ID.");
+    Require(currentStock >= 0, "Invalid stock quantity.");
+    Require(minStock >= 0, "Invalid min stock.");
+    // 3. Thực thi cập nhật thông qua Repository xuống cơ sở dữ liệu
+    return _repo.UpdateStock(bookId, warehouse, currentStock, minStock);
+}
+4.5.9 Quản lý báo cáo
+Chức năng Quản lý báo cáo (Report Management) cung cấp cho Quản trị viên (Admin) các công cụ phân tích dữ liệu kinh doanh tổng quan và chi tiết. Các nghiệp vụ trọng tâm bao gồm: tổng hợp doanh thu theo các mốc thời gian, thống kê danh sách các đầu sách bán chạy nhất và hỗ trợ tính năng xuất dữ liệu báo cáo ra định dạng bảng tính Excel. Phân hệ này là cơ sở quan trọng giúp nhà quản lý đánh giá hiệu quả hoạt động và đưa ra các quyết định chiến lược kinh doanh chính xác.
+Về mặt kiến trúc kỹ thuật, luồng xử lý tại tầng dịch vụ (ReportService) được thiết kế với tính bảo mật và toàn vẹn cao. Trước khi thực hiện bất kỳ lệnh tổng hợp dữ liệu hoặc kết xuất tệp tin nào, hệ thống bắt buộc phải thông qua lớp kiểm duyệt đặc quyền thông qua PermissionService.RequireAdmin(). Các tham số đầu vào như khoảng thời gian báo cáo (fromDate, toDate) được kiểm tra tính hợp lệ toán học (ngày bắt đầu không được lớn hơn ngày kết thúc). Sau khi thỏa mãn điều kiện, tầng Repository mới tiến hành thực thi các câu lệnh truy vấn tổng hợp dữ liệu (GROUP BY, SUM) hoặc gọi các thủ tục lưu trữ hiệu năng cao từ cơ sở dữ liệu.
+Giao diện (Form) được thiết kế trực quan với các biểu đồ thống kê và lưới hiển thị dữ liệu linh hoạt. Đối với tính năng xuất Excel, hệ thống xử lý luồng I/O một cách mượt mà, tự động làm mới giao diện hoặc hiển thị thông báo trạng thái khi tệp tin được kết xuất thành công. Mọi trường hợp phát sinh lỗi (như sai lệch khoảng thời gian, lỗi phân quyền hoặc lỗi ghi file) đều được hệ thống bắt ngoại lệ và hiển thị thông báo chi tiết, giúp người dùng dễ dàng nắm bắt nguyên nhân và xử lý.
+Hình 4.22: Giao diện quản lý báo cáo
+Hình 4.23: Sơ đồ tuần tự luồng xử lý nghiệp vụ quản lý báo cáo
+Mã nguồn minh họa:
+public class ReportService : ServiceBase
+{
+    private readonly ReportRepository _repo;
+    public ReportService()
+    {
+        _repo = new ReportRepository();
+    }
+    // Lấy báo cáo thống kê tài chính (Đồng bộ)
+    public ReportStats GetFinancialReports()
+    {
+        return _repo.GetFinancialReports();
+    }
+    // Lấy báo cáo thống kê tài chính (Bất đồng bộ - Tối ưu hiệu năng UI)
+    public async System.Threading.Tasks.Task<ReportStats> GetFinancialReportsAsync()
+    {
+        return await _repo.GetFinancialReportsAsync();
+    }
+}
+4.6. XÂY DỰNG NGHIỆP VỤ BÁN SÁCH
+Nghiệp vụ bán sách (Sales Order Management) là quy trình nghiệp vụ cốt lõi của hệ thống, được hiện thực hóa thông qua hai tầng thành phần chính là SalesOrderService và SalesOrderRepository. Nghiệp vụ cho phép nhân viên thực hiện các thao tác: lựa chọn khách hàng, chọn các đầu sách cần mua, nhập số lượng, thiết lập phương thức thanh toán và ghi chú giao dịch.
+Về mặt logic nghiệp vụ, trước khi tiến hành khởi tạo hóa đơn, tầng dịch vụ thực hiện một loạt các bước kiểm duyệt khắt khe: xác thực trạng thái đăng nhập của người dùng, kiểm tra tính hợp lệ của số lượng bán (phải lớn hơn 0) và đối soát trực tiếp với kho hàng để đảm bảo lượng tồn thực tế tại cửa hàng (Store) đủ đáp ứng giao dịch.
+Khi các điều kiện được thỏa mãn, hệ thống thực thi giao dịch đồng bộ trên cơ sở dữ liệu: tạo lập bản ghi tổng quan tại bảng SalesOrders đồng thời ghi nhận chi tiết danh sách ấn phẩm vào bảng SalesOrderDetails. Tổng giá trị hóa đơn được tính toán tự động dựa trên số lượng, đơn giá và các chính sách giảm giá (nếu có). Ngay sau khi hóa đơn được tạo thành công, hệ thống thực hiện hai tác vụ tự động quan trọng: trừ trực tiếp số lượng tồn kho tương ứng của từng đầu sách tại cửa hàng và ghi nhận lịch sử biến động kho vào bảng InventoryTransactions để phục vụ công tác kiểm toán.
+Trên giao diện bán hàng (Sales Form), lưới dữ liệu (DataGridView) đóng vai trò như một giỏ hàng tạm thời. Nhân viên có thể thêm từng đầu sách, hệ thống tự động tính toán thành tiền cho từng dòng và cộng dồn ra tổng hóa đơn. Sau khi hoàn tất lưu trữ, hệ thống hiển thị thông báo thành công trực quan và hỗ trợ kết xuất nội dung hóa đơn phục vụ nhu cầu in ấn hoặc lưu trữ điện tử.
+Hình 4.24: Giao diện xử lý nghiệm vụ bán sách
+Hình 4.25: Sơ đồ tuần tự luồng xử lý nghiệp vụ bán sách
+Mã nguồn minh họa:
+public int CreateOrder(int storeId, int? customerId, string paymentMethod, string? note, List<SalesOrderDetail> details)
+{
+    // 1. Kiểm tra phân quyền: Chỉ nhân viên hoặc Admin mới được phép bán hàng
+    PermissionService.RequireStaffOrAdmin();
+    // 2. Phân giải ID cửa hàng và thực hiện kiểm duyệt chi tiết giỏ hàng
+    int resolvedStoreId = ResolveStoreIdForWrite(storeId);
+    ValidateDetails(resolvedStoreId, details);
+    // 3. Tự động sinh mã hóa đơn duy nhất (Order Code)
+    string orderCode = _salesOrderRepository.GenerateOrderCode();
+    while (_salesOrderRepository.IsOrderCodeExists(orderCode))
+        orderCode = _salesOrderRepository.GenerateOrderCode();
+    // 4. Khởi tạo đối tượng SalesOrder với thông tin phiên làm việc hiện tại (CurrentSession)
+    var order = new SalesOrder
+    {
+        OrderCode = orderCode,
+        StoreId = resolvedStoreId,
+        UserId = CurrentSession.UserId,
+        CustomerId = customerId,
+        PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? AppConstants.PaymentMethods.Cash : paymentMethod.Trim(),
+        OrderStatus = AppConstants.OrderStatuses.Completed,
+        Note = TrimNullable(note)
+    };
+    // 5. Thực thi tạo hóa đơn và chi tiết hóa đơn xuống CSDL thông qua Repository
+    return _salesOrderRepository.CreateOrder(order, details);
+}
+private void ValidateDetails(int storeId, List<SalesOrderDetail> details)
+{
+    Require(details != null && details.Count > 0, "Invoice must contain at least one book.");
+    foreach (var detail in details)
+    {
+        Require(detail.BookId > 0, "Invalid book.");
+        Require(detail.Quantity > 0, "Sales quantity must be greater than 0.");
+        Require(detail.UnitPrice >= 0, "Invalid unit price.");
+        Require(detail.DiscountAmount >= 0, "Invalid discount.");
+        // Kiểm tra số lượng tồn kho thực tế tại cửa hàng trước khi bán
+        bool hasStock = _bookRepository.HasEnoughStock(storeId, detail.BookId, detail.Quantity);
+        if (!hasStock) throw new Exception("Not enough stock to sell.");
+    }
+}
+4.7. XÂY DỰNG NGHIỆP VỤ NHẬP SÁCH
+Nghiệp vụ nhập sách (Purchase Receipt Management) được thiết kế đặc biệt dành riêng cho Quản trị viên (Admin) nhằm quản lý nguồn cung ứng và bổ sung hàng hóa cho các cơ sở kinh doanh. Các thao tác cốt lõi bao gồm: lựa chọn cửa hàng nhận hàng, chỉ định nhà cung cấp, thêm danh sách các đầu sách cần nhập kèm theo số lượng, giá nhập thực tế và ghi chú giao dịch.
+Về mặt kiến trúc xử lý, tầng dịch vụ PurchaseReceiptService đóng vai trò kiểm soát toàn bộ quy trình nghiệp vụ. Trước khi cho phép lưu trữ, hệ thống tiến hành xác thực đặc quyền quản trị (RequireAdmin) và kiểm tra tính hợp lệ của dữ liệu đầu vào (đảm bảo các thông tin định danh cửa hàng, nhà cung cấp, sách và số lượng, đơn giá nhập đều hợp lệ). Sau khi vượt qua các bước kiểm duyệt, tầng Repository mới tiến hành thực thi giao dịch cơ sở dữ liệu để tạo lập đồng thời bản ghi Phiếu nhập (PurchaseReceipts) và danh sách Chi tiết phiếu nhập (PurchaseReceiptDetails).
+Điểm quan trọng của nghiệp vụ này là cơ chế tự động đồng bộ hóa kho hàng: ngay khi phiếu nhập được tạo thành công, số lượng tồn kho của các đầu sách tương ứng tại cửa hàng sẽ được cộng thêm. Trong trường hợp chi nhánh đó chưa từng lưu trữ đầu sách được nhập, hệ thống sẽ tự động khởi tạo mới bản ghi trong bảng StoreBookInventories. Đồng thời, hệ thống ghi nhận một giao dịch vào bảng InventoryTransactions với loại giao dịch là Import nhằm lưu vết toàn bộ lịch sử tăng kho, phục vụ công tác kiểm toán và đối soát tài chính sau này.
+Hình 4.26: Giao diện xử lý nghiệm vụ nhập sách
+Hình 4.27: Sơ đồ tuần tự luồng xử lý nghiệp vụ nhập sách
+4.8. XÂY DỰNG NGHIỆP VỤ TRẢ HÀNG
+Nghiệp vụ trả hàng (Return Receipt Management) được xây dựng nhằm xử lý các tình huống phát sinh khi khách hàng có nhu cầu đổi trả sách sau khi đã hoàn tất giao dịch mua bán. Các thao tác chính bao gồm: nhân viên tiến hành tra cứu và lựa chọn hóa đơn gốc, chỉ định danh mục sách mà khách muốn trả, nhập chính xác số lượng trả và ghi chú rõ ràng lý do trả hàng.
+Về mặt kiến trúc xử lý, tầng dịch vụ ReturnReceiptService đảm nhận vai trò kiểm soát toàn bộ logic nghiệp vụ. Trước khi lập phiếu, hệ thống tiến hành xác thực quyền hạn, kiểm tra tính hợp lệ của số lượng trả (số lượng trả phải lớn hơn 0 và không được vượt quá số lượng đã mua trong hóa đơn gốc). Khi các điều kiện được thỏa mãn, tầng dịch vụ sẽ khởi tạo phiếu trả hàng.
+Số tiền hoàn lại cho khách hàng được tính toán tự động dựa trên đơn giá bán ban đầu nhân với số lượng sách thực tế trả lại. Nếu sách đáp ứng các tiêu chuẩn chất lượng để nhập lại kho, hệ thống tự động cộng dồn số lượng tồn kho tương ứng tại cửa hàng, đồng thời ghi nhận một giao dịch vào bảng InventoryTransactions với loại giao dịch là Return để lưu vết lịch sử tăng kho. Cuối cùng, hệ thống hỗ trợ kết xuất biên lai trả hàng dưới dạng nội dung văn bản trực quan để nhân viên in trực tiếp giao cho khách hàng.
+Hình 4.28: Giao diện xử lý nghiệm vụ trả hàng
+Hình 4.29: Sơ đồ tuần tự luồng xử lý nghiệp vụ trả hàng
+4.9. XÂY DỰNG CHỨC NĂNG XUẤT EXCEL
+Chức năng xuất Excel đóng vai trò là công cụ hỗ trợ đắc lực cho người quản trị trong việc kết xuất dữ liệu hệ thống ra tệp bảng tính định dạng tiêu chuẩn (.xlsx). Nghiệp vụ này được xây dựng và tích hợp thông qua thư viện mã nguồn mở chuyên dụng ClosedXML, cho phép làm việc trực tiếp với cấu trúc tệp Excel mà không yêu cầu cài đặt sẵn bộ phần mềm Microsoft Office trên máy tính của người dùng.
+Về mặt luồng xử lý kỹ thuật, lớp dịch vụ ExcelExportService đảm nhận nhiệm vụ tiếp nhận dữ liệu nguồn trực tiếp từ các thành phần hiển thị như DataGridView hoặc các bảng dữ liệu trung gian (DataTable). Quá trình xử lý bao gồm các bước tuần tự: khởi tạo một bảng tính mới (Workbook), thiết lập và tạo lập các trang tính (Worksheet), định dạng và ghi dòng tiêu đề cột, tuần tự hóa vòng lặp để đổ dữ liệu dòng vào bảng, đồng thời thực thi thuật toán tự động căn chỉnh độ rộng cột (AutoFitColumns) nhằm đảm bảo tính thẩm mỹ, tránh tình trạng bị tràn chữ hoặc hiển thị lỗi ký tự.
+Chức năng này được ứng dụng rộng rãi trên toàn bộ các phân hệ trọng yếu của hệ thống như: xuất báo cáo tổng hợp doanh thu, danh mục danh sách đầu sách, số liệu tồn kho theo cửa hàng hoặc sao lưu danh sách hóa đơn bán hàng. Việc tích hợp khả năng xuất Excel giúp Quản trị viên dễ dàng lưu trữ báo cáo lưu động bên ngoài cơ sở dữ liệu hệ thống, thuận tiện cho việc chia sẻ thông tin với cấp quản lý hoặc phục vụ công tác in ấn tài liệu kiểm toán. Trong phạm vi đồ án hiện tại, chức năng tập trung vào việc kiến tạo các tệp bảng tính trực quan, mạch lạc, đáp ứng tốt nhu cầu trích xuất dữ liệu cơ bản.
+Hình 4.30: Sơ đồ tuần tự luồng xử lý xuất Excel
+4.10. KIỂM THỬ CHƯƠNG TRÌNH
+Quá trình kiểm thử được thực hiện thủ công trên dữ liệu mẫu trong SQL Server. Nhóm tập trung kiểm thử các luồng chính như đăng nhập, phân quyền, CRUD dữ liệu nền, bán sách, nhập sách, trả hàng, xem tồn kho và xem báo cáo. Các lỗi phát hiện trong quá trình kiểm thử được ghi nhận và sửa trực tiếp trong code.
+Bảng 4.3: Kịch bản kiểm thử tiêu biểu
+Mã TC
+Tên kiểm thử
+Dữ liệu/Thao tác
+Kết quả mong đợi
+Đánh giá
+TC01
+Đăng nhập đúng tài khoản Admin
+Nhập admin/123456
+Hệ thống mở Dashboard Admin
+Đạt
+TC02
+Đăng nhập sai mật khẩu
+Nhập mật khẩu sai
+Hiển thị thông báo lỗi
+Đạt
+TC03
+Thêm danh mục
+Nhập tên danh mục hợp lệ
+Danh mục được lưu và hiển thị lại
+Đạt
+TC04
+Thêm sách thiếu tên
+Để trống tên sách
+Hệ thống báo lỗi dữ liệu
+Đạt
+TC05
+Bán sách đủ tồn kho
+Chọn sách còn hàng và số lượng hợp lệ
+Tạo hóa đơn, trừ kho
+Đạt
+TC06
+Bán sách vượt tồn kho
+Nhập số lượng lớn hơn tồn
+Hệ thống không cho bán
+Đạt
+TC07
+Nhập sách
+Tạo phiếu nhập hợp lệ
+Tồn kho tăng và ghi lịch sử
+Đạt
+TC08
+Trả hàng
+Tạo phiếu trả từ hóa đơn
+Tạo phiếu trả, cập nhật kho nếu hợp lệ
+Đạt
+TC09
+Xem doanh thu
+Admin mở báo cáo
+Hiển thị doanh thu theo ngày
+Đạt
+TC10
+Xuất Excel
+Bấm nút xuất báo cáo
+Tạo file Excel
+Đạt
+Kết quả kiểm thử cho thấy các chức năng chính của hệ thống hoạt động đúng với yêu cầu cơ bản. Các trường hợp nhập thiếu dữ liệu, nhập số lượng không hợp lệ hoặc bán vượt tồn kho đều được hệ thống kiểm tra và hiển thị thông báo. Tuy nhiên, một số chức năng nâng cao như in hóa đơn định dạng đẹp, sao lưu dữ liệu tự động và tích hợp mã vạch chưa được triển khai đầy đủ.
+4.11. KẾT QUẢ ĐẠT ĐƯỢC
+Xây dựng được database BookStoreDB có các bảng chính phục vụ quản lý cửa hàng sách.
+Xây dựng được các Models và ViewModels theo cấu trúc dữ liệu.
+Xây dựng được RepositoryBase và các repository dùng Microsoft.Data.SqlClient.
+Xây dựng được các service xử lý nghiệp vụ, phân quyền và mã hóa mật khẩu.
+Xây dựng được LoginForm và DashboardForm phân quyền Admin/Staff.
+Xây dựng được nền tảng cho các form quản trị Admin và form nghiệp vụ Staff.
+Hệ thống có khả năng quản lý tồn kho theo từng cửa hàng, bán sách, nhập sách và trả hàng.
+Hệ thống hỗ trợ xuất Excel và tạo nội dung hóa đơn/biên lai dạng văn bản.
+4.12. HẠN CHẾ
+Giao diện chưa được tối ưu hoàn toàn về thẩm mỹ và trải nghiệm người dùng.
+Chức năng in hóa đơn mới ở mức tạo nội dung, chưa thiết kế mẫu in chuyên nghiệp.
+Chưa tích hợp máy quét mã vạch hoặc máy in hóa đơn thật.
+Chưa có chức năng sao lưu và phục hồi database từ giao diện.
+Chưa triển khai thanh toán trực tuyến hoặc đồng bộ dữ liệu qua Internet.
+Phân quyền mới dừng ở hai vai trò Admin và Staff, chưa có phân quyền chi tiết theo từng thao tác.
+4.13. TỔNG KẾT VÀ HƯỚNG PHÁT TRIỂN
+4.13.1. Tổng kết đề tài
+Qua quá trình nghiên cứu, thiết kế và phát triển, đề tài "Xây dựng phần mềm quản lý cửa hàng sách" đã hoàn thành đầy đủ các mục tiêu đề ra ban đầu. Hệ thống được xây dựng dựa trên mô hình phân tầng (N-Tier Architecture) kết hợp với các nguyên lý lập trình hướng đối tượng và Clean Code, đảm bảo tính tách biệt rõ ràng giữa các lớp Giao diện (UI), Dịch vụ nghiệp vụ (BLL) và Truy xuất dữ liệu (DAL).
+Các phân hệ cốt lõi của một hệ thống quản lý bán lẻ sách chuyên nghiệp đã được hiện thực hóa hoàn toàn:
+Hệ thống phân quyền & Bảo mật: Quản lý chặt chẽ phiên làm việc (CurrentSession) với hai cấp độ phân quyền rõ rệt là Quản trị viên (Admin) và Nhân viên (Staff), bảo vệ toàn vẹn các thao tác nhạy cảm.
+Quản lý danh mục & Dữ liệu nền: Xây dựng đầy đủ các chức năng quản lý Tác giả, Thể loại, Nhà xuất bản, Sách, Kho hàng và Nhân sự với các tầng kiểm duyệt dữ liệu (Validate và Normalize) khắt khe.
+Nghiệp vụ vận hành toàn diện: Xử lý mượt mà các luồng nghiệp vụ phức tạp từ Bán hàng (trừ tồn kho tự động, quản lý giỏ hàng), Nhập sách (cập nhật tồn kho, ghi nhận lịch sử Import), cho đến Trả hàng (hoàn tiền, xử lý phiếu trả và cập nhật kho Return).
+Tiện ích hỗ trợ quản trị: Tích hợp thành công công cụ xuất báo cáo ra tệp bảng tính Excel thông qua thư viện ClosedXML, giúp người quản lý dễ dàng lưu trữ và kiểm toán dữ liệu.
+Kết quả kiểm thử thực tế trên hệ thống cho thấy các chức năng hoạt động ổn định, phản hồi chính xác với các ràng buộc dữ liệu, ngăn chặn kịp thời các ngoại lệ nghiệp vụ như bán vượt quá số lượng tồn kho hay trùng lặp mã định danh.
+4.13.2. Hướng phát triển trong tương lai
+Mặc dù hệ thống đã đáp ứng tốt các yêu cầu cơ bản và nâng cao của một cửa hàng sách, trong giai đoạn tiếp theo, nhóm phát triển sẽ định hướng mở rộng và nâng cấp các tính năng sau để ứng dụng hoàn thiện hơn vào môi trường thực tế:
+Nâng cấp giao diện & Trải nghiệm người dùng (UI/UX): Tối ưu hóa giao diện đồ họa hiện đại hơn, hỗ trợ chế độ tương tác linh hoạt, đồng thời thiết kế các mẫu in hóa đơn/biên lai chuyên nghiệp, đẹp mắt thay vì chỉ dừng ở dạng nội dung văn bản thuần túy.
+Tích hợp phần cứng ngoại vi: Mở rộng khả năng kết nối với máy quét mã vạch (Barcode Scanner) để tăng tốc độ tìm kiếm và bán hàng, cũng như kết nối trực tiếp với máy in hóa đơn nhiệt chuyên dụng tại quầy thu ngân.
+Quản trị cơ sở dữ liệu & Sao lưu: Xây dựng tính năng sao lưu (Backup) và phục hồi (Restore) cơ sở dữ liệu trực tiếp từ giao diện Quản trị viên, đảm bảo an toàn dữ liệu trước các sự cố bất ngờ.
+Mở rộng phương thức thanh toán: Tích hợp các cổng thanh toán điện tử (như QR Code, Momo, VNPay) thay vì chỉ hỗ trợ hình thức thanh toán tiền mặt cơ bản.
+Phân quyền chi tiết (Fine-grained Permissions): Phát triển hệ thống phân quyền linh hoạt hơn, cho phép gán quyền hạn chi tiết đến từng thao tác cụ thể (thêm, sửa, xóa, duyệt) thay vì chỉ phân chia theo hai vai trò tĩnh là Admin và Staff.
+KẾT LUẬN VÀ ĐỀ NGHỊ
+1. KẾT LUẬN
+Đồ án “Xây dựng chương trình quản lý tiệm sách Kim Đồng” đã thực hiện được các nội dung chính từ khảo sát bài toán, xác định yêu cầu, thiết kế cơ sở dữ liệu đến xây dựng chương trình bằng C# Windows Forms và SQL Server. Hệ thống được tổ chức theo mô hình nhiều tầng, có phân tách rõ ràng giữa giao diện, xử lý nghiệp vụ và truy xuất dữ liệu.
+Về chức năng, hệ thống đáp ứng được các nghiệp vụ cơ bản của tiệm sách như đăng nhập, phân quyền, quản lý cửa hàng, nhân viên, khách hàng, sách, danh mục, tác giả, nhà xuất bản, nhà cung cấp, nhập sách, bán sách, trả hàng, quản lý tồn kho và thống kê doanh thu. Bên cạnh đó, hệ thống có thêm các chức năng hỗ trợ như mã hóa mật khẩu bằng BCrypt, lưu phiên đăng nhập bằng CurrentSession, kiểm tra quyền bằng PermissionService, upload ảnh sách và xuất Excel.
+Về mặt học tập, đồ án giúp nhóm củng cố kiến thức về lập trình C#, Windows Forms, SQL Server, thiết kế cơ sở dữ liệu, tổ chức mã nguồn theo tầng, làm việc nhóm và kiểm thử phần mềm. Qua quá trình thực hiện, nhóm hiểu rõ hơn cách chuyển từ yêu cầu bài toán thực tế thành các bảng dữ liệu, lớp xử lý và giao diện chương trình.
+2. ĐỀ NGHỊ VÀ HƯỚNG PHÁT TRIỂN
+Hoàn thiện giao diện người dùng theo hướng trực quan, hiện đại và dễ thao tác hơn.
+Bổ sung chức năng in hóa đơn định dạng chuẩn, hỗ trợ máy in hóa đơn tại quầy.
+Tích hợp quét mã vạch sách để tăng tốc độ bán hàng và nhập hàng.
+Bổ sung chức năng sao lưu, phục hồi database và phân quyền chi tiết theo từng chức năng.
+Phát triển phiên bản web hoặc API để quản lý nhiều cửa hàng qua mạng.
+Bổ sung biểu đồ doanh thu, biểu đồ tồn kho và phân tích sách bán chạy theo thời gian.
+Tích hợp thanh toán điện tử hoặc mã QR trong các phiên bản sau.
+TÀI LIỆU THAM KHẢO
+1. Microsoft (2025), Tài liệu C# và .NET, Microsoft Learn.
+2. Microsoft (2025), Tài liệu Windows Forms, Microsoft Learn.
+3. Microsoft (2025), Tài liệu SQL Server, Microsoft Learn.
+4. Microsoft (2025), Tài liệu Microsoft.Data.SqlClient, Microsoft Learn.
+5. ClosedXML Project (2025), Tài liệu sử dụng thư viện ClosedXML.
+6. BCrypt.Net-Next Project (2025), Tài liệu sử dụng thư viện BCrypt.Net-Next.
+7. Nguyễn Văn Ba (2010), Phân tích và thiết kế hệ thống thông tin, Nxb Đại học Quốc gia Hà Nội.
+8. Giáo trình Cơ sở dữ liệu, tài liệu lưu hành nội bộ, Khoa Công nghệ thông tin.
+ 
