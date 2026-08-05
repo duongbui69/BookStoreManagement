@@ -110,6 +110,45 @@ namespace BookStoreManagement.Repositories
                     AddParameter(detailCommand, "@UnitPrice", detail.UnitPrice);
                     AddParameter(detailCommand, "@DiscountAmount", detail.DiscountAmount);
                     detailCommand.ExecuteNonQuery();
+
+                    // Trừ tồn kho sau khi bán
+                    const string deductBookSql = @"
+                        UPDATE Books SET Quantity = Quantity - @Qty
+                        WHERE Id = @BookId AND Quantity >= @Qty;
+                    ";
+                    using var deductBookCmd = new SqlCommand(deductBookSql, connection, transaction);
+                    AddParameter(deductBookCmd, "@Qty", detail.Quantity);
+                    AddParameter(deductBookCmd, "@BookId", detail.BookId);
+                    int rowsAffected = deductBookCmd.ExecuteNonQuery();
+                    if (rowsAffected == 0)
+                        throw new Exception($"Không đủ hàng trong kho (BookId={detail.BookId}).");
+
+                    const string deductStoreSql = @"
+                        IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                            UPDATE StoreBookInventories
+                            SET Quantity = Quantity - @Qty, UpdatedAt = SYSDATETIME()
+                            WHERE StoreId = @StoreId AND BookId = @BookId AND Quantity >= @Qty;
+                    ";
+                    using var deductStoreCmd = new SqlCommand(deductStoreSql, connection, transaction);
+                    AddParameter(deductStoreCmd, "@StoreId", order.StoreId);
+                    AddParameter(deductStoreCmd, "@BookId", detail.BookId);
+                    AddParameter(deductStoreCmd, "@Qty", detail.Quantity);
+                    deductStoreCmd.ExecuteNonQuery();
+
+                    // Ghi lịch sử thiếu hàng
+                    const string logSql = @"
+                        INSERT INTO InventoryTransactions
+                            (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                        VALUES
+                            (@StoreId, @BookId, @UserId, 'SALE', -@Qty, 'SalesOrder', @RefId, N'Bán hàng tại quầy', SYSDATETIME());
+                    ";
+                    using var logCmd = new SqlCommand(logSql, connection, transaction);
+                    AddParameter(logCmd, "@StoreId", order.StoreId);
+                    AddParameter(logCmd, "@BookId", detail.BookId);
+                    AddParameter(logCmd, "@UserId", order.UserId);
+                    AddParameter(logCmd, "@Qty", detail.Quantity);
+                    AddParameter(logCmd, "@RefId", orderId);
+                    logCmd.ExecuteNonQuery();
                 }
 
                 return orderId;
@@ -319,6 +358,41 @@ namespace BookStoreManagement.Repositories
                         Quantity = detail.Quantity,
                         UnitPrice = detail.UnitPrice,
                         DiscountAmount = detail.DiscountAmount
+                    }, transaction);
+
+                    // Trừ tồn kho sau khi bán
+                    const string deductBookSql = @"
+                        UPDATE Books SET Quantity = Quantity - @Qty
+                        WHERE Id = @BookId AND Quantity >= @Qty;
+                    ";
+                    int rowsAffected = await connection.ExecuteAsync(deductBookSql,
+                        new { Qty = detail.Quantity, BookId = detail.BookId }, transaction);
+                    if (rowsAffected == 0)
+                        throw new Exception($"Không đủ hàng trong kho (BookId={detail.BookId}).");
+
+                    const string deductStoreSql = @"
+                        IF EXISTS (SELECT 1 FROM StoreBookInventories WHERE StoreId = @StoreId AND BookId = @BookId)
+                            UPDATE StoreBookInventories
+                            SET Quantity = Quantity - @Qty, UpdatedAt = SYSDATETIME()
+                            WHERE StoreId = @StoreId AND BookId = @BookId AND Quantity >= @Qty;
+                    ";
+                    await connection.ExecuteAsync(deductStoreSql,
+                        new { StoreId = order.StoreId, BookId = detail.BookId, Qty = detail.Quantity }, transaction);
+
+                    // Ghi lịch sử kho
+                    const string logSql = @"
+                        INSERT INTO InventoryTransactions
+                            (StoreId, BookId, UserId, TransactionType, QuantityChange, ReferenceType, ReferenceId, Note, CreatedAt)
+                        VALUES
+                            (@StoreId, @BookId, @UserId, 'SALE', -@Qty, 'SalesOrder', @RefId, N'Bán hàng tại quầy', SYSDATETIME());
+                    ";
+                    await connection.ExecuteAsync(logSql, new
+                    {
+                        StoreId = order.StoreId,
+                        BookId = detail.BookId,
+                        UserId = order.UserId,
+                        Qty = detail.Quantity,
+                        RefId = orderId
                     }, transaction);
                 }
             });
