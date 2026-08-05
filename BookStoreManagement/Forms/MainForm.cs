@@ -296,6 +296,13 @@ namespace BookStoreManagement.Forms
             panelSidebar.Controls.Remove(btnHR);
             panelSidebar.Controls.Remove(btnReports);
 
+            if (navPanel != null)
+            {
+                panelSidebar.Controls.Remove(navPanel);
+                navPanel.Dispose();
+            }
+            allMenuButtons.Clear();
+
             lblBrand.Visible = false;
             lblSubBrand.Visible = false;
 
