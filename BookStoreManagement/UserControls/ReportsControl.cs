@@ -29,7 +29,7 @@ namespace BookStoreManagement.UserControls
         private Guna2Button btnExportExcel;
 
         // KPI Cards
-        private Guna2Panel pnlMetrics;
+        private TableLayoutPanel pnlMetrics;
         private Guna2Panel cardAllTimeRevenue;
         private Guna2Panel cardRevenue;
         private Guna2Panel cardOrders;
@@ -99,24 +99,33 @@ namespace BookStoreManagement.UserControls
             pnlHeader.Resize += (s, e) => { btnExportExcel.Location = new Point(pnlHeader.Width - 130, 22); };
 
             // 2. Metric Cards
-            pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter + 20) };
-            cardAllTimeRevenue = CreateMetricCard("Doanh Thu (Từ trước tới nay)", "0 đ", "", true);
-            cardRevenue = CreateMetricCard("Doanh Thu Tháng Này", "0 đ", "", true);
-            cardOrders = CreateMetricCard("Đơn Hàng Tháng Này", "0", "", true);
-            cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "0", "", false, true);
-            
-            pnlMetrics.Controls.AddRange(new Control[] { cardAllTimeRevenue, cardRevenue, cardOrders, cardLowStock });
-            pnlMetrics.Resize += (s, e) => 
-            {
-                int cardWidth = (pnlMetrics.Width - (gutter * 3)) / 4;
-                if (cardWidth > 0)
-                {
-                    cardAllTimeRevenue.Width = cardWidth; cardAllTimeRevenue.Left = 0;
-                    cardRevenue.Width = cardWidth; cardRevenue.Left = cardWidth + gutter;
-                    cardOrders.Width = cardWidth; cardOrders.Left = (cardWidth + gutter) * 2;
-                    cardLowStock.Width = cardWidth; cardLowStock.Left = (cardWidth + gutter) * 3;
-                }
+            pnlMetrics = new TableLayoutPanel 
+            { 
+                Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter + 20),
+                ColumnCount = 4, RowCount = 1,
+                BackColor = Color.Transparent
             };
+            for(int i=0; i<4; i++) pnlMetrics.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+
+            cardAllTimeRevenue = CreateMetricCard("Tổng DT (Tất Cả)", "0 đ", "", true);
+            cardRevenue = CreateMetricCard("DT Tháng Này", "0 đ", "", true);
+            cardOrders = CreateMetricCard("Đơn Tháng Này", "0", "", true);
+            cardLowStock = CreateMetricCard("Sắp hết hàng", "0", "", false, true);
+            
+            cardAllTimeRevenue.Margin = new Padding(0, 0, 10, 0);
+            cardRevenue.Margin = new Padding(10, 0, 10, 0);
+            cardOrders.Margin = new Padding(10, 0, 10, 0);
+            cardLowStock.Margin = new Padding(10, 0, 0, 0);
+
+            cardAllTimeRevenue.Dock = DockStyle.Fill;
+            cardRevenue.Dock = DockStyle.Fill;
+            cardOrders.Dock = DockStyle.Fill;
+            cardLowStock.Dock = DockStyle.Fill;
+
+            pnlMetrics.Controls.Add(cardAllTimeRevenue, 0, 0);
+            pnlMetrics.Controls.Add(cardRevenue, 1, 0);
+            pnlMetrics.Controls.Add(cardOrders, 2, 0);
+            pnlMetrics.Controls.Add(cardLowStock, 3, 0);
 
             // 3. Chart
             pnlChart = new Guna2Panel 
