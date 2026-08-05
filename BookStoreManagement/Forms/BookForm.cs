@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
@@ -21,6 +22,7 @@ namespace BookStoreManagement.Forms
         private Guna2CheckBox chkIsActive;
         private Guna2PictureBox pbImage;
         private Guna2Button btnBrowseImg, btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         private string _imagePath = "";
         public Book? BookModel { get; private set; }
@@ -33,7 +35,9 @@ namespace BookStoreManagement.Forms
             _publisherService = new PublisherService();
             
             BookModel = bookToEdit;
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             LoadDropdowns();
             
             if (BookModel != null) BindData();
@@ -64,10 +68,21 @@ namespace BookStoreManagement.Forms
             // Left Col (X = 24)
             int yLeft = 70;
             txtBookCode = CreateInput("Mã sách", 24, ref yLeft);
+            txtBookCode.MaxLength = 50;
+
             txtISBN = CreateInput("Mã ISBN", 24, ref yLeft);
+            txtISBN.MaxLength = 30;
+
             txtTitle = CreateInput("Tiêu đề sách", 24, ref yLeft);
+            txtTitle.MaxLength = 200;
+
             txtPublishYear = CreateInput("Năm xuất bản", 24, ref yLeft);
+            txtPublishYear.MaxLength = 4;
+            ValidationHelper.WireDigitsOnly(txtPublishYear, _errorProvider);
+
             txtPageCount = CreateInput("Số trang", 24, ref yLeft);
+            txtPageCount.MaxLength = 6;
+            ValidationHelper.WireDigitsOnly(txtPageCount, _errorProvider);
             
             Label lblCat = new Label { Text = "Danh mục", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cbCategory = new Guna2ComboBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
@@ -86,11 +101,19 @@ namespace BookStoreManagement.Forms
             yRight += 75;
 
             txtSellingPrice = CreateInput("Giá bán (VNĐ)", 400, ref yRight, 280);
+            txtSellingPrice.MaxLength = 20;
+            ValidationHelper.WireDecimalOnly(txtSellingPrice, _errorProvider);
+
             txtQuantity = CreateInput("Số lượng tồn kho ban đầu", 400, ref yRight, 280);
+            txtQuantity.MaxLength = 10;
+            ValidationHelper.WireDigitsOnly(txtQuantity, _errorProvider);
+
             txtMinStock = CreateInput("Tồn kho tối thiểu", 400, ref yRight, 280);
+            txtMinStock.MaxLength = 10;
+            ValidationHelper.WireDigitsOnly(txtMinStock, _errorProvider);
             
             Label lblDesc = new Label { Text = "Mô tả / Giới thiệu sách", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            txtDescription = new Guna2TextBox { Location = new Point(400, yRight + 25), Width = 400, Height = 80, Font = new Font("Segoe UI", 10F), Multiline = true, BorderRadius = 4 };
+            txtDescription = new Guna2TextBox { Location = new Point(400, yRight + 25), Width = 400, Height = 80, Font = new Font("Segoe UI", 10F), Multiline = true, BorderRadius = 4, MaxLength = 500 };
             this.Controls.AddRange(new Control[] { lblDesc, txtDescription });
             yRight += 115;
 
@@ -191,6 +214,32 @@ namespace BookStoreManagement.Forms
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
+            // --- Validation ---
+            if (string.IsNullOrWhiteSpace(txtTitle.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tiêu đề sách.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTitle.Focus();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtPublishYear.Text))
+            {
+                if (!int.TryParse(txtPublishYear.Text, out int yr) || yr < 1000 || yr > DateTime.Now.Year)
+                {
+                    MessageBox.Show("Năm xuất bản không hợp lệ.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtPublishYear.Focus();
+                    return;
+                }
+            }
+
+            if (!decimal.TryParse(txtSellingPrice.Text, out decimal sp) || sp < 0)
+            {
+                MessageBox.Show("Giá bán không hợp lệ. Vui lòng nhập số dương.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSellingPrice.Focus();
+                return;
+            }
+            // --- End Validation ---
+
             try {
                 if (BookModel == null) BookModel = new Book();
                 
@@ -199,7 +248,7 @@ namespace BookStoreManagement.Forms
                 BookModel.Title = txtTitle.Text.Trim();
                 if (int.TryParse(txtPublishYear.Text, out int y)) BookModel.PublishYear = y;
                 if (int.TryParse(txtPageCount.Text, out int pc)) BookModel.PageCount = pc;
-                if (decimal.TryParse(txtSellingPrice.Text, out decimal sp)) BookModel.SellingPrice = sp;
+                if (decimal.TryParse(txtSellingPrice.Text, out decimal spVal)) BookModel.SellingPrice = spVal;
                 if (int.TryParse(txtQuantity.Text, out int q)) BookModel.Quantity = q;
                 if (int.TryParse(txtMinStock.Text, out int ms)) BookModel.MinStock = ms;
                 BookModel.Description = txtDescription.Text.Trim();

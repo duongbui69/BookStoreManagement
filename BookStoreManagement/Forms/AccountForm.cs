@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
@@ -18,6 +19,7 @@ namespace BookStoreManagement.Forms
         private Guna2ComboBox cbRole;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public User? AccountModel { get; private set; }
 
@@ -28,7 +30,9 @@ namespace BookStoreManagement.Forms
             _storeService = new StoreService();
             
             AccountModel = accountToEdit;
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             
             this.Load += AccountForm_Load;
             
@@ -52,20 +56,30 @@ namespace BookStoreManagement.Forms
             // Left Col (X = 24)
             int yLeft = 70;
             txtUsername = CreateInput("Tên đăng nhập (*)", 24, ref yLeft);
+            txtUsername.MaxLength = 50;
             
             Label lblPass = new Label { Text = "Mật khẩu (Để trống nếu không đổi)", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             this.Controls.Add(lblPass);
-            txtPassword = new Guna2TextBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), PasswordChar = '*', BorderRadius = 4 };
+            txtPassword = new Guna2TextBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), PasswordChar = '*', BorderRadius = 4, MaxLength = 50 };
             this.Controls.Add(txtPassword);
             yLeft += 75;
 
             txtFullName = CreateInput("Họ và Tên", 24, ref yLeft);
+            txtFullName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtFullName, _errorProvider);
+
             txtPhone = CreateInput("Số điện thoại", 24, ref yLeft);
+            txtPhone.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtPhone, _errorProvider);
 
             // Right Col (X = 400)
             int yRight = 70;
             txtEmail = CreateInput("Email", 400, ref yRight);
+            txtEmail.MaxLength = 100;
+            ValidationHelper.WireEmailValidation(txtEmail, _errorProvider);
+
             txtAddress = CreateInput("Địa chỉ", 400, ref yRight);
+            txtAddress.MaxLength = 255;
 
             Label lblRole = new Label { Text = "Vai trò", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cbRole = new Guna2ComboBox { Location = new Point(400, yRight + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
@@ -126,6 +140,36 @@ namespace BookStoreManagement.Forms
 
         private void BtnSave_Click(object? sender, EventArgs e)
         {
+            // --- Validation ---
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên đăng nhập.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidUsername(txtUsername.Text))
+            {
+                MessageBox.Show("Tên đăng nhập phải từ 4-50 ký tự, chỉ gồm chữ cái, chữ số, dấu gạch dưới và dấu chấm (không có khoảng trắng).", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidPhone(txtPhone.Text))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPhone.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidEmail(txtEmail.Text))
+            {
+                MessageBox.Show("Email không đúng định dạng. Vui lòng kiểm tra lại.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
+                return;
+            }
+            // --- End Validation ---
+
             if (AccountModel == null) AccountModel = new User();
             
             AccountModel.Username = txtUsername.Text.Trim();

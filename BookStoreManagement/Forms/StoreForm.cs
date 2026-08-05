@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
@@ -16,12 +17,15 @@ namespace BookStoreManagement.Forms
         private Guna2TextBox txtStoreCode, txtStoreName, txtAddress, txtPhone, txtManagerName;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public StoreForm(Store? store = null)
         {
             _store = store;
             _repository = new StoreRepository();
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             SetupTheme();
             LoadData();
         }
@@ -48,10 +52,22 @@ namespace BookStoreManagement.Forms
             int startY = 70;
 
             txtStoreCode = CreateInput("Mã Chi nhánh (*)", ref startY);
+            txtStoreCode.MaxLength = 50;
+
             txtStoreName = CreateInput("Tên Chi nhánh (*)", ref startY);
+            txtStoreName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtStoreName, _errorProvider);
+
             txtAddress = CreateInput("Địa chỉ (*)", ref startY);
+            txtAddress.MaxLength = 255;
+
             txtPhone = CreateInput("Số điện thoại", ref startY);
+            txtPhone.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtPhone, _errorProvider);
+
             txtManagerName = CreateInput("Tên Người quản lý", ref startY);
+            txtManagerName.MaxLength = 100;
+            ValidationHelper.WireTextWithDot(txtManagerName, _errorProvider);
 
             // Status
             chkIsActive = new Guna2CheckBox { Text = "Đang hoạt động", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10F), Checked = true };
@@ -147,6 +163,13 @@ namespace BookStoreManagement.Forms
                 string.IsNullOrWhiteSpace(txtAddress.Text))
             {
                 MessageBox.Show("Vui lòng điền các trường bắt buộc (*).", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!ValidationHelper.IsValidPhone(txtPhone.Text))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPhone.Focus();
                 return;
             }
 

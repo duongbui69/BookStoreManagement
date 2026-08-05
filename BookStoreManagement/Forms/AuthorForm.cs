@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
@@ -18,11 +19,14 @@ namespace BookStoreManagement.Forms
         private Guna2TextBox txtId, txtName, txtNationality, txtDescription;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public AuthorForm(int? authorId = null)
         {
             _authorRepository = new AuthorRepository();
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponentLayout();
+            _errorProvider.ContainerControl = this;
             ApplyTheme();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
 
@@ -60,10 +64,15 @@ namespace BookStoreManagement.Forms
             txtId.Enabled = false;
 
             txtName = CreateInput("Tên Tác giả (*)", ref startY);
+            txtName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtName, _errorProvider);
+
             txtNationality = CreateInput("Quốc tịch", ref startY);
+            txtNationality.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtNationality, _errorProvider);
             
             Label lblDesc = new Label { Text = "Mô tả", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            txtDescription = new Guna2TextBox { Location = new Point(24, startY + 25), Width = 436, Height = 80, Multiline = true, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            txtDescription = new Guna2TextBox { Location = new Point(24, startY + 25), Width = 436, Height = 80, Multiline = true, Font = new Font("Segoe UI", 10F), BorderRadius = 4, MaxLength = 255 };
             this.Controls.AddRange(new Control[] { lblDesc, txtDescription });
             startY += 120;
 

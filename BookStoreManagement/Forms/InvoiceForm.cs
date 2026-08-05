@@ -1,4 +1,4 @@
-﻿using BookStoreManagement.Helpers;
+using BookStoreManagement.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -85,12 +85,6 @@ namespace BookStoreManagement.Forms
             pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
             lblTitle = new Label { Text = "CHI TIẾT HÓA ĐƠN", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
             
-            btnClose = new Button { Text = "X", Size = new Size(40, 40), FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Cursor = Cursors.Hand };
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.Location = new Point(750, 10);
-            btnClose.Click += (s, e) => this.Close();
-
-            pnlHeader.Controls.Add(btnClose);
             pnlHeader.Controls.Add(lblTitle); // fill must be added last or sent to back
             lblTitle.SendToBack();
 

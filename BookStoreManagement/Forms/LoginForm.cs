@@ -32,6 +32,10 @@ namespace BookStoreManagement.Forms
             txtPassword.IconLeft = CreateEmojiImage("🔒", 20);
             txtPassword.IconRight = CreateEmojiImage("👁", 18);
 
+            // Validation constraints
+            txtUsername.MaxLength = 50;
+            txtPassword.MaxLength = 50;
+
             txtUsername.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
             txtPassword.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) btnLogin.PerformClick(); };
 

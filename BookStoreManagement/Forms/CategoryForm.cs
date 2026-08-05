@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
@@ -17,6 +18,7 @@ namespace BookStoreManagement.Forms
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave;
         private Guna2Button btnCancel;
+        private ErrorProvider _errorProvider;
 
         public Category? CategoryModel { get; private set; }
 
@@ -24,8 +26,9 @@ namespace BookStoreManagement.Forms
         {
             _service = new CategoryService();
             CategoryModel = categoryToEdit;
-            
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             
             if (CategoryModel != null)
             {
@@ -52,14 +55,15 @@ namespace BookStoreManagement.Forms
 
             // Category Name
             Label lblName = new Label { Text = "Tên danh mục (*)", Location = new Point(24, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            txtCategoryName = new Guna2TextBox { Location = new Point(24, yPos + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
+            txtCategoryName = new Guna2TextBox { Location = new Point(24, yPos + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4, MaxLength = 100 };
+            ValidationHelper.WireTextOnly(txtCategoryName, _errorProvider);
             this.Controls.Add(lblName);
             this.Controls.Add(txtCategoryName);
             yPos += 75;
 
             // Description
             Label lblDesc = new Label { Text = "Mô tả", Location = new Point(24, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            txtDescription = new Guna2TextBox { Location = new Point(24, yPos + 25), Width = 436, Height = 60, Font = new Font("Segoe UI", 10F), Multiline = true, BorderRadius = 4 };
+            txtDescription = new Guna2TextBox { Location = new Point(24, yPos + 25), Width = 436, Height = 60, Font = new Font("Segoe UI", 10F), Multiline = true, BorderRadius = 4, MaxLength = 255 };
             this.Controls.Add(lblDesc);
             this.Controls.Add(txtDescription);
             yPos += 100;

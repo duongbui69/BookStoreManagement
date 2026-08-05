@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Repositories;
 using BookStoreManagement.Themes;
@@ -18,11 +19,14 @@ namespace BookStoreManagement.Forms
         private Guna2TextBox txtId, txtName, txtPhone, txtEmail, txtAddress;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public SupplierForm(int? supplierId = null)
         {
             _supplierRepository = new SupplierRepository();
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponentLayout();
+            _errorProvider.ContainerControl = this;
             ApplyTheme();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
 
@@ -60,9 +64,19 @@ namespace BookStoreManagement.Forms
             txtId.Enabled = false;
 
             txtName = CreateInput("Tên Nhà cung cấp (*)", ref startY);
+            txtName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtName, _errorProvider);
+
             txtPhone = CreateInput("Số điện thoại", ref startY);
+            txtPhone.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtPhone, _errorProvider);
+
             txtEmail = CreateInput("Email", ref startY);
+            txtEmail.MaxLength = 100;
+            ValidationHelper.WireEmailValidation(txtEmail, _errorProvider);
+
             txtAddress = CreateInput("Địa chỉ", ref startY);
+            txtAddress.MaxLength = 255;
 
             chkIsActive = new Guna2CheckBox { Text = "Đang hợp tác (Kinh doanh)", Location = new Point(24, startY), AutoSize = true, Font = new Font("Segoe UI", 10F) };
             this.Controls.Add(chkIsActive);
@@ -180,6 +194,20 @@ namespace BookStoreManagement.Forms
             {
                 MessageBox.Show("Tên NCC đã tồn tại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtName.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidPhone(txtPhone.Text))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPhone.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidEmail(txtEmail.Text))
+            {
+                MessageBox.Show("Email không đúng định dạng. Vui lòng kiểm tra lại.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
                 return;
             }
 

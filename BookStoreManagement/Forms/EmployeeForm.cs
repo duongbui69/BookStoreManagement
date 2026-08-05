@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
 using BookStoreManagement.Models;
@@ -18,6 +19,7 @@ namespace BookStoreManagement.Forms
         private Guna2ComboBox cbRole, cbStore;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public User? EmployeeModel { get; private set; }
 
@@ -28,7 +30,9 @@ namespace BookStoreManagement.Forms
             _storeService = new StoreService();
             
             EmployeeModel = userToEdit;
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             
             this.Load += EmployeeForm_Load;
             
@@ -50,23 +54,41 @@ namespace BookStoreManagement.Forms
             // Left Col (X = 24)
             int yLeft = 70;
             txtUserCode = CreateInput("Mã nhân viên", 24, ref yLeft);
+            txtUserCode.MaxLength = 50;
+
             txtUsername = CreateInput("Tên đăng nhập", 24, ref yLeft);
+            txtUsername.MaxLength = 50;
             
             Label lblPass = new Label { Text = "Mật khẩu (Để trống nếu không đổi)", Location = new Point(24, yLeft), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             this.Controls.Add(lblPass);
-            txtPassword = new Guna2TextBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), PasswordChar = '*', BorderRadius = 4 };
+            txtPassword = new Guna2TextBox { Location = new Point(24, yLeft + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), PasswordChar = '*', BorderRadius = 4, MaxLength = 50 };
             this.Controls.Add(txtPassword);
             yLeft += 75;
 
             txtFullName = CreateInput("Họ và Tên", 24, ref yLeft);
+            txtFullName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtFullName, _errorProvider);
+
             txtIdentity = CreateInput("CCCD / CMND", 24, ref yLeft);
+            txtIdentity.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtIdentity, _errorProvider);
+
             txtHourlyRate = CreateInput("Lương theo giờ (VNĐ)", 24, ref yLeft);
+            txtHourlyRate.MaxLength = 20;
+            ValidationHelper.WireDecimalOnly(txtHourlyRate, _errorProvider);
 
             // Right Col (X = 400)
             int yRight = 70;
             txtPhone = CreateInput("Số điện thoại", 400, ref yRight);
+            txtPhone.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtPhone, _errorProvider);
+
             txtEmail = CreateInput("Email", 400, ref yRight);
+            txtEmail.MaxLength = 100;
+            ValidationHelper.WireEmailValidation(txtEmail, _errorProvider);
+
             txtAddress = CreateInput("Địa chỉ", 400, ref yRight);
+            txtAddress.MaxLength = 255;
 
             Label lblRole = new Label { Text = "Vai trò", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             cbRole = new Guna2ComboBox { Location = new Point(400, yRight + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4 };
@@ -139,8 +161,45 @@ namespace BookStoreManagement.Forms
             cbStore.SelectedValue = EmployeeModel.StoreId ?? 0;
         }
 
-        private async void BtnSave_Click(object? sender, EventArgs e)
+        private void BtnSave_Click(object? sender, EventArgs e)
         {
+            // --- Validation ---
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên đăng nhập.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidUsername(txtUsername.Text))
+            {
+                MessageBox.Show("Tên đăng nhập phải từ 4-50 ký tự, chỉ gồm chữ cái, chữ số, dấu gạch dưới và dấu chấm.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidIdentity(txtIdentity.Text))
+            {
+                MessageBox.Show("CMND/CCCD không hợp lệ. Phải là 9 hoặc 12 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtIdentity.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidPhone(txtPhone.Text))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPhone.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidEmail(txtEmail.Text))
+            {
+                MessageBox.Show("Email không đúng định dạng. Vui lòng kiểm tra lại.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
+                return;
+            }
+            // --- End Validation ---
+
             if (EmployeeModel == null) EmployeeModel = new User();
             
             EmployeeModel.UserCode = txtUserCode.Text.Trim();

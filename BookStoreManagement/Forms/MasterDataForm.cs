@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using BookStoreManagement.Models;
@@ -71,20 +71,7 @@ namespace BookStoreManagement.Forms
                 Location = new Point(24, 24)
             };
 
-            btnClose = new Button
-            {
-                Text = "✕",
-                Font = new Font("Segoe UI", 12),
-                Size = new Size(32, 32),
-                Location = new Point(this.Width - 56, 20),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            btnClose.FlatAppearance.BorderSize = 0;
-            btnClose.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
-
             pnlMain.Controls.Add(lblTitle);
-            pnlMain.Controls.Add(btnClose);
 
             int yPos = 80;
 
@@ -158,8 +145,7 @@ namespace BookStoreManagement.Forms
             pnlMain.BackColor = ThemeManager.CardBackground;
 
             lblTitle.ForeColor = ThemeManager.TextPrimary;
-            btnClose.ForeColor = ThemeManager.TextSecondary;
-            btnClose.BackColor = ThemeManager.CardBackground;
+
 
             lblName.ForeColor = ThemeManager.TextSecondary;
             txtName.BackColor = ThemeManager.Background;

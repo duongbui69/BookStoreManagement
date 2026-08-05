@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using BookStoreManagement.Helpers;
 using BookStoreManagement.Models;
 using BookStoreManagement.Services;
 using BookStoreManagement.Themes;
@@ -16,6 +17,7 @@ namespace BookStoreManagement.Forms
         private Guna2NumericUpDown numPoints;
         private Guna2CheckBox chkIsActive;
         private Guna2Button btnSave, btnCancel;
+        private ErrorProvider _errorProvider;
 
         public Customer? CustomerModel { get; private set; }
 
@@ -23,8 +25,9 @@ namespace BookStoreManagement.Forms
         {
             _service = new CustomerService();
             CustomerModel = customerToEdit;
-            
+            _errorProvider = new ErrorProvider { BlinkStyle = ErrorBlinkStyle.NeverBlink };
             InitializeComponent();
+            _errorProvider.ContainerControl = this;
             ApplyTheme();
             
             this.Load += CustomerForm_Load;
@@ -46,16 +49,29 @@ namespace BookStoreManagement.Forms
             // Left Col (X = 24)
             int yLeft = 70;
             txtCustomerCode = CreateInput("Mã khách hàng (Để trống sẽ tự động tạo)", 24, ref yLeft);
+            txtCustomerCode.MaxLength = 50;
             if (CustomerModel != null) txtCustomerCode.ReadOnly = true;
             
             txtFullName = CreateInput("Họ và Tên (*)", 24, ref yLeft);
+            txtFullName.MaxLength = 100;
+            ValidationHelper.WireTextOnly(txtFullName, _errorProvider);
+
             txtIdentityNumber = CreateInput("CMND / CCCD", 24, ref yLeft);
+            txtIdentityNumber.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtIdentityNumber, _errorProvider);
+
             txtPhone = CreateInput("Số điện thoại", 24, ref yLeft);
+            txtPhone.MaxLength = 20;
+            ValidationHelper.WireDigitsOnly(txtPhone, _errorProvider);
 
             // Right Col (X = 400)
             int yRight = 70;
             txtEmail = CreateInput("Email", 400, ref yRight);
+            txtEmail.MaxLength = 100;
+            ValidationHelper.WireEmailValidation(txtEmail, _errorProvider);
+
             txtAddress = CreateInput("Địa chỉ", 400, ref yRight);
+            txtAddress.MaxLength = 255;
 
             Label lblPoints = new Label { Text = "Điểm thưởng", Location = new Point(400, yRight), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
             numPoints = new Guna2NumericUpDown { Location = new Point(400, yRight + 25), Width = 340, Height = 40, Font = new Font("Segoe UI", 10F), Maximum = 99999999, Minimum = 0, BorderRadius = 4 };
@@ -108,6 +124,28 @@ namespace BookStoreManagement.Forms
             if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
                 MessageBox.Show("Vui lòng nhập họ tên khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtFullName.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidIdentity(txtIdentityNumber.Text))
+            {
+                MessageBox.Show("CMND/CCCD không hợp lệ. Phải là 9 hoặc 12 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtIdentityNumber.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidPhone(txtPhone.Text))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPhone.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidEmail(txtEmail.Text))
+            {
+                MessageBox.Show("Email không đúng định dạng. Vui lòng kiểm tra lại.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
                 return;
             }
 
