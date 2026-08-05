@@ -30,6 +30,7 @@ namespace BookStoreManagement.UserControls
 
         // KPI Cards
         private Guna2Panel pnlMetrics;
+        private Guna2Panel cardAllTimeRevenue;
         private Guna2Panel cardRevenue;
         private Guna2Panel cardOrders;
         private Guna2Panel cardLowStock;
@@ -99,19 +100,21 @@ namespace BookStoreManagement.UserControls
 
             // 2. Metric Cards
             pnlMetrics = new Guna2Panel { Dock = DockStyle.Top, Height = 100, Margin = new Padding(0, 0, 0, gutter + 20) };
-            cardRevenue = CreateMetricCard("Tổng Doanh Thu", "1,245,000,000 đ", "", true);
-            cardOrders = CreateMetricCard("Tổng Đơn Hàng", "4,521", "", false);
-            cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "34", "", false, true);
+            cardAllTimeRevenue = CreateMetricCard("Doanh Thu (Từ trước tới nay)", "0 đ", "", true);
+            cardRevenue = CreateMetricCard("Doanh Thu Tháng Này", "0 đ", "", true);
+            cardOrders = CreateMetricCard("Đơn Hàng Tháng Này", "0", "", true);
+            cardLowStock = CreateMetricCard("Sản phẩm sắp hết hàng", "0", "", false, true);
             
-            pnlMetrics.Controls.AddRange(new Control[] { cardRevenue, cardOrders, cardLowStock });
+            pnlMetrics.Controls.AddRange(new Control[] { cardAllTimeRevenue, cardRevenue, cardOrders, cardLowStock });
             pnlMetrics.Resize += (s, e) => 
             {
-                int cardWidth = (pnlMetrics.Width - (gutter * 2)) / 3;
+                int cardWidth = (pnlMetrics.Width - (gutter * 3)) / 4;
                 if (cardWidth > 0)
                 {
-                    cardRevenue.Width = cardWidth; cardRevenue.Left = 0;
-                    cardOrders.Width = cardWidth; cardOrders.Left = cardWidth + gutter;
-                    cardLowStock.Width = cardWidth; cardLowStock.Left = (cardWidth + gutter) * 2;
+                    cardAllTimeRevenue.Width = cardWidth; cardAllTimeRevenue.Left = 0;
+                    cardRevenue.Width = cardWidth; cardRevenue.Left = cardWidth + gutter;
+                    cardOrders.Width = cardWidth; cardOrders.Left = (cardWidth + gutter) * 2;
+                    cardLowStock.Width = cardWidth; cardLowStock.Left = (cardWidth + gutter) * 3;
                 }
             };
 
@@ -299,6 +302,11 @@ namespace BookStoreManagement.UserControls
             if (this.IsDisposed) return;
             if (_stats == null) return;
             
+
+            UpdateMetricCard(cardAllTimeRevenue, 
+                $"{_stats.AllTimeRevenue:N0} đ", 
+                "", 
+                true);
 
             UpdateMetricCard(cardRevenue, 
                 $"{_stats.TotalRevenue:N0} đ", 

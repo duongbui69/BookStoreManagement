@@ -33,6 +33,8 @@ namespace BookStoreManagement.Repositories
         public decimal TotalRevenue { get; set; }
         public decimal RevenueGrowth { get; set; }
         
+        public decimal AllTimeRevenue { get; set; }
+        
         public int TotalOrders { get; set; }
         public decimal OrdersGrowth { get; set; }
         
@@ -68,8 +70,10 @@ namespace BookStoreManagement.Repositories
 
             decimal currentRevenue = await GetTotalRevenueAsync(currentMonthStart, now);
             decimal lastRevenue = await GetTotalRevenueAsync(lastMonthStart, currentMonthStart);
+            decimal allTimeRevenue = await ExecuteScalarAsync<decimal>("SELECT ISNULL(SUM(TotalAmount), 0) FROM SalesOrders");
 
             stats.TotalRevenue = currentRevenue;
+            stats.AllTimeRevenue = allTimeRevenue;
             stats.RevenueGrowth = lastRevenue == 0 ? 0 : ((currentRevenue - lastRevenue) / lastRevenue) * 100;
 
             // 2. Orders
