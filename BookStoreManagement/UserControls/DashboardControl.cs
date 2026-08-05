@@ -1,7 +1,7 @@
 using BookStoreManagement.Helpers;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D; using LiveCharts; using LiveCharts.Wpf; using LiveCharts.WinForms;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -35,7 +35,8 @@ namespace BookStoreManagement.UserControls
         
         private Guna2Panel pnlChartContainer;
         private Label lblChartTitle;
-        private Panel pnlLineChart;
+        private LiveCharts.WinForms.CartesianChart cartesianChart;
+        private Guna2ComboBox cbTimeFilter;
 
         private Guna2Panel pnlTableContainer;
         private Guna2Panel pnlTableHeader;
@@ -115,12 +116,30 @@ namespace BookStoreManagement.UserControls
             lblChartTitle.Tag = "ChartTitle";
             pnlChartContainer.Controls.Add(lblChartTitle);
             
-            pnlLineChart = new Panel { Location = new Point(20, 60), Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, BackColor = Color.Transparent };
-            pnlLineChart.Paint += PnlLineChart_Paint;
-            pnlChartContainer.Controls.Add(pnlLineChart);
+            cbTimeFilter = new Guna2ComboBox
+            {
+                Location = new Point(pnlChartContainer.Width - 220, 15),
+                Width = 200,
+                Height = 36,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BorderRadius = 4,
+                Font = new Font("Segoe UI", 10F)
+            };
+            cbTimeFilter.Items.AddRange(new object[] { "Tháng này", "Tuần này", "Hôm nay", "Năm nay" });
+            cbTimeFilter.SelectedIndex = 0;
+            cbTimeFilter.SelectedIndexChanged += async (s, e) => await LoadDataAsync();
+            pnlChartContainer.Controls.Add(cbTimeFilter);
+            
+            cartesianChart = new LiveCharts.WinForms.CartesianChart
+            {
+                Location = new Point(20, 60),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                BackColor = Color.Transparent
+            };
+            pnlChartContainer.Controls.Add(cartesianChart);
             pnlChartContainer.Resize += (s, e) => {
-                pnlLineChart.Size = new Size(pnlChartContainer.Width - 40, pnlChartContainer.Height - 80);
-                pnlLineChart.Invalidate();
+                cartesianChart.Size = new Size(pnlChartContainer.Width - 40, pnlChartContainer.Height - 80);
+                cbTimeFilter.Location = new Point(pnlChartContainer.Width - 220, 15);
             };
             
             tlpMain.Controls.Add(pnlChartContainer, 0, 0);
@@ -228,14 +247,14 @@ namespace BookStoreManagement.UserControls
 
         private void LoadData()
         {
-            currentStats = _dashboardService.GetStats();
+            currentStats = _dashboardService.GetStats(cbTimeFilter.Text);
             
             foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.TotalRevenue:N0} ₫";
             foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.NetProfit:N0} ₫";
             foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
             foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
             
-            pnlLineChart.Invalidate();
+            SetupChart(currentStats);
             
             _currentPage = 1;
             LoadTableData();
@@ -243,14 +262,14 @@ namespace BookStoreManagement.UserControls
 
         private async Task LoadDataAsync()
         {
-            currentStats = await _dashboardService.GetStatsAsync();
+            currentStats = await _dashboardService.GetStatsAsync(cbTimeFilter.Text);
             
             foreach(Control c in card1.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.TotalRevenue:N0} ₫";
             foreach(Control c in card2.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = $"{currentStats.NetProfit:N0} ₫";
             foreach(Control c in card3.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.TotalOrders.ToString("N0");
             foreach(Control c in card4.Controls) if (c.Tag?.ToString() == "CardValue") c.Text = currentStats.LowStockCount.ToString();
             
-            pnlLineChart.Invalidate();
+            SetupChart(currentStats);
             
             _currentPage = 1;
             LoadTableData();
@@ -266,7 +285,62 @@ namespace BookStoreManagement.UserControls
             paginationControl.UpdatePagination(currentStats.LowStockItems.Count, _currentPage, _pageSize);
         }
 
+        private void SetupChart(DashboardStats stats)
+        {
+            if (stats == null) return;
 
+            var series = new LineSeries
+            {
+                Title = "Doanh thu",
+                Values = new ChartValues<decimal>(),
+                PointGeometrySize = 15,
+                LineSmoothness = 0.5,
+                StrokeThickness = 3,
+                Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(41, 128, 185)),
+                Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 41, 128, 185))
+            };
+
+            var labels = new List<string>();
+
+            // Convert dictionary to sorted list
+            var sortedData = stats.MonthlyRevenue.OrderBy(x => x.Key).ToList();
+            
+            foreach (var item in sortedData)
+            {
+                series.Values.Add(item.Value);
+                if (cbTimeFilter.Text == "Hôm nay" || cbTimeFilter.Text == "Tuần này")
+                {
+                    labels.Add(item.Key.ToString("dd/MM"));
+                }
+                else
+                {
+                    labels.Add(item.Key.ToString("MM/yyyy"));
+                }
+            }
+
+            cartesianChart.Series = new SeriesCollection { series };
+            
+            cartesianChart.AxisX.Clear();
+            cartesianChart.AxisX.Add(new Axis
+            {
+                Labels = labels,
+                Separator = new Separator { Step = 1, IsEnabled = false },
+                LabelsRotation = 15
+            });
+
+            cartesianChart.AxisY.Clear();
+            cartesianChart.AxisY.Add(new Axis
+            {
+                LabelFormatter = value => value.ToString("N0") + " ₫",
+                Separator = new Separator { StrokeThickness = 1, StrokeDashArray = new System.Windows.Media.DoubleCollection { 2 } }
+            });
+            
+            // Set chart colors based on theme
+            cartesianChart.AxisX[0].Foreground = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(ThemeManager.TextSecondary.R, ThemeManager.TextSecondary.G, ThemeManager.TextSecondary.B));
+            cartesianChart.AxisY[0].Foreground = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(ThemeManager.TextSecondary.R, ThemeManager.TextSecondary.G, ThemeManager.TextSecondary.B));
+        }
 
         private void DgvProducts_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -287,60 +361,6 @@ namespace BookStoreManagement.UserControls
             }
         }
         
-        private void PnlLineChart_Paint(object sender, PaintEventArgs e)
-        {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            var rect = pnlLineChart.ClientRectangle;
-
-            if (currentStats == null || currentStats.MonthlyRevenue.Count == 0) return;
-
-            var sortedMonths = currentStats.MonthlyRevenue.OrderBy(x => x.Key).ToList();
-            if (sortedMonths.Count == 0) return;
-
-            float maxVal = (float)sortedMonths.Max(x => x.Value);
-            if (maxVal == 0) maxVal = 1;
-
-            float paddingX = 40f;
-            float paddingY = 40f;
-            float bottomY = rect.Height - paddingY;
-            float chartWidth = rect.Width - (paddingX * 2);
-            float chartHeight = rect.Height - paddingY - 20f;
-            
-            float barWidth = (chartWidth / sortedMonths.Count) * 0.6f;
-            float stepX = chartWidth / sortedMonths.Count;
-
-            for (int i = 0; i < sortedMonths.Count; i++)
-            {
-                float xCenter = paddingX + (i * stepX) + (stepX / 2);
-                float barHeight = ((float)sortedMonths[i].Value / maxVal * chartHeight);
-                float x = xCenter - (barWidth / 2);
-                float y = bottomY - barHeight;
-
-                // Draw Bar
-                if (barHeight > 0)
-                {
-                    RectangleF barRect = new RectangleF(x, y, barWidth, barHeight);
-                    using (var brush = new LinearGradientBrush(barRect, Color.FromArgb(41, 128, 185), Color.FromArgb(141, 188, 215), LinearGradientMode.Vertical))
-                    {
-                        g.FillRectangle(brush, barRect);
-                    }
-                }
-
-                // Draw Label
-                using (var font = new Font("Segoe UI", 8F))
-                using (var brush = new SolidBrush(ThemeManager.TextSecondary))
-                {
-                    var format = new StringFormat();
-                    format.Alignment = StringAlignment.Center;
-                    g.TranslateTransform(xCenter, bottomY + 15);
-                    g.RotateTransform(-45);
-                    g.DrawString(sortedMonths[i].Key.ToString("MM/yy"), font, brush, 0, 0, format);
-                    g.ResetTransform();
-                }
-            }
-        }
-
         private void ThemeManager_ThemeChanged(object sender, EventArgs e)
         {
             ApplyTheme();
@@ -372,8 +392,6 @@ namespace BookStoreManagement.UserControls
             lblTableTitle.ForeColor = ThemeManager.TextPrimary;
 
             ThemeManager.ApplyDataGridViewStyle(dgvProducts);
-            
-            pnlLineChart.Invalidate();
         }
         
         private void ApplyThemeToCard(Guna2Panel card)

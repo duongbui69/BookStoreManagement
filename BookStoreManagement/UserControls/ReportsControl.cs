@@ -534,7 +534,7 @@ namespace BookStoreManagement.UserControls
             btnExportExcel.ForeColor = ThemeManager.ButtonText;
 
             // Metrics Cards
-            var cards = new[] { cardRevenue, cardOrders, cardLowStock };
+            var cards = new[] { cardAllTimeRevenue, cardRevenue, cardOrders, cardLowStock };
             foreach (var card in cards)
             {
                 if (card == null) continue;

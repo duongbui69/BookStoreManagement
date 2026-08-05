@@ -11,14 +11,14 @@ namespace BookStoreManagement.Services
             _repo = new DashboardRepository();
         }
 
-        public DashboardStats GetStats()
+        public DashboardStats GetStats(string filter = "Tháng này")
         {
-            return _repo.GetStats();
+            return _repo.GetStats(filter);
         }
 
-        public async System.Threading.Tasks.Task<DashboardStats> GetStatsAsync()
+        public async System.Threading.Tasks.Task<DashboardStats> GetStatsAsync(string filter = "Tháng này")
         {
-            return await _repo.GetStatsAsync();
+            return await _repo.GetStatsAsync(filter);
         }
     }
 }

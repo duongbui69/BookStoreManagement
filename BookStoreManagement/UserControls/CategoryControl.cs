@@ -75,10 +75,10 @@ namespace BookStoreManagement.UserControls
             lblTitle = new Label { Text = "Danh mục sách", Font = new Font("Segoe UI", 24F, FontStyle.Bold), AutoSize = true, Location = new Point(0, 0) };
             lblSubtitle = new Label { Text = "Quản lý và phân loại các đầu sách trong hệ thống.", Font = new Font("Segoe UI", 11F), AutoSize = true, Location = new Point(0, 45) };
             
-            btnExport = new Guna2Button { Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnExport = new Guna2Button { Name = "btnExport", Text = "Xuất Excel", Size = new Size(120, 36), BorderRadius = 8, BorderThickness = 1, FillColor = Color.Transparent, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnExport.Click += BtnExport_Click;
 
-            btnAdd = new Guna2Button { Text = "+ Thêm mới", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnAdd = new Guna2Button { Name = "btnAdd", Text = "+ Thêm mới", Size = new Size(120, 36), BorderRadius = 8, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnAdd.Click += BtnAdd_Click;
 
             pnlPageHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
@@ -104,7 +104,7 @@ namespace BookStoreManagement.UserControls
 // Filter Bar
             pnlFilters = new Guna2Panel { Dock = DockStyle.Top, Height = 70, CustomBorderThickness = new Padding(1), Margin = new Padding(0, 0, 0, gutter), BorderRadius = 8 };
             
-            txtSearch = new Guna2TextBox { Size = new Size(300, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Nhập tên danh mục để tìm kiếm..." };
+            txtSearch = new Guna2TextBox { Name = "txtSearch", Size = new Size(300, 36), Location = new Point(20, 16), BorderRadius = 8, PlaceholderText = "Nhập tên danh mục để tìm kiếm..." };
             
             cbStatus = new Guna2ComboBox { Size = new Size(160, 36), Location = new Point(340, 16), BorderRadius = 8, Cursor = Cursors.Hand };
             cbStatus.Items.Add(new { Text = "Tất cả trạng thái", Value = "" });
@@ -139,6 +139,7 @@ namespace BookStoreManagement.UserControls
             
             dgvCategories = new Guna2DataGridView
             {
+                Name = "dgvCategories",
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,

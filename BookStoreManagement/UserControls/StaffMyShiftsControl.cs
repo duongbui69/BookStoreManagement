@@ -470,7 +470,7 @@ namespace BookStoreManagement.UserControls
                         item.ShiftName,
                         timeStr,
                         displayRevenue.ToString("N0") + " đ",
-                        item.Status == "Đã đóng" ? "Đã đóng" : "Đang mở",
+                        (item.Status == "Closed" || item.Status == "Đã đóng") ? "Đã kết thúc" : "Đang mở",
                         "Chi tiết"
                     );
                     dgvHistory.Rows[rowIndex].Tag = item;
@@ -492,8 +492,8 @@ namespace BookStoreManagement.UserControls
                 string status = e.Value?.ToString() ?? "";
                 if (string.IsNullOrEmpty(status)) return;
 
-                Color bgColor = status == "Đã đóng" ? ThemeManager.HoverColor : Color.FromArgb(40, Color.ForestGreen);
-                Color textColor = status == "Đã đóng" ? ThemeManager.TextSecondary : Color.ForestGreen;
+                Color bgColor = status == "Đã kết thúc" ? ThemeManager.HoverColor : Color.FromArgb(40, Color.ForestGreen);
+                Color textColor = status == "Đã kết thúc" ? ThemeManager.TextSecondary : Color.ForestGreen;
 
                 Rectangle badgeRect = e.CellBounds;
                 badgeRect.Inflate(-25, -12); // Resize for badge

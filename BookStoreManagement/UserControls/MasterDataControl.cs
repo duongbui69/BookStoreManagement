@@ -35,9 +35,7 @@ namespace BookStoreManagement.UserControls
         private TextBox txtSearch;
 
         private DataGridView dgvData;
-        private Panel pnlPagination;
-        private Label lblPageInfo;
-        private FlowLayoutPanel flpPagination;
+        private PaginationControl paginationControl;
 
         private CategoryRepository _categoryRepository;
         private AuthorRepository _authorRepository;
@@ -215,22 +213,16 @@ namespace BookStoreManagement.UserControls
             pnlDataContainer.Controls.Add(dgvData);
 
             // Pagination Panel
-            pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(16) };
-            lblPageInfo = new Label { AutoSize = true, Location = new Point(16, 20), Font = new Font("Segoe UI", 9) };
-            flpPagination = new FlowLayoutPanel 
-            { 
-                AutoSize = true, 
-                FlowDirection = FlowDirection.LeftToRight, 
-                Location = new Point(0, 12) 
+            paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
+            paginationControl.PageChanged += (s, e) => 
+            {
+                currentPage = e.NewPage;
+                LoadData();
             };
-            
-            pnlPagination.Controls.Add(lblPageInfo);
-            pnlPagination.Controls.Add(flpPagination);
-            pnlPagination.Resize += PnlPagination_Resize;
 
             Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = 20, BackColor = Color.Transparent };
             
-            pnlDataContainer.Controls.Add(pnlPagination);
+            pnlDataContainer.Controls.Add(paginationControl);
             pnlDataContainer.Controls.Add(dgvData);
             pnlDataContainer.Controls.Add(spacer1);
             pnlDataContainer.Controls.Add(pnlFilter);
@@ -267,10 +259,7 @@ namespace BookStoreManagement.UserControls
 
             ThemeManager.ApplyDataGridViewStyle(dgvData);
 
-            pnlPagination.BackColor = ThemeManager.CardBackground;
-            lblPageInfo.ForeColor = ThemeManager.TextSecondary;
 
-            UpdatePagination();
             dgvData.Invalidate();
         }
 
@@ -287,10 +276,7 @@ namespace BookStoreManagement.UserControls
             txtSearch.Location = new Point(pnlFilter.Width - txtSearch.Width - 16, 16);
         }
 
-        private void PnlPagination_Resize(object sender, EventArgs e)
-        {
-            flpPagination.Location = new Point(pnlPagination.Width - flpPagination.Width - 16, 12);
-        }
+
 
         private void CboDataType_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -390,7 +376,7 @@ namespace BookStoreManagement.UserControls
                 dgvData.Rows[i].Cells["colSTT"].Value = (currentPage - 1) * pageSize + i + 1;
             }
 
-            UpdatePagination();
+            paginationControl.UpdatePagination(totalRecords, currentPage, pageSize);
         }
 
         private void CboPageSize_SelectedIndexChanged(object sender, EventArgs e)
@@ -623,77 +609,7 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void UpdatePagination()
-        {
-            int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
-            if (totalPages == 0) totalPages = 1;
-            
-            int startRecord = (currentPage - 1) * pageSize + 1;
-            int endRecord = Math.Min(currentPage * pageSize, totalRecords);
-            
-            lblPageInfo.Text = totalRecords == 0 ? "Không có dữ liệu" : $"Hiển thị {startRecord} - {endRecord} của {totalRecords} bản ghi";
 
-            flpPagination.Controls.Clear();
-
-            // Prev Button
-            Button btnPrev = CreatePageButton("<", currentPage > 1);
-            btnPrev.Click += (s, e) => { if (currentPage > 1) { currentPage--; LoadData(); } };
-            flpPagination.Controls.Add(btnPrev);
-
-            // Page Numbers
-            for (int i = 1; i <= totalPages; i++)
-            {
-                if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1))
-                {
-                    Button btnPage = CreatePageButton(i.ToString(), true, i == currentPage);
-                    int pageNum = i;
-                    btnPage.Click += (s, e) => { currentPage = pageNum; LoadData(); };
-                    flpPagination.Controls.Add(btnPage);
-                }
-                else if (i == currentPage - 2 || i == currentPage + 2)
-                {
-                    Label lblDots = new Label { Text = "...", Width = 30, TextAlign = ContentAlignment.MiddleCenter, ForeColor = ThemeManager.TextSecondary };
-                    flpPagination.Controls.Add(lblDots);
-                }
-            }
-
-            // Next Button
-            Button btnNext = CreatePageButton(">", currentPage < totalPages);
-            btnNext.Click += (s, e) => { if (currentPage < totalPages) { currentPage++; LoadData(); } };
-            flpPagination.Controls.Add(btnNext);
-            
-            PnlPagination_Resize(null, null);
-        }
-
-        private Button CreatePageButton(string text, bool enabled, bool active = false)
-        {
-            Button btn = new Button
-            {
-                Text = text,
-                Width = 32,
-                Height = 32,
-                FlatStyle = FlatStyle.Flat,
-                Enabled = enabled,
-                Cursor = enabled ? Cursors.Hand : Cursors.Default,
-                Font = new Font("Segoe UI", 9),
-                Margin = new Padding(2)
-            };
-
-            if (active)
-            {
-                btn.BackColor = ThemeManager.ButtonFill;
-                btn.ForeColor = ThemeManager.ButtonText;
-                btn.FlatAppearance.BorderColor = ThemeManager.ButtonFill;
-            }
-            else
-            {
-                btn.BackColor = ThemeManager.CardBackground;
-                btn.ForeColor = ThemeManager.TextPrimary;
-                btn.FlatAppearance.BorderColor = ThemeManager.TextBoxBorder;
-            }
-
-            return btn;
-        }
     }
 }
 

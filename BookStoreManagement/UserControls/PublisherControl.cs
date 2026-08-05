@@ -1,4 +1,4 @@
-﻿using BookStoreManagement.Helpers;
+using BookStoreManagement.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,9 +23,7 @@ namespace BookStoreManagement.UserControls
         private Guna2TextBox txtSearch;
         
         private DataGridView dgvData;
-        private Panel pnlPagination;
-        private Label lblPaginationInfo;
-        private FlowLayoutPanel flpPagination;
+        private PaginationControl paginationControl;
         
         private PublisherRepository _publisherRepository;
         private int currentPage = 1;
@@ -148,28 +146,11 @@ namespace BookStoreManagement.UserControls
             dgvData.CellClick += DgvData_CellClick;
 
             // Pagination Section
-            pnlPagination = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(0, 10, 0, 0) };
-            
-            lblPaginationInfo = new Label 
-            { 
-                Font = new Font("Segoe UI", 11), 
-                AutoSize = true, 
-                Location = new Point(0, 20) 
-            };
-            
-            flpPagination = new FlowLayoutPanel 
-            { 
-                FlowDirection = FlowDirection.LeftToRight, 
-                WrapContents = false, 
-                AutoSize = true, 
-                Anchor = AnchorStyles.Right | AnchorStyles.Top 
-            };
-
-            pnlPagination.Controls.Add(lblPaginationInfo);
-            pnlPagination.Controls.Add(flpPagination);
-            pnlPagination.Resize += (s, e) => 
+            paginationControl = new PaginationControl { Dock = DockStyle.Bottom };
+            paginationControl.PageChanged += (s, e) => 
             {
-                flpPagination.Location = new Point(pnlPagination.Width - flpPagination.Width, 15);
+                currentPage = e.NewPage;
+                LoadData();
             };
 
             // Spacer panel between header and grid
@@ -177,7 +158,7 @@ namespace BookStoreManagement.UserControls
 
             // Add to Control
             this.Controls.Add(dgvData);
-            this.Controls.Add(pnlPagination);
+            this.Controls.Add(paginationControl);
             this.Controls.Add(pnlSpacer);
             this.Controls.Add(pnlFilters);
             this.Controls.Add(pnlHeader);
@@ -226,7 +207,7 @@ namespace BookStoreManagement.UserControls
             
             ThemeManager.ApplyDataGridViewStyle(dgvData);
             
-            lblPaginationInfo.ForeColor = ThemeManager.TextSecondary;
+
         }
 
         public async void PerformSearch(string query)
@@ -258,7 +239,7 @@ namespace BookStoreManagement.UserControls
                     dgvData.Rows.Add(index++, code, publisher.PublisherName, publisher.Address ?? "", publisher.Email ?? "", "", "");
                 }
 
-                UpdatePaginationUI();
+                paginationControl.UpdatePagination(totalRecords, currentPage, pageSize);
             }
             catch (Exception ex)
             {
@@ -266,76 +247,7 @@ namespace BookStoreManagement.UserControls
             }
         }
 
-        private void UpdatePaginationUI()
-        {
-            int startRecord = (currentPage - 1) * pageSize + 1;
-            int endRecord = Math.Min(currentPage * pageSize, totalRecords);
-            
-            if (totalRecords == 0)
-            {
-                lblPaginationInfo.Text = "Không có dữ liệu";
-            }
-            else
-            {
-                lblPaginationInfo.Text = $"Hiển thị {startRecord} - {endRecord} trong tổng số {totalRecords} nhà xuất bản";
-            }
 
-            flpPagination.Controls.Clear();
-            int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
-            if (totalPages <= 1) return;
-
-            // Prev Button
-            Button btnPrev = CreatePaginationButton("\ue5cb");
-            btnPrev.Font = new Font("Material Symbols Outlined", 11);
-            btnPrev.Enabled = currentPage > 1;
-            btnPrev.Click += (s, e) => { currentPage--; LoadData(); };
-            flpPagination.Controls.Add(btnPrev);
-
-            // Page Buttons
-            int startPage = Math.Max(1, currentPage - 1);
-            int endPage = Math.Min(totalPages, currentPage + 1);
-
-            for (int i = startPage; i <= endPage; i++)
-            {
-                int pageNum = i;
-                Button btnPage = CreatePaginationButton(i.ToString());
-                if (i == currentPage)
-                {
-                    btnPage.BackColor = ThemeManager.ButtonFill;
-                    btnPage.ForeColor = ThemeManager.ButtonText;
-                    btnPage.FlatAppearance.BorderColor = ThemeManager.ButtonFill;
-                }
-                else
-                {
-                    btnPage.Click += (s, e) => { currentPage = pageNum; LoadData(); };
-                }
-                flpPagination.Controls.Add(btnPage);
-            }
-
-            // Next Button
-            Button btnNext = CreatePaginationButton("\ue5cc");
-            btnNext.Font = new Font("Material Symbols Outlined", 11);
-            btnNext.Enabled = currentPage < totalPages;
-            btnNext.Click += (s, e) => { currentPage++; LoadData(); };
-            flpPagination.Controls.Add(btnNext);
-            
-            flpPagination.Location = new Point(pnlPagination.Width - flpPagination.Width, 15);
-        }
-
-        private Button CreatePaginationButton(string text)
-        {
-            return new Button
-            {
-                Text = text,
-                Size = new Size(32, 32),
-                Margin = new Padding(2),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = ThemeManager.CardBackground,
-                ForeColor = ThemeManager.TextPrimary,
-                Font = new Font("Segoe UI", 11F),
-                Cursor = Cursors.Hand
-            };
-        }
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {

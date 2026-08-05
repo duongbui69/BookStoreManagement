@@ -1,5 +1,8 @@
 using System;
 using System.Drawing;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace BookStoreManagement.Themes
 {
@@ -9,9 +12,51 @@ namespace BookStoreManagement.Themes
 
         public static event EventHandler ThemeChanged;
 
+        public static void Initialize()
+        {
+            try
+            {
+                string path = "appsettings.json";
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    var node = JsonNode.Parse(json);
+                    if (node != null && node["IsDarkMode"] != null)
+                    {
+                        IsDarkMode = node["IsDarkMode"].GetValue<bool>();
+                    }
+                }
+            }
+            catch { }
+        }
+
         public static void ToggleTheme()
         {
             IsDarkMode = !IsDarkMode;
+            
+            try
+            {
+                string path = "appsettings.json";
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    var node = JsonNode.Parse(json);
+                    if (node != null)
+                    {
+                        node["IsDarkMode"] = IsDarkMode;
+                        File.WriteAllText(path, node.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+                        
+                        // Also write to project directory if debugging
+                        string projPath = @"..\..\..\appsettings.json";
+                        if (File.Exists(projPath))
+                        {
+                            File.WriteAllText(projPath, node.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+                        }
+                    }
+                }
+            }
+            catch { }
+
             ThemeChanged?.Invoke(null, EventArgs.Empty);
         }
 

@@ -10,7 +10,16 @@ namespace BookStoreManagement.UserControls
 {
     public partial class SettingsControl : UserControl, ISearchableControl
     {
+        private BookStoreManagement.Services.SettingsService _settingsService;
         private Guna2Panel pnlContent;
+        
+        // Input fields
+        private Guna2TextBox txtStoreName;
+        private Guna2TextBox txtBranchId;
+        private Guna2TextBox txtAddress;
+        private Guna2ComboBox cbTimezone;
+        private Guna2ComboBox cbCurrency;
+        private Guna2TextBox txtThreshold;
         
         // Header
         private Guna2Panel pnlHeader;
@@ -55,8 +64,35 @@ namespace BookStoreManagement.UserControls
 
         public SettingsControl()
         {
+            _settingsService = new BookStoreManagement.Services.SettingsService();
             InitializeUI();
             ThemeManager.ThemeChanged += ThemeManager_ThemeChanged;
+            LoadSettings();
+        }
+
+        private async void LoadSettings()
+        {
+            var settings = await _settingsService.GetAllSettingsAsync();
+            if (settings.TryGetValue("StoreName", out string storeName)) txtStoreName.Text = storeName;
+            if (settings.TryGetValue("BranchId", out string branchId)) txtBranchId.Text = branchId;
+            if (settings.TryGetValue("Address", out string address)) txtAddress.Text = address;
+            if (settings.TryGetValue("MinStockThreshold", out string minStock)) txtThreshold.Text = minStock;
+            
+            // If we add timezone and currency to DB later, load them here
+        }
+
+        private async void SaveSettings()
+        {
+            var settingsToSave = new Dictionary<string, string>
+            {
+                { "StoreName", txtStoreName.Text },
+                { "BranchId", txtBranchId.Text },
+                { "Address", txtAddress.Text },
+                { "MinStockThreshold", txtThreshold.Text }
+            };
+
+            await _settingsService.SaveMultipleSettingsAsync(settingsToSave);
+            MessageBox.Show("Đã lưu cấu hình thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void InitializeUI()
@@ -201,20 +237,32 @@ namespace BookStoreManagement.UserControls
             var pnl = new Guna2Panel { Dock = DockStyle.Fill };
             
             var card1 = CreateCard("Store Information", "store", 300, 0);
-            var txtStoreName = CreateInputGroup("Store Name", "Bookwise Downtown", false, 20, 70);
-            var txtBranchId = CreateInputGroup("Branch ID", "BW-NYC-001", true, 340, 70);
-            var txtAddress = CreateInputGroup("Physical Address", "120 Broadway, New York, NY 10271", false, 20, 150);
-            txtAddress.Width = 560; 
-            var btnSave = new Guna2Button { Text = "Lưu thay đổi", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 230) };
             
-            card1.Controls.AddRange(new Control[] { txtStoreName, txtBranchId, txtAddress, btnSave });
+            // We create panels but need to save the created textbox references
+            var pnlStoreName = CreateInputGroup("Store Name", "", false, 20, 70);
+            txtStoreName = (Guna2TextBox)pnlStoreName.Controls[1];
+            
+            var pnlBranchId = CreateInputGroup("Branch ID", "", false, 340, 70);
+            txtBranchId = (Guna2TextBox)pnlBranchId.Controls[1];
+            
+            var pnlAddress = CreateInputGroup("Physical Address", "", false, 20, 150);
+            txtAddress = (Guna2TextBox)pnlAddress.Controls[1];
+            pnlAddress.Width = 560; 
+            
+            var btnSave = new Guna2Button { Text = "Lưu thay đổi", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 230) };
+            btnSave.Click += (s, e) => SaveSettings();
+            
+            card1.Controls.AddRange(new Control[] { pnlStoreName, pnlBranchId, pnlAddress, btnSave });
             actionButtons.Add(btnSave);
 
             var card2 = CreateCard("Region & Language", "public", 180, 320);
-            var cbTimezone = CreateComboGroup("System Timezone", new[] { "Eastern Time (US)", "Central Time", "Pacific Time", "Vietnam (GMT+7)" }, 20, 70);
-            var cbCurrency = CreateComboGroup("Currency", new[] { "USD ($)", "₫ (â‚«)" }, 340, 70);
+            var pnlTimezone = CreateComboGroup("System Timezone", new[] { "Eastern Time (US)", "Central Time", "Pacific Time", "Vietnam (GMT+7)" }, 20, 70);
+            cbTimezone = (Guna2ComboBox)pnlTimezone.Controls[1];
             
-            card2.Controls.AddRange(new Control[] { cbTimezone, cbCurrency });
+            var pnlCurrency = CreateComboGroup("Currency", new[] { "USD ($)", "₫ (VNĐ)" }, 340, 70);
+            cbCurrency = (Guna2ComboBox)pnlCurrency.Controls[1];
+            
+            card2.Controls.AddRange(new Control[] { pnlTimezone, pnlCurrency });
 
             pnl.Controls.AddRange(new Control[] { card1, card2 });
             pnl.Resize += (s, e) => {
@@ -223,14 +271,14 @@ namespace BookStoreManagement.UserControls
                 if (card1.Width > 100)
                 {
                     int half = (card1.Width - 60) / 2;
-                    txtStoreName.Width = half;
-                    txtBranchId.Width = half;
-                    txtBranchId.Left = 40 + half;
-                    txtAddress.Width = card1.Width - 40;
+                    pnlStoreName.Width = half;
+                    pnlBranchId.Width = half;
+                    pnlBranchId.Left = 40 + half;
+                    pnlAddress.Width = card1.Width - 40;
                     
-                    cbTimezone.Width = half;
-                    cbCurrency.Width = half;
-                    cbCurrency.Left = 40 + half;
+                    pnlTimezone.Width = half;
+                    pnlCurrency.Width = half;
+                    pnlCurrency.Left = 40 + half;
                 }
             };
             return pnl;
@@ -295,15 +343,19 @@ namespace BookStoreManagement.UserControls
             var lblTitle = new Label { Text = "Mức cảnh báo sắp hết", Font = new Font("Segoe UI", 9F, FontStyle.Bold), AutoSize = true, Location = new Point(20, 70) };
             var lblSub = new Label { Text = "Báo động khi số lượng thấp hơn mức này.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 95) };
             
-            var txtThreshold = new Guna2TextBox { Text = "15", Size = new Size(60, 30), Location = new Point(200, 70), TextAlign = HorizontalAlignment.Center, BorderRadius = 4 };
-            var trackBar = new Guna2TrackBar { Location = new Point(20, 130), Width = 300, Minimum = 1, Maximum = 100, Value = 15 };
+            txtThreshold = new Guna2TextBox { Text = "10", Size = new Size(60, 30), Location = new Point(200, 70), TextAlign = HorizontalAlignment.Center, BorderRadius = 4 };
+            var trackBar = new Guna2TrackBar { Location = new Point(20, 130), Width = 300, Minimum = 1, Maximum = 100, Value = 10 };
             trackBar.ValueChanged += (s, e) => txtThreshold.Text = trackBar.Value.ToString();
+            
+            var btnSaveAlerts = new Guna2Button { Text = "Lưu Cảnh báo", Size = new Size(130, 40), BorderRadius = 4, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Location = new Point(20, 180) };
+            btnSaveAlerts.Click += (s, e) => SaveSettings();
+            actionButtons.Add(btnSaveAlerts);
 
             textBoxes.Add(txtThreshold);
             primaryLabels.Add(lblTitle);
             standardLabels.Add(lblSub);
 
-            card1.Controls.AddRange(new Control[] { lblTitle, lblSub, txtThreshold, trackBar });
+            card1.Controls.AddRange(new Control[] { lblTitle, lblSub, txtThreshold, trackBar, btnSaveAlerts });
             
             var card2 = CreateCard("Email Settings (SMTP)", "mail", 200, 220);
             var lblSmtp = new Label { Text = "Cấu hình server email để gửi báo cáo.", Font = new Font("Segoe UI", 9F), AutoSize = true, Location = new Point(20, 70) };

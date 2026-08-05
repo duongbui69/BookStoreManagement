@@ -84,7 +84,22 @@ namespace BookStoreManagement.Forms
             // 1. Header
             pnlHeader = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = ThemeManager.ButtonFill };
             lblTitle = new Label { Text = "CHI TIẾT HÓA ĐƠN", Font = new Font("Segoe UI", 16F, FontStyle.Bold), ForeColor = Color.White, AutoSize = false, TextAlign = ContentAlignment.MiddleCenter, Dock = DockStyle.Fill };
-            
+            btnClose = new Button 
+            { 
+                Text = "X", 
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold), 
+                ForeColor = Color.White, 
+                BackColor = Color.Transparent, 
+                FlatStyle = FlatStyle.Flat, 
+                Size = new Size(40, 40), 
+                Cursor = Cursors.Hand, 
+                Dock = DockStyle.Right 
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(231, 76, 60);
+            btnClose.Click += (s, e) => this.Close();
+
+            pnlHeader.Controls.Add(btnClose);
             pnlHeader.Controls.Add(lblTitle); // fill must be added last or sent to back
             lblTitle.SendToBack();
 

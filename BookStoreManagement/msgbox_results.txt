@@ -1,0 +1,161 @@
+AccountControl.cs: Lỗi tải tài khoản: 
+AccountControl.cs: Lỗi: 
+AccountForm.cs: Cập nhật tài khoản thành công.
+AccountForm.cs: Email không đúng định dạng. Vui lòng kiểm tra lại.
+AccountForm.cs: Lỗi: 
+AccountForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+AccountForm.cs: Tên đăng nhập phải từ 4-50 ký tự, chỉ gồm chữ cái, chữ số, dấu gạch dưới và dấu chấm (không có khoảng trắng).
+AccountForm.cs: Tạo tài khoản thành công.
+AccountForm.cs: Vui lòng nhập mật khẩu cho tài khoản mới.
+AccountForm.cs: Vui lòng nhập tên đăng nhập.
+AuthorControl.cs: Không thể xóa tác giả này. Có thể dữ liệu đang được sử dụng ở nơi khác.
+AuthorControl.cs: Lỗi khi xuất Excel: 
+AuthorControl.cs: Lỗi tải dữ liệu: 
+AuthorControl.cs: Lỗi xóa: 
+AuthorControl.cs: Xuất file Excel thành công!
+AuthorForm.cs: Cập nhật thành công!
+AuthorForm.cs: Không tìm thấy dữ liệu Tác giả!
+AuthorForm.cs: Lỗi khi lưu dữ liệu: 
+AuthorForm.cs: Lỗi tải dữ liệu: 
+AuthorForm.cs: Thêm mới thành công!
+AuthorForm.cs: Tên tác giả đã tồn tại!
+AuthorForm.cs: Vui lòng nhập tên tác giả!
+BarcodeScanDialog.cs: Vui lòng nhập mã vạch.
+BookForm.cs: Giá bán không hợp lệ. Vui lòng nhập số dương.
+BookForm.cs: Lỗi: 
+BookForm.cs: Năm xuất bản không hợp lệ.
+BookForm.cs: Vui lòng nhập tiêu đề sách.
+BookForm.cs: Đã cập nhật sách thành công.
+BookForm.cs: Đã thêm sách thành công.
+CatalogControl.cs: Bạn có chắc chắn muốn xóa cuốn sách này không?
+CatalogControl.cs: Không tìm thấy sách.
+CatalogControl.cs: Lỗi xuất Excel: 
+CatalogControl.cs: Xuất file Excel thành công!
+CatalogControl.cs: Đã xóa sách thành công!
+CategoryControl.cs: Bạn có chắc chắn muốn xóa danh mục này?
+CategoryControl.cs: Lỗi khi xuất Excel: 
+CategoryControl.cs: Lỗi tải dữ liệu: 
+CategoryControl.cs: Lỗi xóa: 
+CategoryControl.cs: Xuất file Excel thành công!
+CategoryControl.cs: Xóa danh mục thành công!
+CategoryForm.cs: Cập nhật danh mục thành công!
+CategoryForm.cs: Thêm danh mục thành công!
+CategoryForm.cs: Tên danh mục không được để trống.
+CloseShiftDialog.cs: Đóng ca thành công!
+CustomerControl.cs: Lỗi tải dữ liệu: 
+CustomerControl.cs: Lỗi xóa khách hàng: 
+CustomerControl.cs: Lỗi xóa: 
+CustomerControl.cs: Đã xóa thành công.
+CustomerForm.cs: CMND/CCCD không hợp lệ. Phải là 9 hoặc 12 chữ số.
+CustomerForm.cs: Email không đúng định dạng. Vui lòng kiểm tra lại.
+CustomerForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+CustomerForm.cs: Vui lòng nhập họ tên khách hàng.
+CustomerForm.cs: Đã cập nhật khách hàng thành công.
+CustomerForm.cs: Đã thêm khách hàng thành công.
+EmployeeForm.cs: CMND/CCCD không hợp lệ. Phải là 9 hoặc 12 chữ số.
+EmployeeForm.cs: Email không đúng định dạng. Vui lòng kiểm tra lại.
+EmployeeForm.cs: Lỗi: 
+EmployeeForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+EmployeeForm.cs: Tên đăng nhập phải từ 4-50 ký tự, chỉ gồm chữ cái, chữ số, dấu gạch dưới và dấu chấm.
+EmployeeForm.cs: Vui lòng nhập mật khẩu cho nhân viên mới.
+EmployeeForm.cs: Vui lòng nhập tên đăng nhập.
+EmployeeForm.cs: Đã cập nhật nhân viên thành công.
+EmployeeForm.cs: Đã tạo nhân viên thành công.
+ExportReceiptAddForm.cs: Giá không hợp lệ!
+ExportReceiptAddForm.cs: Số lượng không hợp lệ!
+ExportReceiptAddForm.cs: Thêm phiếu xuất thành công!
+ExportReceiptAddForm.cs: Vui lòng chọn Kho xuất!
+ExportReceiptAddForm.cs: Vui lòng thêm ít nhất một sản phẩm!
+ExportReceiptControl.cs: Lỗi khi xuất Excel: 
+ExportReceiptControl.cs: Xuất file Excel thành công!
+HRControl.cs: Bạn có chắc chắn muốn xóa nhân viên này không?
+HRControl.cs: Không tìm thấy nhân viên.
+HRControl.cs: Xóa nhân viên thành công!
+InventoryControl.cs: Bạn có chắc chắn muốn xóa tồn kho của sản phẩm này không?
+InventoryControl.cs: Lỗi khi xuất Excel: 
+InventoryControl.cs: Xuất file Excel thành công!
+InventoryEditForm.cs: Đã lưu thông tin kho thành công!
+InventoryLedgerControl.cs: Lỗi khi xuất Excel: 
+InventoryLedgerControl.cs: Xuất file Excel thành công!
+InvoiceForm.cs: Không tìm thấy chi tiết hóa đơn.
+InvoiceForm.cs: Lỗi tải chi tiết: 
+MainForm.cs: Vui lòng bắt đầu ca làm việc trước khi thực hiện các thao tác khác!
+MasterDataControl.cs: Lỗi xóa. Bản ghi có thể đang được sử dụng.
+MasterDataControl.cs: Đã xóa thành công!
+MasterDataForm.cs: Tên NXB đã tồn tại!
+MasterDataForm.cs: Tên danh mục đã tồn tại!
+MasterDataForm.cs: Tên tác giả đã tồn tại!
+MasterDataForm.cs: Vui lòng nhập tên!
+OrderForm.cs: Cập nhật đơn hàng thành công!
+OrdersControl.cs: Hủy đơn hàng thành công.
+OrdersControl.cs: Lỗi hủy đơn: 
+OrdersControl.cs: Lỗi hủy: 
+OrdersControl.cs: Lỗi mở chi tiết đơn hàng: 
+OrdersControl.cs: Lỗi tải dữ liệu: 
+POSControl.cs: Giỏ hàng trống!
+POSControl.cs: Không tìm thấy sách với mã: 
+POSControl.cs: POS Load Error: 
+POSControl.cs: Refresh Data Error: 
+POSControl.cs: Sách này đã hết hàng trong kho!
+POSControl.cs: Số lượng phải là số lớn hơn 0.
+POSControl.cs: Thanh toán thành công!
+PublisherControl.cs: Không thể xóa nhà xuất bản này. Có thể dữ liệu đang được sử dụng ở nơi khác.
+PublisherControl.cs: Lỗi khi xuất Excel: 
+PublisherControl.cs: Lỗi tải dữ liệu: 
+PublisherControl.cs: Lỗi xóa: 
+PublisherControl.cs: Xuất file Excel thành công!
+PublisherForm.cs: Cập nhật thành công!
+PublisherForm.cs: Email không đúng định dạng. Vui lòng kiểm tra lại.
+PublisherForm.cs: Không tìm thấy dữ liệu NXB!
+PublisherForm.cs: Lỗi khi lưu: 
+PublisherForm.cs: Lỗi tải dữ liệu: 
+PublisherForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+PublisherForm.cs: Thêm mới thành công!
+PublisherForm.cs: Tên NXB đã tồn tại!
+PublisherForm.cs: Vui lòng nhập tên NXB!
+PurchaseReceiptAddForm.cs: Giá không hợp lệ!
+PurchaseReceiptAddForm.cs: Số lượng không hợp lệ!
+PurchaseReceiptAddForm.cs: Thêm phiếu nhập thành công!
+PurchaseReceiptAddForm.cs: Vui lòng chọn Kho!
+PurchaseReceiptAddForm.cs: Vui lòng chọn Nhà cung cấp!
+PurchaseReceiptAddForm.cs: Vui lòng thêm ít nhất một sản phẩm!
+PurchaseReceiptControl.cs: Lỗi khi xuất Excel: 
+PurchaseReceiptControl.cs: Xuất file Excel thành công!
+RefundControl.cs: Đã xóa thành công!
+RefundForm.cs: Cập nhật thành công!
+RefundForm.cs: Không tìm thấy đơn hàng hoặc đơn hàng trống!
+RefundForm.cs: Lỗi cập nhật: 
+RefundForm.cs: Lỗi tạo phiếu: 
+RefundForm.cs: Tạo phiếu trả thành công!
+RefundForm.cs: Vui lòng chọn ít nhất 1 sản phẩm để trả và nhập số lượng > 0.
+RefundForm.cs: Vui lòng nhập Mã đơn hàng dạng số!
+RefundForm.cs: Vui lòng tìm và chọn đơn hàng hợp lệ.
+ReportsControl.cs: Lỗi khi xuất Excel: 
+ReportsControl.cs: Xuất file Excel thành công!
+StaffInventoryControl.cs: Lỗi xuất Excel: 
+StaffInventoryControl.cs: Xuất file Excel thành công!
+StaffMyInvoicesControl.cs: Lỗi xuất Excel: 
+StaffMyInvoicesControl.cs: Xuất file Excel thành công!
+StaffReturnControl.cs: Không tìm thấy hóa đơn.
+StaffReturnControl.cs: Số lượng trả phải là số dương hợp lệ.
+StaffReturnControl.cs: Vui lòng nhập số lượng trả cho ít nhất một mặt hàng.
+StartShiftForm.cs: Bắt đầu ca thành công!
+StartShiftForm.cs: Số tiền đầu ca không hợp lệ.
+StartShiftForm.cs: Vui lòng chọn một ca.
+StoreForm.cs: Mã chi nhánh đã tồn tại.
+StoreForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+StoreForm.cs: Vui lòng điền các trường bắt buộc (*).
+SupplierControl.cs: Không thể xóa nhà cung cấp này. Có thể dữ liệu đang được sử dụng ở nơi khác.
+SupplierControl.cs: Lỗi khi xuất Excel: 
+SupplierControl.cs: Lỗi tải dữ liệu: 
+SupplierControl.cs: Lỗi xóa: 
+SupplierControl.cs: Xuất file Excel thành công!
+SupplierForm.cs: Cập nhật thành công!
+SupplierForm.cs: Email không đúng định dạng. Vui lòng kiểm tra lại.
+SupplierForm.cs: Không tìm thấy dữ liệu NCC!
+SupplierForm.cs: Lỗi khi lưu: 
+SupplierForm.cs: Lỗi tải dữ liệu: 
+SupplierForm.cs: Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.
+SupplierForm.cs: Thêm mới thành công!
+SupplierForm.cs: Tên NCC đã tồn tại!
+SupplierForm.cs: Vui lòng nhập tên nhà cung cấp!

@@ -9,6 +9,7 @@ namespace BookStoreManagement
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             ApplicationConfiguration.Initialize();
+            Themes.ThemeManager.Initialize();
             Application.Run(new Forms.LoginForm());
         }
 

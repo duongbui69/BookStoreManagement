@@ -36,13 +36,32 @@ namespace BookStoreManagement.Repositories
 
     public class DashboardRepository : RepositoryBase
     {
-        public DashboardStats GetStats()
+        public DashboardStats GetStats(string filter = "Tháng này")
         {
             var stats = new DashboardStats();
-
             DateTime now = DateTime.Now;
-            DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
-            DateTime lastMonthStart = currentMonthStart.AddMonths(-1);
+            DateTime startDate, prevStartDate;
+
+            switch (filter)
+            {
+                case "Hôm nay":
+                    startDate = now.Date;
+                    prevStartDate = startDate.AddDays(-1);
+                    break;
+                case "Tuần này":
+                    startDate = now.Date.AddDays(-(int)now.DayOfWeek);
+                    prevStartDate = startDate.AddDays(-7);
+                    break;
+                case "Năm nay":
+                    startDate = new DateTime(now.Year, 1, 1);
+                    prevStartDate = startDate.AddYears(-1);
+                    break;
+                case "Tháng này":
+                default:
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    prevStartDate = startDate.AddMonths(-1);
+                    break;
+            }
             
             // Helper to get sum
             decimal GetTotalRevenue(DateTime start, DateTime end)
@@ -63,11 +82,11 @@ namespace BookStoreManagement.Repositories
                     });
             }
 
-            decimal currentRevenue = GetTotalRevenue(currentMonthStart, now);
-            decimal lastRevenue = GetTotalRevenue(lastMonthStart, currentMonthStart);
+            decimal currentRevenue = GetTotalRevenue(startDate, now.AddDays(1));
+            decimal lastRevenue = GetTotalRevenue(prevStartDate, startDate);
             
-            int currentOrders = GetTotalOrders(currentMonthStart, now);
-            int lastOrders = GetTotalOrders(lastMonthStart, currentMonthStart);
+            int currentOrders = GetTotalOrders(startDate, now.AddDays(1));
+            int lastOrders = GetTotalOrders(prevStartDate, startDate);
 
             stats.TotalRevenue = currentRevenue;
             stats.TotalOrders = currentOrders;
@@ -80,12 +99,25 @@ namespace BookStoreManagement.Repositories
             stats.ProfitGrowth = lastProfit == 0 ? 0 : ((stats.NetProfit - lastProfit) / lastProfit) * 100;
             stats.OrdersGrowth = lastOrders == 0 ? 0 : ((currentOrders - lastOrders) / (decimal)lastOrders) * 100;
 
-            // Monthly Revenue for Line Chart (Past 12 months)
-            for (int i = 11; i >= 0; i--)
+            // Monthly or Daily Revenue for Chart
+            stats.MonthlyRevenue = new Dictionary<DateTime, decimal>();
+            if (filter == "Hôm nay" || filter == "Tuần này")
             {
-                DateTime mStart = currentMonthStart.AddMonths(-i);
-                DateTime mEnd = mStart.AddMonths(1);
-                stats.MonthlyRevenue.Add(mStart, GetTotalRevenue(mStart, mEnd));
+                int days = filter == "Hôm nay" ? 7 : 7;
+                for (int i = days - 1; i >= 0; i--)
+                {
+                    DateTime dStart = now.Date.AddDays(-i);
+                    stats.MonthlyRevenue.Add(dStart, GetTotalRevenue(dStart, dStart.AddDays(1)));
+                }
+            }
+            else
+            {
+                for (int i = 11; i >= 0; i--)
+                {
+                    DateTime mStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
+                    DateTime mEnd = mStart.AddMonths(1);
+                    stats.MonthlyRevenue.Add(mStart, GetTotalRevenue(mStart, mEnd));
+                }
             }
 
             // Pie Chart Data (Sales By Category)
@@ -104,7 +136,7 @@ namespace BookStoreManagement.Repositories
                 JOIN SalesOrders so ON sd.SalesOrderId = so.Id
                 WHERE so.OrderDate >= @Start
                 GROUP BY c.CategoryName", 
-            p => AddParameter(p, "@Start", currentMonthStart));
+            p => AddParameter(p, "@Start", startDate));
 
             // Low Stock Items
             ExecuteQuery(cmd => {
@@ -136,13 +168,32 @@ namespace BookStoreManagement.Repositories
             return stats;
         }
 
-        public async System.Threading.Tasks.Task<DashboardStats> GetStatsAsync()
+        public async System.Threading.Tasks.Task<DashboardStats> GetStatsAsync(string filter = "Tháng này")
         {
             var stats = new DashboardStats();
-
             DateTime now = DateTime.Now;
-            DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
-            DateTime lastMonthStart = currentMonthStart.AddMonths(-1);
+            DateTime startDate, prevStartDate;
+
+            switch (filter)
+            {
+                case "Hôm nay":
+                    startDate = now.Date;
+                    prevStartDate = startDate.AddDays(-1);
+                    break;
+                case "Tuần này":
+                    startDate = now.Date.AddDays(-(int)now.DayOfWeek);
+                    prevStartDate = startDate.AddDays(-7);
+                    break;
+                case "Năm nay":
+                    startDate = new DateTime(now.Year, 1, 1);
+                    prevStartDate = startDate.AddYears(-1);
+                    break;
+                case "Tháng này":
+                default:
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    prevStartDate = startDate.AddMonths(-1);
+                    break;
+            }
             
             // Helper to get sum
             async System.Threading.Tasks.Task<decimal> GetTotalRevenueAsync(DateTime start, DateTime end)
@@ -156,11 +207,11 @@ namespace BookStoreManagement.Repositories
                 return await ExecuteScalarAsync<int>("SELECT COUNT(*) FROM SalesOrders WHERE OrderDate >= @Start AND OrderDate < @End", new { Start = start, End = end });
             }
 
-            decimal currentRevenue = await GetTotalRevenueAsync(currentMonthStart, now);
-            decimal lastRevenue = await GetTotalRevenueAsync(lastMonthStart, currentMonthStart);
+            decimal currentRevenue = await GetTotalRevenueAsync(startDate, now.AddDays(1));
+            decimal lastRevenue = await GetTotalRevenueAsync(prevStartDate, startDate);
             
-            int currentOrders = await GetTotalOrdersAsync(currentMonthStart, now);
-            int lastOrders = await GetTotalOrdersAsync(lastMonthStart, currentMonthStart);
+            int currentOrders = await GetTotalOrdersAsync(startDate, now.AddDays(1));
+            int lastOrders = await GetTotalOrdersAsync(prevStartDate, startDate);
 
             stats.TotalRevenue = currentRevenue;
             stats.TotalOrders = currentOrders;
@@ -173,20 +224,32 @@ namespace BookStoreManagement.Repositories
             stats.ProfitGrowth = lastProfit == 0 ? 0 : ((stats.NetProfit - lastProfit) / lastProfit) * 100;
             stats.OrdersGrowth = lastOrders == 0 ? 0 : ((currentOrders - lastOrders) / (decimal)lastOrders) * 100;
 
-            // Monthly Revenue for Chart (Past 12 months)
-            for (int i = 11; i >= 0; i--)
+            // Monthly or Daily Revenue for Chart
+            stats.MonthlyRevenue = new Dictionary<DateTime, decimal>();
+            if (filter == "Hôm nay" || filter == "Tuần này")
             {
-                DateTime mStart = currentMonthStart.AddMonths(-i);
-                DateTime mEnd = mStart.AddMonths(1);
-                if (mStart.Year < 2026 || (mStart.Year == 2026 && mStart.Month <= 6))
+                int days = filter == "Hôm nay" ? 7 : 7; // Show past 7 days for both today and this week
+                for (int i = days - 1; i >= 0; i--)
                 {
-                    // Mock data for <= June 2026
-                    decimal[] mockData = new decimal[] { 12000000, 15000000, 14500000, 18000000, 16000000, 22000000, 10000000, 11000000, 13000000, 12500000, 15000000, 17000000 };
-                    stats.MonthlyRevenue.Add(mStart, mockData[mStart.Month - 1]);
+                    DateTime dStart = now.Date.AddDays(-i);
+                    stats.MonthlyRevenue.Add(dStart, await GetTotalRevenueAsync(dStart, dStart.AddDays(1)));
                 }
-                else
+            }
+            else
+            {
+                for (int i = 11; i >= 0; i--)
                 {
-                    stats.MonthlyRevenue.Add(mStart, await GetTotalRevenueAsync(mStart, mEnd));
+                    DateTime mStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
+                    DateTime mEnd = mStart.AddMonths(1);
+                    if (mStart.Year < 2026 || (mStart.Year == 2026 && mStart.Month <= 6))
+                    {
+                        decimal[] mockData = new decimal[] { 12000000, 15000000, 14500000, 18000000, 16000000, 22000000, 10000000, 11000000, 13000000, 12500000, 15000000, 17000000 };
+                        stats.MonthlyRevenue.Add(mStart, mockData[mStart.Month - 1]);
+                    }
+                    else
+                    {
+                        stats.MonthlyRevenue.Add(mStart, await GetTotalRevenueAsync(mStart, mEnd));
+                    }
                 }
             }
 
@@ -198,7 +261,7 @@ namespace BookStoreManagement.Repositories
                 JOIN Categories c ON b.CategoryId = c.Id
                 JOIN SalesOrders so ON sd.SalesOrderId = so.Id
                 WHERE so.OrderDate >= @Start
-                GROUP BY c.CategoryName", new { Start = currentMonthStart });
+                GROUP BY c.CategoryName", new { Start = startDate });
 
             foreach (var item in categorySales)
             {

@@ -55,7 +55,7 @@ namespace BookStoreManagement.Forms
 
             // Category Name
             Label lblName = new Label { Text = "Tên danh mục (*)", Location = new Point(24, yPos), AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold) };
-            txtCategoryName = new Guna2TextBox { Location = new Point(24, yPos + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4, MaxLength = 100 };
+            txtCategoryName = new Guna2TextBox { Name = "txtCategoryName", Location = new Point(24, yPos + 25), Width = 436, Height = 40, Font = new Font("Segoe UI", 10F), BorderRadius = 4, MaxLength = 100 };
             ValidationHelper.WireTextOnly(txtCategoryName, _errorProvider);
             this.Controls.Add(lblName);
             this.Controls.Add(txtCategoryName);
@@ -77,7 +77,7 @@ namespace BookStoreManagement.Forms
             btnCancel = new Guna2Button { Text = "Hủy bỏ", Location = new Point(this.Width - 140, this.Height - 100), Width = 100, Height = 45, BorderRadius = 8, FillColor = Color.Transparent, BorderThickness = 1, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
             
-            btnSave = new Guna2Button { Text = "Lưu thay đổi", Location = new Point(this.Width - 280, this.Height - 100), Width = 130, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnSave = new Guna2Button { Name = "btnSave", Text = "Lưu thay đổi", Location = new Point(this.Width - 280, this.Height - 100), Width = 130, Height = 45, BorderRadius = 8, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSave.Click += BtnSave_Click;
 
             this.Controls.Add(btnCancel);
