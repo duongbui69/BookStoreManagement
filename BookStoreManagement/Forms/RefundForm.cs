@@ -250,18 +250,28 @@ namespace BookStoreManagement.Forms
         {
             if (string.IsNullOrWhiteSpace(txtOrderCode.Text)) return;
             
-            // To simplify, assume ordercode is actually the ID or we use OrderRepo
+            BookStoreManagement.Models.SalesOrder? foundOrder = null;
+
             if (int.TryParse(txtOrderCode.Text, out int orderId))
             {
-                var details = await _orderService.GetDetailsAsync(orderId);
+                foundOrder = await _orderService.GetByIdAsync(orderId);
+            }
+            else
+            {
+                foundOrder = await _orderService.GetByOrderCodeAsync(txtOrderCode.Text.Trim());
+            }
+
+            if (foundOrder != null)
+            {
+                var details = await _orderService.GetDetailsAsync(foundOrder.Id);
                 if (details != null && details.Count > 0)
                 {
                     _orderDetails = details;
                     dgvDetails.DataSource = null;
                     dgvDetails.DataSource = _orderDetails;
                     
-                    _currentOrder = await _orderService.GetByIdAsync(orderId);
-                    lblCustomerInfo.Text = _currentOrder != null ? $"Khách hàng ID: {_currentOrder.CustomerId}" : "Không tìm thấy";
+                    _currentOrder = foundOrder;
+                    lblCustomerInfo.Text = $"Khách hàng ID: {_currentOrder.CustomerId}";
                 }
                 else
                 {
@@ -270,7 +280,7 @@ namespace BookStoreManagement.Forms
             }
             else
             {
-                MessageBox.Show("Vui lòng nhập Mã đơn hàng dạng số!");
+                MessageBox.Show("Không tìm thấy đơn hàng!");
             }
         }
 
