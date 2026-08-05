@@ -97,10 +97,10 @@ namespace BookStoreManagement.Repositories
 
                 const string insertDetailSql = @"
                     INSERT INTO ReturnReceiptDetails (
-                        ReturnReceiptId, SalesOrderDetailId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
+                        ReturnReceiptId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
                     )
                     VALUES (
-                        @ReturnReceiptId, @SalesOrderDetailId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
+                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
                     );
                 ";
 
@@ -125,7 +125,6 @@ namespace BookStoreManagement.Repositories
                 {
                     using var detailCommand = new SqlCommand(insertDetailSql, connection, transaction);
                     AddParameter(detailCommand, "@ReturnReceiptId", returnReceiptId);
-                    AddParameter(detailCommand, "@SalesOrderDetailId", detail.SalesOrderDetailId);
                     AddParameter(detailCommand, "@BookId", detail.BookId);
                     AddParameter(detailCommand, "@Quantity", detail.Quantity);
                     AddParameter(detailCommand, "@UnitPrice", detail.UnitPrice);
@@ -300,10 +299,10 @@ namespace BookStoreManagement.Repositories
 
                 const string insertDetailSql = @"
                     INSERT INTO ReturnReceiptDetails (
-                        ReturnReceiptId, SalesOrderDetailId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
+                        ReturnReceiptId, BookId, Quantity, UnitPrice, ReturnReason, IsRestock
                     )
                     VALUES (
-                        @ReturnReceiptId, @SalesOrderDetailId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
+                        @ReturnReceiptId, @BookId, @Quantity, @UnitPrice, @ReturnReason, @IsRestock
                     );
                 ";
 
@@ -327,7 +326,6 @@ namespace BookStoreManagement.Repositories
                 {
                     await Dapper.SqlMapper.ExecuteAsync(connection, insertDetailSql, new {
                         ReturnReceiptId = returnReceiptId,
-                        detail.SalesOrderDetailId,
                         detail.BookId,
                         detail.Quantity,
                         detail.UnitPrice,
