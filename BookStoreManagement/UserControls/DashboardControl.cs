@@ -71,7 +71,6 @@ namespace BookStoreManagement.UserControls
             };
             this.Load += DashboardControl_Load;
             this.Disposed += (s, e) => {
-                _resizeTimer?.Dispose();
                 _transactionDebounceTimer?.Dispose();
                 GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
             };
