@@ -75,6 +75,7 @@ namespace BookStoreManagement.UserControls
                 _transactionDebounceTimer?.Dispose();
                 GlobalEvents.TransactionCompleted -= OnTransactionCompleted;
             };
+        }
 
         private void InitializeUI()
         {

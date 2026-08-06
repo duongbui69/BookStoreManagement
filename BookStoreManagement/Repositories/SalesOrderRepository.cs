@@ -258,6 +258,7 @@ namespace BookStoreManagement.Repositories
                 while (reader.Read()) orders.Add(MapOrderList(reader));
                 return orders;
             }, sql, parameters =>
+            {
                 AddParameter(parameters, "@Keyword", keyword);
                 if (storeId.HasValue) AddParameter(parameters, "@StoreId", storeId.Value);
             });
